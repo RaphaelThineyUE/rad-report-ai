@@ -13,6 +13,7 @@ import ResetPassword from '@/pages/ResetPassword';
 import Profile from '@/pages/Profile';
 import Worklist from '@/pages/Worklist';
 import Patients from '@/pages/Patients';
+import PatientDetail from '@/pages/PatientDetail';
 import Analytics from '@/pages/Analytics';
 
 type NavId = 'worklist' | 'patients' | 'analytics' | 'settings';
@@ -22,7 +23,7 @@ function AppShell() {
   const location = useLocation();
   const [search, setSearch] = useState('');
 
-  const active = (location.pathname.slice(1) || 'worklist') as NavId;
+  const active = (location.pathname.slice(1).split('/')[0] || 'worklist') as NavId;
 
   function handleNav(id: NavId) {
     setSearch('');
@@ -32,11 +33,12 @@ function AppShell() {
   return (
     <AppLayout active={active} onNav={handleNav} search={search} setSearch={setSearch}>
       <Routes>
-        <Route path="/worklist"  element={<Worklist  search={search} />} />
-        <Route path="/patients"  element={<Patients  search={search} />} />
-        <Route path="/analytics" element={<Analytics />} />
-        <Route path="/profile"   element={<Profile />} />
-        <Route path="*"          element={<Navigate to="/worklist" replace />} />
+        <Route path="/worklist"      element={<Worklist  search={search} />} />
+        <Route path="/patients"      element={<Patients  search={search} />} />
+        <Route path="/patients/:id"  element={<PatientDetail />} />
+        <Route path="/analytics"     element={<Analytics />} />
+        <Route path="/profile"       element={<Profile />} />
+        <Route path="*"              element={<Navigate to="/worklist" replace />} />
       </Routes>
     </AppLayout>
   );
