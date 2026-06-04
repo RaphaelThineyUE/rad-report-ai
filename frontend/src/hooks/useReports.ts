@@ -78,3 +78,44 @@ export function useReportSignedUrl() {
     },
   });
 }
+
+export interface BatchUploadInput {
+  patientId: string;
+  files: File[];
+}
+
+export function useBatchUpload() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ patientId, files }: BatchUploadInput) => {
+      const results: { file: File; report: Report }[] = [];
+
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('patient_id', patientId);
+
+        const uploadResponse = await api.post<UploadReportResponse>('/api/reports/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+
+        const report = await api.post<Report>('/api/reports', {
+          patient_id: patientId,
+          filename: uploadResponse.data.filename,
+          file_url: uploadResponse.data.file_url,
+          file_size: uploadResponse.data.file_size,
+        });
+
+        results.push({ file, report: report.data });
+      }
+
+      return results;
+    },
+    onSuccess: (results) => {
+      if (results.length > 0) {
+        const patientId = results[0].report.patient_id;
+        queryClient.invalidateQueries({ queryKey: ['reports', patientId] });
+      }
+    },
+  });
+}

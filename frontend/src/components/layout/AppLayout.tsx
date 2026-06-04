@@ -1,9 +1,25 @@
-import { useState } from 'react';
+import { useState, createContext, useContext } from 'react';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
-import { UploadDrawer } from '@/components/drawers/UploadDrawer';
+import { BatchUploadDrawer } from '@/components/drawers/BatchUploadDrawer';
 
 type NavId = 'worklist' | 'patients' | 'analytics' | 'settings';
+
+interface AppLayoutContextType {
+  setCurrentPatientId: (id: string | null) => void;
+  uploadOpen: boolean;
+  setUploadOpen: (open: boolean) => void;
+}
+
+export const AppLayoutContext = createContext<AppLayoutContextType | null>(null);
+
+export function useAppLayoutContext() {
+  const context = useContext(AppLayoutContext);
+  if (!context) {
+    throw new Error('useAppLayoutContext must be used within AppLayout');
+  }
+  return context;
+}
 
 interface AppLayoutProps {
   active: NavId;
@@ -16,25 +32,29 @@ interface AppLayoutProps {
 export function AppLayout({ active, onNav, search, setSearch, children }: AppLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [currentPatientId, setCurrentPatientId] = useState<string | null>(null);
 
   return (
-    <div className="app">
-      <Sidebar active={active} onNav={onNav} collapsed={collapsed} />
-      <div className="main">
-        <Topbar
-          onToggleSidebar={() => setCollapsed(c => !c)}
-          onUpload={() => setUploadOpen(true)}
-          search={search}
-          setSearch={setSearch}
-        />
-        <div className="content">{children}</div>
+    <AppLayoutContext.Provider value={{ setCurrentPatientId, uploadOpen, setUploadOpen }}>
+      <div className="app">
+        <Sidebar active={active} onNav={onNav} collapsed={collapsed} />
+        <div className="main">
+          <Topbar
+            onToggleSidebar={() => setCollapsed(c => !c)}
+            onUpload={() => setUploadOpen(true)}
+            search={search}
+            setSearch={setSearch}
+          />
+          <div className="content">{children}</div>
+        </div>
+        {uploadOpen && currentPatientId && (
+          <BatchUploadDrawer
+            patientId={currentPatientId}
+            onClose={() => setUploadOpen(false)}
+            onComplete={() => setUploadOpen(false)}
+          />
+        )}
       </div>
-      {uploadOpen && (
-        <UploadDrawer
-          onClose={() => setUploadOpen(false)}
-          onComplete={() => setUploadOpen(false)}
-        />
-      )}
-    </div>
+    </AppLayoutContext.Provider>
   );
 }
