@@ -3,6 +3,7 @@ const REQUIRED_VARS = [
   'SUPABASE_SERVICE_ROLE_KEY',
   'SUPABASE_ANON_KEY',
   'ANTHROPIC_API_KEY',
+  'STORAGE_BUCKET',
 ] as const;
 
 export function validateEnv(): void {

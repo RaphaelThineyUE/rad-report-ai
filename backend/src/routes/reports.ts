@@ -1,0 +1,45 @@
+import { IRouter, NextFunction, Request, Response, Router } from 'express';
+import multer from 'multer';
+import { body } from 'express-validator';
+import { requireAuth, AuthRequest } from '../middleware/auth';
+import {
+  createReport,
+  deleteReport,
+  getReport,
+  getReportSignedUrl,
+  listReports,
+  updateReport,
+  uploadReport,
+} from '../controllers/reportController';
+
+const maxFileSizeMb = Number(process.env.MAX_FILE_SIZE_MB ?? 20);
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: maxFileSizeMb * 1024 * 1024 },
+});
+
+const createValidators = [
+  body('patient_id').isUUID().withMessage('patient_id must be a UUID'),
+  body('filename').isString().notEmpty(),
+  body('file_url').isString().notEmpty(),
+  body('file_size').isInt({ gt: 0 }),
+];
+
+function wrapAuth(handler: (req: AuthRequest, res: Response) => Promise<void>) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    handler(req as AuthRequest, res).catch(next);
+  };
+}
+
+const router: IRouter = Router();
+
+router.post('/upload', requireAuth, upload.single('file'), wrapAuth(uploadReport));
+router.get('/:id/url', requireAuth, wrapAuth(getReportSignedUrl));
+
+router.post('/', requireAuth, createValidators, wrapAuth(createReport));
+router.get('/', requireAuth, wrapAuth(listReports));
+router.get('/:id', requireAuth, wrapAuth(getReport));
+router.patch('/:id', requireAuth, wrapAuth(updateReport));
+router.delete('/:id', requireAuth, wrapAuth(deleteReport));
+
+export default router;
