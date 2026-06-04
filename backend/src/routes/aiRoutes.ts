@@ -2,11 +2,13 @@ import { Router } from 'express';
 import { body } from 'express-validator';
 import { analyzeReport, compare, consolidate, summary } from '../controllers/aiController.js';
 import { requireAuth } from '../middleware/auth.js';
+import { aiLimiter } from '../middleware/rateLimit.js';
 import { handleValidation } from '../middleware/validation.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 export const aiRouter = Router();
 
+aiRouter.use(aiLimiter);
 aiRouter.use(requireAuth);
 aiRouter.post('/analyze-report', body('pdf_text').isString(), handleValidation, asyncHandler(analyzeReport));
 aiRouter.post('/generate-summary', body('extracted_json').exists(), handleValidation, asyncHandler(summary));

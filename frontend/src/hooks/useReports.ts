@@ -7,7 +7,7 @@ export const useReports = (patientId?: string) =>
     queryKey: ['reports', patientId],
     queryFn: async () => {
       const { data } = await api.get<{ reports: Report[] }>('/api/reports', {
-        params: patientId ? { patient_id: patientId } : undefined,
+        headers: patientId ? { 'x-patient-id': patientId } : undefined,
       });
       return data.reports;
     },

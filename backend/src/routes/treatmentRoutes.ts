@@ -2,11 +2,13 @@ import { Router } from 'express';
 import { body } from 'express-validator';
 import { createTreatment, deleteTreatment, getTreatment, listTreatments, updateTreatment } from '../controllers/treatmentsController.js';
 import { requireAuth } from '../middleware/auth.js';
+import { protectedLimiter } from '../middleware/rateLimit.js';
 import { handleValidation } from '../middleware/validation.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 export const treatmentRouter = Router();
 
+treatmentRouter.use(protectedLimiter);
 treatmentRouter.use(requireAuth);
 treatmentRouter.get('/', asyncHandler(listTreatments));
 treatmentRouter.post(

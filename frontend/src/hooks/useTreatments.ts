@@ -7,7 +7,7 @@ export const useTreatments = (patientId?: string) =>
     queryKey: ['treatments', patientId],
     queryFn: async () => {
       const { data } = await api.get<{ treatments: Treatment[] }>('/api/treatments', {
-        params: patientId ? { patient_id: patientId } : undefined,
+        headers: patientId ? { 'x-patient-id': patientId } : undefined,
       });
       return data.treatments;
     },

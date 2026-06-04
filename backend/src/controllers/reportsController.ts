@@ -140,11 +140,14 @@ export const processReport = async (request: Request, response: Response) => {
 
 export const listReports = async (request: Request, response: Response) => {
   let query = supabase.from('radiology_reports').select('*').eq('created_by', request.user!.id);
-  if (request.query.patient_id) {
-    query = query.eq('patient_id', String(request.query.patient_id));
+  const patientId = request.header('x-patient-id');
+  const status = request.header('x-report-status');
+
+  if (patientId) {
+    query = query.eq('patient_id', patientId);
   }
-  if (request.query.status) {
-    query = query.eq('status', String(request.query.status));
+  if (status) {
+    query = query.eq('status', status);
   }
 
   const { data, error } = await query.order('created_at', { ascending: false });

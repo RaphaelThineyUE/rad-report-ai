@@ -2,11 +2,13 @@ import { Router } from 'express';
 import { body } from 'express-validator';
 import { createPatient, deletePatient, getPatient, listPatients, updatePatient } from '../controllers/patientsController.js';
 import { requireAuth } from '../middleware/auth.js';
+import { protectedLimiter } from '../middleware/rateLimit.js';
 import { handleValidation } from '../middleware/validation.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 export const patientRouter = Router();
 
+patientRouter.use(protectedLimiter);
 patientRouter.use(requireAuth);
 patientRouter.get('/', asyncHandler(listPatients));
 patientRouter.post(

@@ -3,8 +3,9 @@ import { supabase } from '../services/supabaseClient.js';
 
 export const listTreatments = async (request: Request, response: Response) => {
   let query = supabase.from('treatment_records').select('*').eq('created_by', request.user!.id);
-  if (request.query.patient_id) {
-    query = query.eq('patient_id', String(request.query.patient_id));
+  const patientId = request.header('x-patient-id');
+  if (patientId) {
+    query = query.eq('patient_id', patientId);
   }
 
   const { data, error } = await query.order('treatment_start_date', { ascending: false });
