@@ -4,7 +4,7 @@
  * Tests for Milestone 4: Batch PDF upload with error handling and retry capability
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 /**
  * Test Suite: File Selection and Validation
@@ -276,8 +276,8 @@ describe('Batch Upload - State Management', () => {
     ]);
 
     const file = fileMap.get('file1.pdf')!;
-    file.stage = 'uploading';
-    file.progress = 75;
+    const updatedFile = { ...file, stage: 'uploading' as const, progress: 75 };
+    fileMap.set('file1.pdf', updatedFile);
 
     expect(fileMap.get('file1.pdf')!.stage).toBe('uploading');
     expect(fileMap.get('file1.pdf')!.progress).toBe(75);

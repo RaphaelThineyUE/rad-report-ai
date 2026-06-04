@@ -1,18 +1,46 @@
 import { useState } from 'react';
-import { Avatar, BiRads } from '@/components/ui';
-import { ReportDrawer } from '@/components/drawers/ReportDrawer';
-import { SAMPLE_PATIENTS, type PatientRow } from '@/types/clinical';
+import { Avatar, Button } from '@/components/ui';
+import { usePatients, type Patient } from '@/hooks/usePatients';
+import { AddPatientDialog } from '@/components/dialogs/AddPatientDialog';
+import { PatientDetail } from '@/components/PatientDetail';
 
 interface PatientsProps {
   search: string;
 }
 
 export default function Patients({ search }: PatientsProps) {
-  const [selected, setSelected] = useState<PatientRow | null>(null);
+  const { data: patients, isLoading, error } = usePatients();
+  const [selected, setSelected] = useState<Patient | null>(null);
+  const [showAddDialog, setShowAddDialog] = useState(false);
 
-  const rows = SAMPLE_PATIENTS.filter(p =>
-    !search || (p.name + p.id).toLowerCase().includes(search.toLowerCase())
+  const rows = (patients || []).filter(p =>
+    !search || (p.full_name + p.id).toLowerCase().includes(search.toLowerCase())
   );
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  if (error) {
+    return (
+      <div className="fade-up">
+        <div className="page-head">
+          <div>
+            <h1 className="t-h1">Patients</h1>
+            <div className="sub">Error loading patients</div>
+          </div>
+        </div>
+        <div className="card card-pad" style={{ color: 'var(--fg-3)' }}>
+          Failed to load patients. Please try again.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fade-up">
@@ -21,46 +49,62 @@ export default function Patients({ search }: PatientsProps) {
           <h1 className="t-h1">Patients</h1>
           <div className="sub">Longitudinal records across all studies</div>
         </div>
+        <button className="btn btn-primary" onClick={() => setShowAddDialog(true)}>
+          Add Patient
+        </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
-        {rows.map(p => (
-          <div
-            key={p.id}
-            className="card card-pad"
-            onClick={() => setSelected(p)}
-            style={{ cursor: 'pointer', transition: 'box-shadow var(--dur-fast), transform var(--dur-fast)' }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLDivElement).style.boxShadow = 'var(--shadow-lg)';
-              (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLDivElement).style.boxShadow = 'var(--shadow-md)';
-              (e.currentTarget as HTMLDivElement).style.transform = 'none';
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-              <Avatar initials={p.initials} size={42} />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 600, fontSize: 15 }}>{p.name}</div>
-                <div className="mono" style={{ fontSize: 11.5, color: 'var(--fg-4)' }}>
-                  {p.id} · {p.age}{p.sex}
+      {isLoading ? (
+        <div className="card card-pad" style={{ color: 'var(--fg-3)', textAlign: 'center' }}>
+          Loading patients...
+        </div>
+      ) : rows.length === 0 ? (
+        <div className="card card-pad" style={{ color: 'var(--fg-3)', textAlign: 'center' }}>
+          No patients found
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+          {rows.map(p => (
+            <div
+              key={p.id}
+              className="card card-pad"
+              onClick={() => setSelected(p)}
+              style={{ cursor: 'pointer', transition: 'box-shadow var(--dur-fast), transform var(--dur-fast)' }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLDivElement).style.boxShadow = 'var(--shadow-lg)';
+                (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLDivElement).style.boxShadow = 'var(--shadow-md)';
+                (e.currentTarget as HTMLDivElement).style.transform = 'none';
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+                <Avatar initials={getInitials(p.full_name)} size={42} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 600, fontSize: 15 }}>{p.full_name}</div>
+                  <div className="mono" style={{ fontSize: 11.5, color: 'var(--fg-4)' }}>
+                    {p.id} · {p.gender || 'N/A'}
+                  </div>
                 </div>
               </div>
-              <BiRads value={p.birads} />
+              <div className="kv"><span className="k">Cancer type</span><span className="v">{p.cancer_type}</span></div>
+              <div className="kv"><span className="k">Stage</span><span className="v">{p.cancer_stage || 'Unknown'}</span></div>
+              <div className="kv">
+                <span className="k">Diagnosed</span>
+                <span className="v mono" style={{ fontWeight: 500 }}>{new Date(p.diagnosis_date).toLocaleDateString()}</span>
+              </div>
             </div>
-            <div className="kv"><span className="k">Latest modality</span><span className="v">{p.modality}</span></div>
-            <div className="kv"><span className="k">Density</span><span className="v">{p.density}</span></div>
-            <div className="kv">
-              <span className="k">Last study</span>
-              <span className="v mono" style={{ fontWeight: 500 }}>{p.date}</span>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {selected && (
-        <ReportDrawer patient={selected} onClose={() => setSelected(null)} />
+        <PatientDetail patient={selected} onClose={() => setSelected(null)} />
+      )}
+
+      {showAddDialog && (
+        <AddPatientDialog onClose={() => setShowAddDialog(false)} />
       )}
     </div>
   );

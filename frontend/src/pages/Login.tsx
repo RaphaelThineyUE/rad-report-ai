@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@/components/ui';
 import logoLockup from '@/assets/logo-lockup.svg';
+import { api } from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 
 const INPUT_STYLE: React.CSSProperties = {
   width: '100%', fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--fg-1)',
@@ -12,12 +14,33 @@ const INPUT_STYLE: React.CSSProperties = {
 
 export default function Login() {
   const [email, setEmail] = useState('r.kaur@stmary-imaging.org');
-  const [password, setPassword] = useState('••••••••••');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  function handleSignIn(e: React.FormEvent) {
+  async function handleSignIn(e: React.FormEvent) {
     e.preventDefault();
-    navigate('/worklist');
+    setError('');
+    setLoading(true);
+
+    try {
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError || !data.session) {
+        setError(signInError?.message || 'Failed to sign in');
+        return;
+      }
+
+      navigate('/worklist');
+    } catch (err) {
+      setError('An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -62,6 +85,17 @@ export default function Login() {
             Use your clinical workspace credentials.
           </p>
 
+          {error && (
+            <div style={{
+              background: 'var(--error-100)', border: '1px solid var(--error-200)',
+              borderRadius: 'var(--r-sm)', padding: 12, marginBottom: 16,
+              color: 'var(--error-700)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8
+            }}>
+              <Icon name="alert-circle" size={16} />
+              {error}
+            </div>
+          )}
+
           <label style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-2)', display: 'block', marginBottom: 6 }}>
             Work email
           </label>
@@ -73,6 +107,7 @@ export default function Login() {
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
+              required
               style={INPUT_STYLE}
             />
           </div>
@@ -88,26 +123,28 @@ export default function Login() {
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
+              required
               style={INPUT_STYLE}
             />
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22 }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, color: 'var(--fg-2)' }}>
-              <input type="checkbox" defaultChecked style={{ accentColor: 'var(--rose-600)', width: 15, height: 15 }} />
-              Trust this device
-            </label>
-            <a href="#" onClick={e => e.preventDefault()} style={{ fontSize: 13, color: 'var(--fg-brand)', fontWeight: 600, textDecoration: 'none' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 22 }}>
+            <button
+              type="button"
+              onClick={() => navigate('/forgot-password')}
+              style={{ fontSize: 13, color: 'var(--fg-brand)', fontWeight: 600, textDecoration: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            >
               Forgot password?
-            </a>
+            </button>
           </div>
 
           <button
             type="submit"
+            disabled={loading}
             className="btn btn-primary"
-            style={{ width: '100%', justifyContent: 'center', padding: 12 }}
+            style={{ width: '100%', justifyContent: 'center', padding: 12, opacity: loading ? 0.6 : 1 }}
           >
-            Sign in securely
+            {loading ? 'Signing in...' : 'Sign in securely'}
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 18, color: 'var(--fg-4)', fontSize: 11.5 }}>

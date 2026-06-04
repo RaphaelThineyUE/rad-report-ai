@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import axios from 'axios';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
+import { ConsolidatedView } from '@/components/analytics';
 import {
   useCreateReport,
   useDeleteReport,
@@ -15,6 +16,7 @@ import { api } from '@/lib/api';
 
 interface ReportsTabProps {
   patientId: string;
+  patientName?: string;
 }
 
 const STATUS_COLORS: Record<ReportStatus, React.CSSProperties> = {
@@ -24,7 +26,7 @@ const STATUS_COLORS: Record<ReportStatus, React.CSSProperties> = {
   failed: { color: 'var(--danger-700)', background: 'var(--danger-50)', borderColor: 'var(--danger-200)' },
 };
 
-export function ReportsTab({ patientId }: ReportsTabProps) {
+export function ReportsTab({ patientId, patientName }: ReportsTabProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { data: reports, isLoading, isError } = useReports(patientId);
   const createReport = useCreateReport();
@@ -32,6 +34,7 @@ export function ReportsTab({ patientId }: ReportsTabProps) {
   const signedUrl = useReportSignedUrl();
   const [uploading, setUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showConsolidated, setShowConsolidated] = useState(false);
 
   const sortedReports = useMemo(() => reports ?? [], [reports]);
 
@@ -110,9 +113,20 @@ export function ReportsTab({ patientId }: ReportsTabProps) {
               Upload one or more PDFs. Duplicate filenames per patient are blocked.
             </p>
           </div>
-          <Button variant="primary" icon={uploading ? 'Loader2' : 'upload'} onClick={openPicker} disabled={uploading}>
-            {uploading ? 'Uploading…' : 'Upload PDF(s)'}
-          </Button>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {sortedReports.length > 1 && (
+              <Button
+                variant="secondary"
+                icon="file-text"
+                onClick={() => setShowConsolidated(true)}
+              >
+                Compare Reports
+              </Button>
+            )}
+            <Button variant="primary" icon={uploading ? 'Loader2' : 'upload'} onClick={openPicker} disabled={uploading}>
+              {uploading ? 'Uploading…' : 'Upload PDF(s)'}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -177,6 +191,15 @@ export function ReportsTab({ patientId }: ReportsTabProps) {
             </div>
           ))}
         </div>
+      )}
+
+      {showConsolidated && reports && patientName && (
+        <ConsolidatedView
+          patientId={patientId}
+          patientName={patientName}
+          reports={reports}
+          onClose={() => setShowConsolidated(false)}
+        />
       )}
     </div>
   );

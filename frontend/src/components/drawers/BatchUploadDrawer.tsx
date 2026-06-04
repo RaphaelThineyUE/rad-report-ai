@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import axios from 'axios';
 import { Button, Icon, FileDropzone } from '@/components/ui';
 import { api } from '@/lib/api';
@@ -59,6 +59,11 @@ export function BatchUploadDrawer({
   const curIdx = STAGE_ORDER.indexOf(stage);
 
   function handleFilesSelected(files: File[]) {
+    if (files.length === 0) {
+      setFileStates(new Map());
+      return;
+    }
+
     const newStates = new Map(fileStates);
     for (const file of files) {
       if (!newStates.has(file.name)) {
@@ -77,12 +82,6 @@ export function BatchUploadDrawer({
     const newStates = new Map(fileStates);
     newStates.delete(fileName);
     setFileStates(newStates);
-  }
-
-  function clearAll() {
-    setFileStates(new Map());
-    setStage('idle');
-    setOverallProgress(0);
   }
 
   async function uploadFiles() {
