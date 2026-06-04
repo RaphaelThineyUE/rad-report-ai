@@ -1,0 +1,95 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Backend: Attach (tsx watch)",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "restart": true,
+      "cwd": "${workspaceFolder}/backend",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "preLaunchTask": "backend:dev (inspect)"
+    },
+    {
+      "name": "Frontend: Chrome (Vite)",
+      "type": "pwa-chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/frontend/src",
+      "preLaunchTask": "frontend:dev"
+    },
+    {
+      "name": "Backend: Debug Jest",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "backend",
+        "exec",
+        "jest",
+        "--runInBand",
+        "--watchAll=false"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "autoAttachChildProcesses": true,
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    },
+    {
+      "name": "Frontend: Debug Vitest",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "frontend",
+        "exec",
+        "vitest",
+        "run",
+        "--no-file-parallelism"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "autoAttachChildProcesses": true,
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    },
+    {
+      "name": "Backend: Jest Watch (Terminal Debug)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm --filter backend test -- --watch"
+    },
+    {
+      "name": "Frontend: Vitest Watch (Terminal Debug)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm --filter frontend test:watch"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full Stack: Backend + Frontend",
+      "configurations": [
+        "Backend: Attach (tsx watch)",
+        "Frontend: Chrome (Vite)"
+      ],
+      "stopAll": true
+    },
+    {
+      "name": "Test Debug: Backend + Frontend",
+      "configurations": [
+        "Backend: Debug Jest",
+        "Frontend: Debug Vitest"
+      ],
+      "stopAll": true
+    }
+  ]
+}
