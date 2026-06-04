@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - Node.js 20+
-- pnpm (`npm install -g pnpm`)
+- Yarn (`npm install -g yarn`)
 - A [Supabase](https://supabase.com) project (project ID: `ghdgkthminenqniqhjjx`)
 - An [Anthropic](https://console.anthropic.com) API key
 
@@ -14,7 +14,7 @@
 ### 1. Install dependencies
 
 ```bash
-pnpm install
+yarn install
 ```
 
 This installs dependencies for all workspaces (root, backend, frontend) in one command.
@@ -87,13 +87,13 @@ npx supabase gen types typescript \
 
 ```bash
 # Run both backend and frontend concurrently
-pnpm dev
+yarn dev
 
 # Run backend only (port 3001)
-pnpm --filter backend dev
+yarn workspace backend dev
 
 # Run frontend only (port 5173)
-pnpm --filter frontend dev
+yarn workspace frontend dev
 ```
 
 ---
@@ -102,16 +102,16 @@ pnpm --filter frontend dev
 
 ```bash
 # Add to backend
-pnpm --filter backend add <package>
+yarn workspace backend add <package>
 
 # Add to frontend
-pnpm --filter frontend add <package>
+yarn workspace frontend add <package>
 
 # Add dev dependency to root
-pnpm add -D -w <package>
+yarn add -D -W <package>
 ```
 
-Never use `npm install` directly — always use `pnpm`.
+Never use `npm install` directly — always use `yarn`.
 
 ---
 
@@ -119,13 +119,13 @@ Never use `npm install` directly — always use `pnpm`.
 
 ```bash
 # Backend tests (Jest + Supertest)
-pnpm --filter backend test
+yarn workspace backend test
 
 # Frontend component tests (Vitest + RTL)
-pnpm --filter frontend test
+yarn workspace frontend test
 
 # E2E tests (Playwright)
-pnpm --filter frontend test:e2e
+yarn workspace frontend test:e2e
 ```
 
 ---

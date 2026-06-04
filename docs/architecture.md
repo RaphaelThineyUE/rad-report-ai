@@ -25,7 +25,7 @@ Express API (Node.js / TypeScript)  ─────► Anthropic API (Claude)
 | File storage | Supabase Storage (private bucket) | Signed URLs for PDF access; files never exposed publicly |
 | AI provider | Anthropic Claude only | `claude-sonnet-4-20250514` for all AI calls |
 | ORM | Supabase JS client | Typed queries, RLS enforcement at DB level |
-| Package manager | pnpm workspaces | Strict hoisting, faster installs, monorepo DX |
+| Package manager | Yarn workspaces | Stable monorepo workflow and broad ecosystem support |
 | Component lib | shadcn/ui + Tailwind | Composable, accessible, no runtime overhead |
 | State/cache | TanStack Query | Server state management, background refetching, optimistic updates |
 

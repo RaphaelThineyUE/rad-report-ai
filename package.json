@@ -1,12 +1,22 @@
 {
   "name": "rad-report-ai",
   "version": "0.0.0",
-  "private": true,
+  "private": true, 
+  "packageManager": "yarn@1.22.22",
+  "workspaces": [
+    "backend",
+    "frontend",
+    "shared"
+  ],
   "scripts": {
-    "dev": "concurrently --kill-others-on-fail --names backend,frontend -c cyan,magenta \"pnpm --filter backend dev\" \"pnpm --filter frontend dev\"",
-    "build": "pnpm --filter backend build && pnpm --filter frontend build",
-    "test": "pnpm --filter backend test && pnpm --filter frontend test",
-    "lint": "pnpm -r lint"
+    "dev": "concurrently --kill-others-on-fail --names backend,frontend -c cyan,magenta \"yarn workspace backend dev\" \"yarn workspace frontend dev\"",
+    "build": "yarn workspace backend build && yarn workspace frontend build",
+    "test": "yarn workspace backend test && yarn workspace frontend test",
+    "lint": "yarn workspace backend lint && yarn workspace frontend lint",
+    "backend:dev": "yarn workspace backend dev",
+    "frontend:dev": "yarn workspace frontend dev",
+    "backend:test": "yarn workspace backend test",
+    "frontend:test": "yarn workspace frontend test"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

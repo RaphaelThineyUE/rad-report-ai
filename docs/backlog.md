@@ -12,7 +12,7 @@ This document mirrors the full issue structure. Each section maps to a Linear ep
 
 | Issue | Title | Labels | Priority |
 |---|---|---|---|
-| MIG-76 | Initialize pnpm workspace | infra, chore | Urgent |
+| MIG-76 | Initialize Yarn workspace | infra, chore | Urgent |
 | MIG-77 | Backend scaffold (Express + TypeScript) | infra, backend, chore | Urgent |
 | MIG-78 | Frontend scaffold (Vite + React 18 + TypeScript) | infra, frontend, chore | Urgent |
 | MIG-79 | Tailwind CSS + shadcn/ui initialization | infra, frontend, chore | Urgent |
@@ -21,7 +21,7 @@ This document mirrors the full issue structure. Each section maps to a Linear ep
 | MIG-82 | Database migrations: 4 SQL schemas | database, chore | Urgent |
 | MIG-83 | Enable RLS on all Supabase tables | database, security | Urgent |
 | MIG-84 | Supabase Storage bucket 'reports' setup | database, security, privacy | Urgent |
-| MIG-85 | Dev scripts: pnpm dev (concurrent backend + frontend) | infra, chore | High |
+| MIG-85 | Dev scripts: yarn dev (concurrent backend + frontend) | infra, chore | High |
 
 ---
 

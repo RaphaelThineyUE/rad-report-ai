@@ -4,7 +4,7 @@
     {
       "label": "frontend:dev",
       "type": "shell",
-      "command": "pnpm --filter frontend dev",
+      "command": "yarn workspace frontend dev",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -30,7 +30,7 @@
     {
       "label": "backend:dev (inspect)",
       "type": "shell",
-      "command": "pnpm --filter backend exec tsx watch --inspect src/index.ts",
+      "command": "yarn workspace backend exec tsx watch --inspect src/index.ts",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -56,7 +56,7 @@
     {
       "label": "backend:test:watch",
       "type": "shell",
-      "command": "pnpm --filter backend test -- --watch",
+      "command": "yarn workspace backend test --watch",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -82,7 +82,7 @@
     {
       "label": "frontend:test:watch",
       "type": "shell",
-      "command": "pnpm --filter frontend test:watch",
+      "command": "yarn workspace frontend test:watch",
       "options": {
         "cwd": "${workspaceFolder}"
       },

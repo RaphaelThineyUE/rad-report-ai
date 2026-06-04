@@ -1,18 +1,18 @@
 ﻿Title,Description,Status,Priority,Estimate,Labels,Project,Milestone,Epic,Issue Type
-Scaffold monorepo with pnpm workspaces,"User story:
+Scaffold monorepo with Yarn workspaces,"User story:
 As a developer, I want a clean monorepo so backend and frontend can be developed together.
 
 Acceptance criteria:
-- Root repo uses pnpm workspaces.
+- Root repo uses Yarn workspaces.
 - Backend and frontend run independently.
 - Root script can run both apps.
 - Repo follows the agreed structure.
 
 Tasks:
 - Create radreport-ai root.
-- Add pnpm-workspace.yaml.
+- Add workspaces in root package.json.
 - Add root package.json.
-- Add .npmrc with shamefully-hoist=true.
+- Add .npmrc only if npm registry settings are required.
 - Add .gitignore.
 - Create backend workspace.
 - Create frontend workspace.

@@ -25,11 +25,10 @@
       "name": "Backend: Debug Jest",
       "type": "pwa-node",
       "request": "launch",
-      "runtimeExecutable": "pnpm",
+      "runtimeExecutable": "yarn",
       "runtimeArgs": [
-        "--filter",
+        "workspace",
         "backend",
-        "exec",
         "jest",
         "--runInBand",
         "--watchAll=false"
@@ -45,11 +44,10 @@
       "name": "Frontend: Debug Vitest",
       "type": "pwa-node",
       "request": "launch",
-      "runtimeExecutable": "pnpm",
+      "runtimeExecutable": "yarn",
       "runtimeArgs": [
-        "--filter",
+        "workspace",
         "frontend",
-        "exec",
         "vitest",
         "run",
         "--no-file-parallelism"
@@ -65,13 +63,13 @@
       "name": "Backend: Jest Watch (Terminal Debug)",
       "type": "node-terminal",
       "request": "launch",
-      "command": "pnpm --filter backend test -- --watch"
+      "command": "yarn workspace backend test --watch"
     },
     {
       "name": "Frontend: Vitest Watch (Terminal Debug)",
       "type": "node-terminal",
       "request": "launch",
-      "command": "pnpm --filter frontend test:watch"
+      "command": "yarn workspace frontend test:watch"
     }
   ],
   "compounds": [

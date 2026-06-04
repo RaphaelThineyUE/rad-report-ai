@@ -58,9 +58,8 @@ NodeJs, React, Typescript
 
 ```
 radreport-ai/                  ← monorepo root
-├── package.json               ← pnpm workspaces config
-├── pnpm-workspace.yaml        ← packages: \[backend, frontend]
-├── .npmrc                     ← shamefully-hoist=true
+├── package.json               ← Yarn workspaces config (backend, frontend, shared)
+├── .npmrc                     ← optional npm registry configuration
 ├── .gitignore
 ├── backend/
 │   ├── package.json
@@ -96,9 +95,9 @@ radreport-ai/                  ← monorepo root
 * OS: **Windows 11 with WSL2**
 * Shell: bash (WSL2)
 * Node: v20+
-* Package manager: **pnpm** (workspaces)
-* Install pnpm: `npm install -g pnpm` (once)
-* Workspace config: `pnpm-workspace.yaml` at repo root
+* Package manager: **Yarn** (workspaces)
+* Install Yarn: `npm install -g yarn` (once)
+* Workspace config: `workspaces` in root `package.json`
 
 \---
 
@@ -392,12 +391,12 @@ patient/
 
 ```bash
    # From repo root
-   pnpm install                          # install all workspaces
-   pnpm --filter backend dev             # run backend only
-   pnpm --filter frontend dev            # run frontend only
-   pnpm dev                              # run both (via root script)
-   pnpm --filter backend add <pkg>       # add dep to backend
-   pnpm --filter frontend add <pkg>      # add dep to frontend
+  yarn install                          # install all workspaces
+  yarn workspace backend dev            # run backend only
+  yarn workspace frontend dev           # run frontend only
+  yarn dev                              # run both (via root script)
+  yarn workspace backend add <pkg>      # add dep to backend
+  yarn workspace frontend add <pkg>     # add dep to frontend
    ```
 
 3. **Auth routes** — register, login, me (GET/PATCH)
@@ -459,7 +458,7 @@ VITE\_API\_URL=http://localhost:3001
 |-|-|-|
 |AI provider|Anthropic Claude only|No OpenAI|
 |Database|Supabase (PostgreSQL)|Not MongoDB|
-|Package manager|pnpm workspaces|Faster installs, strict hoisting, better monorepo DX|
+|Package manager|Yarn workspaces|Stable monorepo workflow and broad ecosystem support|
 |Dev OS|Windows WSL2|All shell commands bash-compatible|
 |Language|TypeScript throughout|Both backend and frontend|
 |Component lib|shadcn/ui + Tailwind|Not NextUI, not MUI|
@@ -472,7 +471,7 @@ VITE\_API\_URL=http://localhost:3001
 ## 11\. Developer Notes
 
 * **Never hardcode API keys** — always use env vars
-* **Package manager: pnpm** — never use `npm install` directly; use `pnpm install` at root or `pnpm --filter <pkg> add <dep>`
+* **Package manager: Yarn** — never use `npm install` directly; use `yarn install` at root or `yarn workspace <pkg> add <dep>`
 * **All Claude calls** use `claude-sonnet-4-20250514` and `max\_tokens: 1000` unless consolidation (use `max\_tokens: 2000`)
 * **PDF storage**: upload to Supabase Storage bucket `reports`, store public URL in `radiology\_reports.file\_url`
 * **Report processing** is async: set status `processing` → parse PDF → call Claude → update record → set `completed` or `failed`

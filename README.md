@@ -19,7 +19,7 @@ AI-powered radiology report analysis platform for breast cancer care. Radiologis
 | File storage | Supabase Storage (private bucket, signed URLs) |
 | AI | Anthropic Claude (`claude-sonnet-4-20250514`) |
 | PDF parsing | pdf-parse |
-| Package manager | pnpm workspaces (monorepo) |
+| Package manager | Yarn workspaces (monorepo) |
 
 ---
 
@@ -53,7 +53,7 @@ rad-report-ai/
 │   ├── database-schema.md
 │   ├── development-guide.md
 │   └── backlog.md
-├── pnpm-workspace.yaml
+├── package.json              # Yarn workspaces config
 └── package.json
 ```
 
@@ -63,7 +63,7 @@ rad-report-ai/
 
 ```bash
 # Install all dependencies (root + backend + frontend)
-pnpm install
+yarn install
 
 # Configure environment variables
 cp backend/.env.example backend/.env
@@ -71,7 +71,7 @@ cp frontend/.env.example frontend/.env
 # Fill in Supabase URL, keys, and Anthropic API key
 
 # Run both servers concurrently
-pnpm dev
+yarn dev
 # Backend: http://localhost:3001
 # Frontend: http://localhost:5173
 ```
