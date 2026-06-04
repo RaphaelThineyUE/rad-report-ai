@@ -271,12 +271,18 @@ describe('Batch Upload - State Management', () => {
   });
 
   it('should update individual file state', () => {
-    const fileMap = new Map([
-      ['file1.pdf', { stage: 'idle' as const, progress: 0, error: null }],
+    interface FileState {
+      stage: 'idle' | 'uploading' | 'extracting' | 'done';
+      progress: number;
+      error: null;
+    }
+
+    const fileMap = new Map<string, FileState>([
+      ['file1.pdf', { stage: 'idle', progress: 0, error: null }],
     ]);
 
     const file = fileMap.get('file1.pdf')!;
-    const updatedFile = { ...file, stage: 'uploading' as const, progress: 75 };
+    const updatedFile: FileState = { ...file, stage: 'uploading', progress: 75 };
     fileMap.set('file1.pdf', updatedFile);
 
     expect(fileMap.get('file1.pdf')!.stage).toBe('uploading');
