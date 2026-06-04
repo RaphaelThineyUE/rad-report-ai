@@ -5,9 +5,12 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { queryClient } from '@/lib/queryClient';
 import { AppLayout } from '@/components/layout/AppLayout';
 import Login from '@/pages/Login';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
 import Worklist from '@/pages/Worklist';
 import Patients from '@/pages/Patients';
 import Analytics from '@/pages/Analytics';
+import Settings from '@/pages/Settings';
 
 type NavId = 'worklist' | 'patients' | 'analytics' | 'settings';
 
@@ -29,6 +32,7 @@ function AppShell() {
         <Route path="/worklist"  element={<Worklist  search={search} />} />
         <Route path="/patients"  element={<Patients  search={search} />} />
         <Route path="/analytics" element={<Analytics />} />
+        <Route path="/settings"  element={<Settings />} />
         <Route path="*"          element={<Navigate to="/worklist" replace />} />
       </Routes>
     </AppLayout>
@@ -40,8 +44,10 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/*"     element={<AppShell />} />
+          <Route path="/login"             element={<Login />} />
+          <Route path="/forgot-password"   element={<ForgotPassword />} />
+          <Route path="/reset-password"    element={<ResetPassword />} />
+          <Route path="/*"                 element={<AppShell />} />
         </Routes>
       </BrowserRouter>
       <ReactQueryDevtools initialIsOpen={false} />

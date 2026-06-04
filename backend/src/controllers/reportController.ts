@@ -3,6 +3,13 @@ import { validationResult } from 'express-validator';
 import { AuthRequest } from '../middleware/auth';
 import { createUserClient, supabaseAdmin } from '../services/supabaseClient';
 import { logger } from '../utils/logger';
+import { extractTextFromPdf, isValidPdf } from '../services/pdfService';
+import {
+  analyzeReport,
+  generateSummary,
+  cleanupIdentifiers,
+  detectBiradsTrend,
+} from '../services/claudeService';
 
 const STORAGE_BUCKET = process.env.STORAGE_BUCKET ?? 'reports';
 
@@ -303,4 +310,154 @@ export async function deleteReport(req: AuthRequest, res: Response): Promise<voi
   }
 
   res.status(204).send();
+}
+
+export async function processReport(req: AuthRequest, res: Response): Promise<void> {
+  const { id } = req.params;
+  const client = createUserClient(req.accessToken);
+  const startTime = Date.now();
+
+  try {
+    // Fetch the report
+    const { data: report, error: reportError } = await client
+      .from('radiology_reports')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (reportError || !report) {
+      res.status(404).json({ error: 'Report not found' });
+      return;
+    }
+
+    if (!report.file_url) {
+      res.status(422).json({ error: 'Report file URL is missing' });
+      return;
+    }
+
+    // Update status to processing
+    await client
+      .from('radiology_reports')
+      .update({ status: 'processing' })
+      .eq('id', id);
+
+    // Download the PDF from storage
+    const { data: fileData, error: downloadError } = await supabaseAdmin.storage
+      .from(STORAGE_BUCKET)
+      .download(report.file_url);
+
+    if (downloadError || !fileData) {
+      logger.error('processReport download error', { userId: req.userId, reportId: id, error: downloadError?.message });
+      await client
+        .from('radiology_reports')
+        .update({
+          status: 'failed',
+          processing_time_ms: Date.now() - startTime,
+        })
+        .eq('id', id);
+      res.status(500).json({ error: 'Failed to download report file' });
+      return;
+    }
+
+    // Validate PDF
+    const isValid = await isValidPdf(fileData);
+    if (!isValid) {
+      logger.error('processReport invalid PDF', { userId: req.userId, reportId: id });
+      await client
+        .from('radiology_reports')
+        .update({
+          status: 'failed',
+          processing_time_ms: Date.now() - startTime,
+        })
+        .eq('id', id);
+      res.status(422).json({ error: 'Invalid PDF file' });
+      return;
+    }
+
+    // Extract text from PDF
+    let extractedText = await extractTextFromPdf(fileData);
+    const rawText = extractedText;
+
+    // Clean up identifiers
+    extractedText = await cleanupIdentifiers(extractedText);
+
+    // Analyze the report
+    const analysis = await analyzeReport(extractedText);
+
+    // Generate summary if not already present
+    const summary = analysis.summary || (await generateSummary(extractedText));
+
+    // Detect BI-RADS trend if available
+    let biradsTrend = null;
+    if (analysis.birads_value && report.birads_value) {
+      const trendData = await detectBiradsTrend([
+        { value: report.birads_value, date: report.created_at },
+        { value: analysis.birads_value, date: new Date().toISOString() },
+      ]);
+      biradsTrend = trendData;
+    }
+
+    const processingTime = Date.now() - startTime;
+
+    // Prepare updates
+    const updates: ReportUpdateBody = {
+      status: 'completed',
+      summary,
+      birads_value: analysis.birads_value,
+      birads_confidence: analysis.birads_confidence,
+      birads_evidence: analysis.findings.map((f) => f.assessment),
+      breast_density_value: analysis.breast_density_value,
+      breast_density_evidence: [analysis.breast_density_value],
+      exam_type: analysis.exam_type,
+      exam_laterality: analysis.exam_laterality,
+      exam_evidence: [analysis.exam_type, analysis.exam_laterality],
+      comparison_prior_exam_date: analysis.comparison_prior_exam_date,
+      comparison_evidence: analysis.comparison_prior_exam_date ? [analysis.comparison_prior_exam_date] : [],
+      findings: analysis.findings,
+      recommendations: analysis.recommendations,
+      red_flags: analysis.red_flags,
+      processing_time_ms: processingTime,
+      raw_text: rawText,
+    };
+
+    // Update the report in the database
+    const { data: updatedReport, error: updateError } = await client
+      .from('radiology_reports')
+      .update(updates)
+      .eq('id', id)
+      .select('*')
+      .single();
+
+    if (updateError || !updatedReport) {
+      logger.error('processReport update error', { userId: req.userId, reportId: id, error: updateError?.message });
+      res.status(500).json({ error: 'Failed to save analysis results' });
+      return;
+    }
+
+    logger.info('Successfully processed report', { userId: req.userId, reportId: id, processingTime });
+
+    res.json({
+      report: updatedReport,
+      processing_time_ms: processingTime,
+      birads_trend: biradsTrend,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('processReport error', { userId: req.userId, reportId: id, error: message });
+
+    // Try to update status to failed
+    try {
+      await client
+        .from('radiology_reports')
+        .update({
+          status: 'failed',
+          processing_time_ms: Date.now() - startTime,
+        })
+        .eq('id', id);
+    } catch (updateErr) {
+      logger.error('Failed to update report status to failed', { error: updateErr instanceof Error ? updateErr.message : 'Unknown' });
+    }
+
+    res.status(500).json({ error: 'Report processing failed', details: message });
+  }
 }
