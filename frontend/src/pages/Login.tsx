@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Icon } from '@/components/ui';
+import { supabase } from '@/lib/supabase';
 import logoLockup from '@/assets/logo-lockup.svg';
 
 const INPUT_STYLE: React.CSSProperties = {
@@ -11,13 +12,23 @@ const INPUT_STYLE: React.CSSProperties = {
 };
 
 export default function Login() {
-  const [email, setEmail] = useState('r.kaur@stmary-imaging.org');
-  const [password, setPassword] = useState('••••••••••');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  function handleSignIn(e: React.FormEvent) {
+  async function handleSignIn(e: React.FormEvent) {
     e.preventDefault();
-    navigate('/worklist');
+    setError('');
+    setLoading(true);
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (authError) {
+      setError(authError.message);
+    } else {
+      navigate('/worklist');
+    }
   }
 
   return (
@@ -62,6 +73,15 @@ export default function Login() {
             Use your clinical workspace credentials.
           </p>
 
+          {error && (
+            <div style={{
+              background: 'var(--danger-50)', color: 'var(--danger-700)', border: '1px solid var(--danger-500)',
+              borderRadius: 'var(--r-sm)', padding: '10px 14px', fontSize: 13.5, marginBottom: 16,
+            }}>
+              {error}
+            </div>
+          )}
+
           <label style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-2)', display: 'block', marginBottom: 6 }}>
             Work email
           </label>
@@ -73,6 +93,7 @@ export default function Login() {
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
+              required
               style={INPUT_STYLE}
             />
           </div>
@@ -88,6 +109,7 @@ export default function Login() {
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
+              required
               style={INPUT_STYLE}
             />
           </div>
@@ -97,18 +119,26 @@ export default function Login() {
               <input type="checkbox" defaultChecked style={{ accentColor: 'var(--rose-600)', width: 15, height: 15 }} />
               Trust this device
             </label>
-            <a href="#" onClick={e => e.preventDefault()} style={{ fontSize: 13, color: 'var(--fg-brand)', fontWeight: 600, textDecoration: 'none' }}>
+            <Link to="/forgot-password" style={{ fontSize: 13, color: 'var(--fg-brand)', fontWeight: 600, textDecoration: 'none' }}>
               Forgot password?
-            </a>
+            </Link>
           </div>
 
           <button
             type="submit"
             className="btn btn-primary"
             style={{ width: '100%', justifyContent: 'center', padding: 12 }}
+            disabled={loading}
           >
-            Sign in securely
+            {loading ? <Icon name="loader" size={16} className="spin" /> : 'Sign in securely'}
           </button>
+
+          <div style={{ textAlign: 'center', marginTop: 20, fontSize: 13.5, color: 'var(--fg-3)' }}>
+            Don't have an account?{' '}
+            <Link to="/register" style={{ color: 'var(--fg-brand)', fontWeight: 600, textDecoration: 'none' }}>
+              Create one
+            </Link>
+          </div>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 18, color: 'var(--fg-4)', fontSize: 11.5 }}>
             <Icon name="shield" size={13} />
