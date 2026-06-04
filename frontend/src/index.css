@@ -5,6 +5,29 @@
 @tailwind utilities;
 
 :root {
+  /* shadcn/ui HSL compatibility vars — mapped from design tokens below.
+     Keep these in sync when updating brand colors. */
+  --background:  48 57% 97%;        /* #FCFAF5 bg-surface */
+  --foreground:  26 12% 12%;        /* #221E1B fg-1 */
+  --card:        48 57% 97%;
+  --card-foreground: 26 12% 12%;
+  --popover:     48 57% 97%;
+  --popover-foreground: 26 12% 12%;
+  --primary:     345 50% 43%;       /* #A33651 rose-600 */
+  --primary-foreground: 0 0% 100%;
+  --secondary:   36 37% 92%;        /* #F2ECE3 bg-subtle */
+  --secondary-foreground: 26 12% 12%;
+  --muted:       36 37% 92%;
+  --muted-foreground: 35 14% 60%;   /* #A89C8B fg-4 */
+  --accent:      36 37% 92%;
+  --accent-foreground: 26 12% 12%;
+  --destructive: 3 52% 49%;         /* #C0433C danger-500 */
+  --destructive-foreground: 0 0% 100%;
+  --border:      38 33% 86%;        /* #E7DECF border-1 */
+  --input:       35 27% 77%;        /* #D4C7B5 border-2 */
+  --ring:        345 43% 52%;       /* #B94E69 rose-500 */
+  --radius:      0.5rem;
+
   /* Brand: Rose */
   --rose-50:  #FBF1F2;
   --rose-100: #F7E2E5;
