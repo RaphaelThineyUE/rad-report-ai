@@ -51,14 +51,29 @@ VITE_SUPABASE_ANON_KEY=<from Supabase dashboard → Settings → API>
 
 ### 3. Apply database migrations
 
-Run the SQL in `docs/database-schema.md` via the [Supabase SQL editor](https://supabase.com/dashboard/project/ghdgkthminenqniqhjjx/sql) in this order:
+Run the SQL files in `supabase/migrations/` via the [Supabase SQL editor](https://supabase.com/dashboard/project/ghdgkthminenqniqhjjx/sql) in order:
 
-1. Create tables (`users`, `patients`, `radiology_reports`, `treatment_records`, `audit_logs`)
-2. Enable RLS and add policies
-3. Create Supabase Storage bucket `reports` (private)
-4. Add storage policies
+1. `001_initial_schema.sql` — creates all 5 tables
+2. `002_rls_policies.sql` — enables RLS + ownership policies
+3. `003_storage_policies.sql` — storage bucket access policies
 
-### 4. Generate TypeScript types from the DB
+### 4. Create the Storage bucket
+
+The `reports` bucket must be created once before running the app. Run this in the Supabase SQL editor:
+
+```sql
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('reports', 'reports', false, 20971520, ARRAY['application/pdf'])
+ON CONFLICT (id) DO NOTHING;
+```
+
+- `public: false` — files are never publicly accessible
+- `file_size_limit: 20971520` — 20 MB max
+- `allowed_mime_types` — PDF only
+
+> **Already done for project `ghdgkthminenqniqhjjx`** — only needed for new Supabase projects or local dev.
+
+### 5. Generate TypeScript types from the DB
 
 ```bash
 npx supabase gen types typescript \

@@ -1,0 +1,997 @@
+﻿Title,Description,Status,Priority,Estimate,Labels,Project,Milestone,Epic,Issue Type
+Scaffold monorepo with pnpm workspaces,"User story:
+As a developer, I want a clean monorepo so backend and frontend can be developed together.
+
+Acceptance criteria:
+- Root repo uses pnpm workspaces.
+- Backend and frontend run independently.
+- Root script can run both apps.
+- Repo follows the agreed structure.
+
+Tasks:
+- Create radreport-ai root.
+- Add pnpm-workspace.yaml.
+- Add root package.json.
+- Add .npmrc with shamefully-hoist=true.
+- Add .gitignore.
+- Create backend workspace.
+- Create frontend workspace.
+- Add dev scripts.",Backlog,Urgent,2,"area:infra, type:chore, mvp",RadReport AI,Milestone 0: Foundation,Project Foundation,Feature
+"Configure TypeScript, linting, and formatting","User story:
+As a developer, I want consistent TypeScript and code quality rules across the project.
+
+Acceptance criteria:
+- Backend and frontend compile with strict TypeScript.
+- Linting works in both workspaces.
+- Formatting is consistent.
+- Basic quality scripts exist.
+
+Tasks:
+- Configure backend tsconfig.
+- Configure frontend tsconfig.
+- Add ESLint.
+- Add Prettier.
+- Add lint, format, and typecheck scripts.
+- Document conventions.",Backlog,Urgent,2,"area:infra, type:chore, mvp",RadReport AI,Milestone 0: Foundation,Project Foundation,Feature
+Add environment configuration and startup validation,"User story:
+As a developer, I want safe environment configuration so secrets are never hardcoded.
+
+Acceptance criteria:
+- Backend fails fast when required env vars are missing.
+- Frontend reads API URL from Vite env.
+- Example env files exist.
+- No secrets are committed.
+
+Tasks:
+- Create backend .env.example.
+- Create frontend .env.example.
+- Add backend env validation.
+- Add frontend VITE_API_URL.
+- Add README setup instructions.
+- Ensure .env is ignored.",Backlog,Urgent,2,"area:infra, area:backend, type:chore, mvp",RadReport AI,Milestone 0: Foundation,Project Foundation,Feature
+Replace custom JWT auth with Supabase Auth,"User story:
+As a user, I want secure authentication handled by Supabase Auth.
+
+Acceptance criteria:
+- Users can register using Supabase Auth.
+- Users can log in using Supabase Auth.
+- Frontend stores Supabase session safely.
+- Backend verifies Supabase JWTs.
+- Custom users.password_hash flow is removed.
+
+Tasks:
+- Remove custom bcrypt/JWT auth plan.
+- Configure Supabase Auth.
+- Add frontend auth client.
+- Create register flow.
+- Create login flow.
+- Create logout flow.
+- Create session restore flow.
+- Add backend middleware to verify Supabase JWT.
+- Create profiles table linked to auth.users.",Backlog,Urgent,5,"area:backend, area:frontend, area:security, mvp",RadReport AI,Milestone 1: Supabase Auth + Database,Supabase Auth and Access Control,Feature
+Create profiles table and role model,"User story:
+As a user, I want my app profile connected to my Supabase Auth account.
+
+Acceptance criteria:
+- profiles.id references auth.users.id.
+- Users can read/update their own profile.
+- Role supports admin and user.
+- RLS protects profile records.
+
+Tasks:
+- Create profiles migration.
+- Add email, full_name, role, timestamps.
+- Add RLS policies.
+- Add profile creation trigger after signup.
+- Add profile update flow.",Backlog,Urgent,3,"area:database, area:security, mvp",RadReport AI,Milestone 1: Supabase Auth + Database,Supabase Auth and Access Control,Feature
+Implement protected frontend routes,"User story:
+As an authenticated user, I want protected app routes so private medical data is not exposed.
+
+Acceptance criteria:
+- Unauthenticated users are redirected to login.
+- Authenticated users can access app pages.
+- Session loading state is handled.
+- Logout clears local session.
+
+Tasks:
+- Create auth provider.
+- Create protected route wrapper.
+- Create login page.
+- Create register page.
+- Create logout action.
+- Add session loading skeleton.
+- Redirect users after login.",Backlog,Urgent,3,"area:frontend, area:security, mvp",RadReport AI,Milestone 1: Supabase Auth + Database,Supabase Auth and Access Control,Feature
+Create core medical data migrations,"User story:
+As a developer, I want reliable database schemas for patients, reports, and treatments.
+
+Acceptance criteria:
+- Core tables exist.
+- Tables use created_by linked to auth.users.id.
+- Common query indexes exist.
+- Duplicate report filenames per patient are blocked.
+
+Tasks:
+- Create patients table.
+- Create radiology_reports table.
+- Create treatment_records table.
+- Add created_by UUID references auth.users(id).
+- Add updated_at trigger.
+- Add indexes.
+- Add unique constraint on patient_id and filename.",Backlog,Urgent,5,"area:database, mvp",RadReport AI,Milestone 1: Supabase Auth + Database,Database and RLS,Feature
+Enable RLS on all app tables,"User story:
+As a user, I want only my own patient data accessible.
+
+Acceptance criteria:
+- RLS is enabled on all app tables.
+- Users can only access rows they own.
+- Unauthorized cross-user access fails.
+- Policies are manually tested.
+
+Tasks:
+- Enable RLS on profiles.
+- Enable RLS on patients.
+- Enable RLS on radiology_reports.
+- Enable RLS on treatment_records.
+- Add select/insert/update/delete policies.
+- Write SQL tests for ownership behavior.",Backlog,Urgent,5,"area:database, area:security, privacy, mvp",RadReport AI,Milestone 1: Supabase Auth + Database,Database and RLS,Feature
+Configure private Supabase Storage bucket,"User story:
+As a user, I want uploaded PDFs stored privately.
+
+Acceptance criteria:
+- reports bucket is private.
+- Files are scoped by user and patient.
+- Users cannot access another user’s files.
+- No permanent public PDF URLs are stored.
+
+Tasks:
+- Create private reports bucket.
+- Define storage path convention.
+- Add Supabase storage policies.
+- Store storage_path, not public URL.
+- Remove public URL assumptions from schema.",Backlog,Urgent,3,"area:backend, area:security, privacy, mvp",RadReport AI,Milestone 3: Private PDF Upload,Private PDF Storage,Feature
+Generate signed PDF URLs on demand,"User story:
+As a user, I want to view PDFs securely using temporary signed URLs.
+
+Acceptance criteria:
+- Signed URLs are generated only for authorized users.
+- URLs expire.
+- Frontend can open the PDF.
+- Expired URLs can be regenerated.
+
+Tasks:
+- Create endpoint POST /api/reports/:id/signed-url.
+- Verify report ownership.
+- Generate Supabase signed URL.
+- Return short-lived URL.
+- Add View PDF action in frontend.
+- Handle expired/failed URL states.",Backlog,Urgent,3,"area:backend, area:frontend, area:security, privacy, mvp",RadReport AI,Milestone 3: Private PDF Upload,Private PDF Storage,Feature
+Build patient CRUD API,"User story:
+As a user, I want to create, view, update, and delete patient records.
+
+Acceptance criteria:
+- All patient routes are protected.
+- Users only see their own patients.
+- Inputs are validated.
+- Search/filter/sort works.
+
+Tasks:
+- Create GET /api/patients.
+- Create POST /api/patients.
+- Create GET /api/patients/:id.
+- Create PATCH /api/patients/:id.
+- Create DELETE /api/patients/:id.
+- Add search, stage, and sort filters.
+- Add validation and error handling.",Backlog,Urgent,5,"area:backend, mvp",RadReport AI,Milestone 2: Patient Management,Patient Management,Feature
+Build patient list UI,"User story:
+As a user, I want to browse and search my patients.
+
+Acceptance criteria:
+- Patient list loads from API.
+- Search works.
+- Stage filtering works.
+- Loading, empty, and error states exist.
+
+Tasks:
+- Create PatientList page.
+- Add search input.
+- Add stage filter.
+- Add sort dropdown.
+- Add patient table/cards.
+- Add loading skeleton.
+- Add empty state.
+- Add error state.",Backlog,Urgent,5,"area:frontend, area:ux, mvp",RadReport AI,Milestone 2: Patient Management,Patient Management,Feature
+Build add/edit patient dialog,"User story:
+As a user, I want to add and edit patient information in a form.
+
+Acceptance criteria:
+- Required fields are validated.
+- Patient can be created.
+- Patient can be edited.
+- UI updates after save.
+
+Tasks:
+- Create AddPatientDialog.
+- Add patient form fields.
+- Add frontend validation.
+- Connect create mutation.
+- Connect update mutation.
+- Invalidate patient queries after save.",Backlog,Urgent,5,"area:frontend, area:ux, mvp",RadReport AI,Milestone 2: Patient Management,Patient Management,Feature
+Build patient detail page,"User story:
+As a user, I want a full patient profile with reports and treatments.
+
+Acceptance criteria:
+- Patient detail loads by ID.
+- Header shows key medical data.
+- Biomarker badges render.
+- Tabs are available.
+
+Tasks:
+- Create PatientDetail.
+- Add patient header.
+- Add cancer stage badge.
+- Add ER/PR/HER2 badges.
+- Add Overview, Timeline, Treatments, and Comparison tabs.
+- Load reports and treatments.",Backlog,Urgent,5,"area:frontend, mvp",RadReport AI,Milestone 2: Patient Management,Patient Management,Feature
+Build secure PDF upload endpoint,"User story:
+As a user, I want to upload a PDF report for a patient.
+
+Acceptance criteria:
+- Only PDFs are accepted.
+- Max file size is 20 MB.
+- Duplicate filename per patient is blocked.
+- File is stored privately.
+- Report record is created.
+
+Tasks:
+- Configure multer.
+- Validate MIME type.
+- Validate file extension.
+- Validate max size.
+- Verify patient ownership.
+- Check duplicate report filename.
+- Upload to private Supabase Storage.
+- Create report record with pending status.
+- Store storage path.",Backlog,Urgent,5,"area:backend, area:security, mvp",RadReport AI,Milestone 3: Private PDF Upload,Report Upload and Immediate Processing,Feature
+Implement immediate report processing,"User story:
+As a user, I want my uploaded report processed immediately after upload.
+
+Acceptance criteria:
+- Upload triggers processing in the same flow.
+- Status changes from pending to processing.
+- PDF text is extracted.
+- Claude analysis runs.
+- Report is updated.
+- Status becomes completed or failed.
+
+Tasks:
+- Create report processing service.
+- Set status to processing.
+- Extract PDF text.
+- Call Claude analysis.
+- Validate AI output.
+- Store structured extraction.
+- Store raw text.
+- Store processing time.
+- Set status to completed.
+- On error, set status to failed.
+- Return final report state.",Backlog,Urgent,8,"area:backend, area:ai, mvp",RadReport AI,Milestone 4: Immediate AI Processing,Report Upload and Immediate Processing,Feature
+Build PDF parsing service,"User story:
+As a user, I want the app to extract text from uploaded PDF reports.
+
+Acceptance criteria:
+- PDF text is extracted reliably.
+- Empty/unreadable PDFs fail gracefully.
+- Raw text is stored privately.
+- Errors are user-friendly.
+
+Tasks:
+- Add pdf-parse.
+- Create pdfService.
+- Extract raw text from uploaded file.
+- Detect empty text.
+- Handle encrypted PDFs.
+- Handle malformed PDFs.
+- Add parse failure errors.",Backlog,Urgent,3,"area:backend, mvp",RadReport AI,Milestone 4: Immediate AI Processing,Report Upload and Immediate Processing,Feature
+Build Claude analysis service,"User story:
+As a user, I want Claude to extract structured radiology report data.
+
+Acceptance criteria:
+- Claude uses claude-sonnet-4-20250514.
+- Response is valid JSON.
+- Extracted fields are stored.
+- Invalid AI responses are handled safely.
+
+Tasks:
+- Add Anthropic SDK.
+- Create claudeService.
+- Implement report analysis prompt.
+- Set max_tokens.
+- Parse JSON response.
+- Validate schema.
+- Store BI-RADS, confidence, evidence, breast density, exam info, comparison, findings, recommendations, and red flags.",Backlog,Urgent,8,"area:ai, area:backend, medical-safety, mvp",RadReport AI,Milestone 4: Immediate AI Processing,Claude AI Report Analysis,Feature
+Add evidence quote verification,"User story:
+As a user, I want AI evidence quotes verified against the original PDF text.
+
+Acceptance criteria:
+- Evidence quotes are checked against raw_text.
+- Missing quotes are flagged.
+- UI can show verification status.
+- Unverified evidence does not appear as fully trusted.
+
+Tasks:
+- Build evidence verification utility.
+- Normalize whitespace in report text.
+- Normalize whitespace in evidence quotes.
+- Check each quote against raw text.
+- Store verification result.
+- Add evidence_verified metadata.
+- Add warning for unverified evidence.",Backlog,Urgent,5,"area:ai, area:backend, medical-safety, mvp",RadReport AI,Milestone 4: Immediate AI Processing,Claude AI Report Analysis,Feature
+Generate patient-friendly report summary,"User story:
+As a user, I want a plain-language summary of report findings.
+
+Acceptance criteria:
+- Summary is 2-4 sentences.
+- Summary is medically cautious.
+- Summary includes disclaimer context.
+- Summary is stored in report record.
+
+Tasks:
+- Create summary prompt.
+- Add generateSummary service method.
+- Generate summary after extraction.
+- Store summary.
+- Display in report detail.",Backlog,High,3,"area:ai, area:backend, medical-safety, mvp",RadReport AI,Milestone 4: Immediate AI Processing,Claude AI Report Analysis,Feature
+Add AI safety disclaimers and clinical review language,"User story:
+As a user, I want clear warnings that AI output does not replace clinical judgment.
+
+Acceptance criteria:
+- Disclaimer appears on report detail.
+- Disclaimer appears on treatment comparison.
+- Disclaimer appears on HowTo page.
+- Language is clear and hard to miss.
+
+Tasks:
+- Write standard disclaimer copy.
+- Add disclaimer component.
+- Render in report detail.
+- Render in treatment comparison.
+- Render in HowTo page.",Backlog,Urgent,2,"area:frontend, area:ai, medical-safety, mvp",RadReport AI,Milestone 4: Immediate AI Processing,Claude AI Report Analysis,Feature
+Build reports list and cards,"User story:
+As a user, I want to see uploaded reports and their processing status.
+
+Acceptance criteria:
+- Reports list loads from API.
+- Status is visible.
+- BI-RADS is visible when available.
+- Red flag count is visible.
+- Failed reports can be retried.
+
+Tasks:
+- Create ReportsList.
+- Create ReportCard.
+- Show filename.
+- Show created date.
+- Show status dot.
+- Show BI-RADS badge.
+- Show red flag count.
+- Add retry action for failed reports.",Backlog,Urgent,5,"area:frontend, mvp",RadReport AI,Milestone 5: Report UX,Report UI,Feature
+Build report detail slide-over,"User story:
+As a user, I want to inspect extracted report details.
+
+Acceptance criteria:
+- Report detail opens in slide-over.
+- BI-RADS is prominent.
+- Evidence quotes are visible.
+- Red flags are highlighted.
+- PDF can be viewed securely.
+
+Tasks:
+- Create ReportDetail.
+- Add red flag banner.
+- Add BI-RADS hero card.
+- Add exam info section.
+- Add AI summary section.
+- Add findings section.
+- Add recommendations section.
+- Add evidence quote display.
+- Add evidence verification warning.
+- Add View PDF action.
+- Add Delete action.",Backlog,Urgent,8,"area:frontend, area:ux, medical-safety, mvp",RadReport AI,Milestone 5: Report UX,Report UI,Feature
+Build file dropzone,"User story:
+As a user, I want to drag and drop a PDF onto the app.
+
+Acceptance criteria:
+- Dropzone accepts PDFs only.
+- Dropzone is disabled without selected patient.
+- Upload progress is shown.
+- Processing status is shown after upload.
+
+Tasks:
+- Create FileDropzone.
+- Add drag/drop handling.
+- Add file validation.
+- Add size validation.
+- Add patient requirement.
+- Show upload progress.
+- Trigger immediate processing.
+- Show success/failure state.",Backlog,Urgent,5,"area:frontend, mvp",RadReport AI,Milestone 3: Private PDF Upload,Report UI,Feature
+Add report processing retry support,"User story:
+As a user, I want to retry failed report processing.
+
+Acceptance criteria:
+- Failed reports show retry action.
+- Retry reuses existing private PDF.
+- Status updates correctly.
+- Errors are preserved for debugging.
+
+Tasks:
+- Create POST /api/reports/:id/retry.
+- Verify ownership.
+- Fetch storage file.
+- Re-run processing.
+- Update status.
+- Add retry button to UI.
+- Show retry loading state.",Backlog,High,3,"area:backend, area:frontend, mvp",RadReport AI,Milestone 5: Report UX,Processing Retry and Failure Recovery,Feature
+Store internal processing errors safely,"User story:
+As a developer, I want report failures debuggable without leaking PHI.
+
+Acceptance criteria:
+- Error code is stored.
+- User sees safe error message.
+- PHI is not logged.
+- Raw Claude prompt is never logged.
+
+Tasks:
+- Add processing_error_code.
+- Add processing_error_message.
+- Sanitize error details.
+- Add safe frontend error display.
+- Add developer error ID.",Backlog,High,2,"area:backend, area:security, medical-safety, mvp",RadReport AI,Milestone 5: Report UX,Processing Retry and Failure Recovery,Feature
+Build treatment CRUD API,"User story:
+As a user, I want to manage treatment records for a patient.
+
+Acceptance criteria:
+- Treatment records can be created, read, updated, and deleted.
+- Records are scoped to authenticated user.
+- Records are linked to patients.
+
+Tasks:
+- Create GET /api/treatments.
+- Create POST /api/treatments.
+- Create GET /api/treatments/:id.
+- Create PATCH /api/treatments/:id.
+- Create DELETE /api/treatments/:id.
+- Add validation.
+- Verify patient ownership.",Backlog,High,5,"area:backend, mvp",RadReport AI,Milestone 6: Treatments and Timeline,Treatment Management,Feature
+Build treatment UI,"User story:
+As a user, I want to view and manage treatments in the patient detail page.
+
+Acceptance criteria:
+- Treatments display in a patient tab.
+- Users can add/edit/delete treatments.
+- Treatment outcomes are visible.
+
+Tasks:
+- Create treatment tab.
+- Create treatment form.
+- Create treatment cards/list.
+- Add edit action.
+- Add delete action.
+- Add loading/empty/error states.",Backlog,High,5,"area:frontend, mvp",RadReport AI,Milestone 6: Treatments and Timeline,Treatment Management,Feature
+Build patient timeline,"User story:
+As a user, I want a timeline of diagnosis, reports, and treatments.
+
+Acceptance criteria:
+- Timeline combines patient, report, and treatment events.
+- Events are sorted by date.
+- Events are color-coded by type.
+- Missing dates are handled gracefully.
+
+Tasks:
+- Create PatientTimeline.
+- Add diagnosis event.
+- Add report events.
+- Add treatment events.
+- Add follow-up events.
+- Sort chronologically.
+- Add event icons and colors.",Backlog,High,5,"area:frontend, area:ux, mvp",RadReport AI,Milestone 6: Treatments and Timeline,Treatment Management,Feature
+Build treatment comparison API,"User story:
+As a user, I want AI-assisted comparison of treatment options.
+
+Acceptance criteria:
+- User can compare up to 5 treatment options.
+- Claude returns valid JSON.
+- Output includes disclaimer.
+- Output is clearly not a medical directive.
+
+Tasks:
+- Create POST /api/ai/compare-treatments.
+- Validate max 5 options.
+- Fetch patient context.
+- Call Claude comparison prompt.
+- Parse JSON response.
+- Validate response schema.
+- Return scores and recommendation.
+- Include disclaimer.",Backlog,High,5,"area:backend, area:ai, medical-safety, mvp",RadReport AI,Milestone 6: Treatments and Timeline,Treatment Comparison AI,Feature
+Build treatment comparison UI,"User story:
+As a user, I want to enter treatment options and compare them visually.
+
+Acceptance criteria:
+- User can add up to 5 options.
+- Comparison results render clearly.
+- Disclaimer appears above AI output.
+- Highest score is highlighted.
+
+Tasks:
+- Create TreatmentComparison.
+- Add option inputs.
+- Add compare button.
+- Add loading state.
+- Add error state.
+- Render result cards.
+- Render disclaimer above output.",Backlog,High,5,"area:frontend, area:ai, medical-safety, mvp",RadReport AI,Milestone 6: Treatments and Timeline,Treatment Comparison AI,Feature
+Build treatment comparison charts,"User story:
+As a user, I want visual charts for treatment comparison results.
+
+Acceptance criteria:
+- Scores render visually.
+- Benefits/risks are readable.
+- Duration and side effects are easy to compare.
+
+Tasks:
+- Create TreatmentComparisonCharts.
+- Add score chart.
+- Add scored cards.
+- Add efficacy section.
+- Add side effect section.
+- Add duration comparison.",Backlog,Medium,3,"area:frontend, area:analytics, post-mvp",RadReport AI,Post-MVP,Treatment Comparison AI,Feature
+Build consolidated report analysis API,"User story:
+As a user, I want multiple reports for a patient summarized together.
+
+Acceptance criteria:
+- API fetches completed reports for one patient.
+- Claude summarizes progression and concerning patterns.
+- Output includes recommendations and caution language.
+
+Tasks:
+- Create POST /api/ai/consolidate-reports.
+- Verify patient ownership.
+- Fetch completed reports.
+- Fetch patient data.
+- Call Claude consolidation prompt.
+- Return consolidated analysis.",Backlog,High,5,"area:backend, area:ai, medical-safety, mvp",RadReport AI,Milestone 7: Consolidation,Consolidated Report Analysis,Feature
+Add deterministic trend detection,"User story:
+As a user, I want obvious changes across reports highlighted by code, not only AI.
+
+Acceptance criteria:
+- BI-RADS changes are calculated deterministically.
+- New red flags are detected.
+- Resolved findings are detected when possible.
+- Risk increase is highlighted.
+
+Tasks:
+- Compare reports chronologically.
+- Calculate BI-RADS trend.
+- Detect highest BI-RADS.
+- Detect new red flags.
+- Detect recurring findings.
+- Detect resolved findings where possible.
+- Return trend metadata to frontend.",Backlog,High,5,"area:backend, area:ai, medical-safety, mvp",RadReport AI,Milestone 7: Consolidation,Consolidated Report Analysis,Feature
+Build consolidated report modal,"User story:
+As a user, I want a modal summarizing all reports for a patient.
+
+Acceptance criteria:
+- Modal shows aggregate report stats.
+- Modal shows deterministic trends.
+- Modal shows Claude summary.
+- Modal allows JSON export.
+
+Tasks:
+- Create ConsolidatedView.
+- Show total reports.
+- Show latest BI-RADS.
+- Show highest BI-RADS.
+- Show red flag count.
+- Show trend warnings.
+- Show AI summary.
+- Show report index.
+- Add export JSON action.",Backlog,High,5,"area:frontend, area:ux, mvp",RadReport AI,Milestone 7: Consolidation,Consolidated Report Analysis,Feature
+Build analytics dashboard,"User story:
+As a user, I want analytics across my patient population.
+
+Acceptance criteria:
+- Dashboard shows summary stats.
+- Charts render correctly.
+- Data is scoped to authenticated user.
+- Empty states exist.
+
+Tasks:
+- Create PatientAnalytics.
+- Add summary cards.
+- Add Demographics, Diagnostic, and Treatment chart tabs.
+- Add Recharts components.
+- Add loading and empty states.",Backlog,Medium,8,"area:frontend, area:analytics, post-mvp",RadReport AI,Post-MVP,Analytics,Feature
+Add analytics filters,"User story:
+As a user, I want to filter analytics so charts are actually useful.
+
+Acceptance criteria:
+- Analytics can be filtered by date range.
+- Analytics can be filtered by cancer stage.
+- Analytics can be filtered by treatment type.
+- Filters affect all charts.
+
+Tasks:
+- Add date range filter.
+- Add cancer stage filter.
+- Add treatment type filter.
+- Wire filters to queries.
+- Add clear filters action.",Backlog,Medium,5,"area:frontend, area:analytics, post-mvp",RadReport AI,Post-MVP,Analytics,Feature
+Create audit logs table,"User story:
+As a system owner, I want sensitive actions logged for accountability.
+
+Acceptance criteria:
+- Audit table exists.
+- User actions can be recorded.
+- Audit logs do not expose PHI unnecessarily.
+- Logs are protected by RLS/admin access.
+
+Tasks:
+- Create audit_logs table.
+- Add id, user_id, action, resource_type, resource_id, metadata, created_at.
+- Enable RLS.
+- Add admin-only read policy.
+- Add insert policy for backend service role.",Backlog,Urgent,3,"area:database, area:security, privacy, compliance, mvp",RadReport AI,Milestone 8: Security and Compliance Readiness,Audit Logging,Feature
+Log sensitive user actions,"User story:
+As a system owner, I want sensitive patient/report actions recorded.
+
+Acceptance criteria:
+- Uploads are logged.
+- Report views are logged.
+- Deletes are logged.
+- Patient changes are logged.
+- AI processing is logged.
+
+Tasks:
+- Create auditService.
+- Log patient create/update/delete.
+- Log report upload.
+- Log report view.
+- Log report delete.
+- Log PDF signed URL generation.
+- Log AI processing start/success/failure.
+- Log treatment create/update/delete.",Backlog,Urgent,5,"area:backend, area:security, privacy, compliance, mvp",RadReport AI,Milestone 8: Security and Compliance Readiness,Audit Logging,Feature
+Add PHI-safe application logging,"User story:
+As a developer, I want useful logs without exposing patient data.
+
+Acceptance criteria:
+- Raw PDF text is never logged.
+- Claude prompts are never logged.
+- JWT/session tokens are never logged.
+- Sensitive fields are redacted.
+
+Tasks:
+- Add logger utility.
+- Define redaction rules.
+- Redact patient names.
+- Redact raw report text.
+- Redact tokens.
+- Redact Claude request bodies.
+- Add error IDs.",Backlog,Urgent,3,"area:backend, area:security, privacy, compliance, mvp",RadReport AI,Milestone 8: Security and Compliance Readiness,PHI-Safe Logging and Privacy,Feature
+Add de-identification mode before Claude calls,"User story:
+As a user, I want patient identifiers stripped before text is sent to Claude.
+
+Acceptance criteria:
+- Obvious identifiers are removed or replaced.
+- Original raw text remains private in database.
+- De-identified text is sent to Claude.
+- Extraction still works after de-identification.
+
+Tasks:
+- Create de-identification service.
+- Remove patient names.
+- Remove DOB.
+- Remove MRNs if present.
+- Remove phone numbers.
+- Remove addresses.
+- Remove emails.
+- Replace identifiers with placeholders.
+- Store de-identification metadata.
+- Send only de-identified text to Claude.
+- Add tests for common PHI patterns.",Backlog,High,8,"area:ai, area:security, privacy, medical-safety, mvp",RadReport AI,Milestone 8: Security and Compliance Readiness,PHI-Safe Logging and Privacy,Feature
+Export report extraction JSON,"User story:
+As a user, I want to export structured report extraction data.
+
+Acceptance criteria:
+- User can export one report as JSON.
+- Export only works for owned reports.
+- Export includes extraction fields and verification metadata.
+
+Tasks:
+- Create export endpoint.
+- Verify report ownership.
+- Return JSON payload.
+- Add frontend export button.
+- Download JSON file.",Backlog,Medium,3,"area:frontend, area:backend, post-mvp",RadReport AI,Post-MVP,Data Export,Feature
+Export patient data bundle,"User story:
+As a user, I want to export a patient’s structured data.
+
+Acceptance criteria:
+- Export includes patient, reports, treatments, and consolidated analysis.
+- Export excludes private PDF binary files by default.
+- Export is scoped to owned patient only.
+
+Tasks:
+- Create patient export endpoint.
+- Fetch patient.
+- Fetch reports.
+- Fetch treatments.
+- Include AI summaries.
+- Add frontend export action.
+- Download JSON file.",Backlog,Medium,5,"area:frontend, area:backend, privacy, post-mvp",RadReport AI,Post-MVP,Data Export,Feature
+Export analytics CSV,"User story:
+As a user, I want analytics exported as CSV.
+
+Acceptance criteria:
+- User can export analytics data.
+- CSV respects active filters.
+- CSV contains no unauthorized data.
+
+Tasks:
+- Create analytics export endpoint.
+- Add CSV generation utility.
+- Apply filters.
+- Add frontend export button.",Backlog,Medium,3,"area:analytics, post-mvp",RadReport AI,Post-MVP,Data Export,Feature
+Build admin system health dashboard,"User story:
+As an admin, I want to monitor system usage and failures.
+
+Acceptance criteria:
+- Only admins can access dashboard.
+- Dashboard shows processing stats.
+- Dashboard shows recent failures.
+- Dashboard shows usage metrics.
+
+Tasks:
+- Add admin route guard.
+- Create admin dashboard page.
+- Show total users.
+- Show total reports.
+- Show failed reports.
+- Show average processing time.
+- Show recent audit events.
+- Show AI failure rate.",Backlog,Medium,8,"area:frontend, area:backend, area:security, post-mvp",RadReport AI,Post-MVP,Admin Dashboard,Feature
+Build admin user management,"User story:
+As an admin, I want to view users and roles.
+
+Acceptance criteria:
+- Admin can view users.
+- Admin can view profile roles.
+- Admin can update user role if allowed.
+- Non-admins cannot access user management.
+
+Tasks:
+- Create admin users endpoint.
+- Add admin RLS/service checks.
+- Create users table UI.
+- Add role update action.
+- Add audit logging for role changes.",Backlog,Medium,5,"area:frontend, area:backend, area:security, post-mvp",RadReport AI,Post-MVP,Admin Dashboard,Feature
+Add organization data model,"User story:
+As a clinic/team, we want multiple users to share patient records securely.
+
+Acceptance criteria:
+- Organizations exist.
+- Users can belong to organizations.
+- Patients can belong to organizations.
+- Access is role-based.
+
+Tasks:
+- Create organizations table.
+- Create organization_members table.
+- Add owner/admin/clinician/viewer roles.
+- Add organization_id to patients.
+- Update RLS policies.
+- Update queries to support organization scope.",Backlog,Medium,8,"area:database, area:security, post-mvp",RadReport AI,Post-MVP,Organization and Team Support,Feature
+Add team sharing permissions,"User story:
+As an organization admin, I want to control who can access shared patient data.
+
+Acceptance criteria:
+- Admins can invite users.
+- Members can access permitted records.
+- Viewers cannot mutate data.
+- Sharing events are audited.
+
+Tasks:
+- Add invite flow.
+- Add member list.
+- Add role management.
+- Add permission checks.
+- Add audit logs.
+- Add frontend team settings page.",Backlog,Medium,8,"area:backend, area:frontend, area:security, post-mvp",RadReport AI,Post-MVP,Organization and Team Support,Feature
+Implement app layout and navigation,"User story:
+As a user, I want consistent navigation across the app.
+
+Acceptance criteria:
+- Layout uses sticky nav.
+- User dropdown works.
+- Navigation is responsive.
+- Logout is available.
+
+Tasks:
+- Create Layout.
+- Add sticky nav.
+- Add logo.
+- Add user dropdown.
+- Add nav links.
+- Add mobile nav.
+- Add logout action.",Backlog,Urgent,5,"area:frontend, area:ux, mvp",RadReport AI,Milestone 9: App Polish,Core Frontend Design System,Feature
+Implement light/dark mode,"User story:
+As a user, I want light and dark mode support.
+
+Acceptance criteria:
+- Theme toggle works.
+- Theme persists.
+- shadcn/ui components support both themes.
+- Charts remain readable.
+
+Tasks:
+- Configure Tailwind dark mode.
+- Configure shadcn theme.
+- Add theme provider.
+- Add theme toggle.
+- Test core pages in both themes.",Backlog,High,3,"area:frontend, area:ux, mvp",RadReport AI,Milestone 9: App Polish,Core Frontend Design System,Feature
+Build Home dashboard,"User story:
+As a user, I want a home dashboard for quick upload and report review.
+
+Acceptance criteria:
+- Dashboard shows stats.
+- Patient selector works.
+- Upload is available.
+- Recent reports are visible.
+
+Tasks:
+- Create Home.
+- Add stat cards.
+- Add patient selector.
+- Add FileDropzone.
+- Add ReportsList.
+- Add recent activity.
+- Add empty state.",Backlog,Urgent,5,"area:frontend, area:ux, mvp",RadReport AI,Milestone 9: App Polish,Core Frontend Design System,Feature
+Build HowTo and medical disclaimer page,"User story:
+As a user, I want guidance on using the app safely.
+
+Acceptance criteria:
+- HowTo page explains app usage.
+- Medical disclaimer is prominent.
+- AI limitations are clear.
+- Page uses accordion sections.
+
+Tasks:
+- Create HowTo.
+- Add upload guide.
+- Add BI-RADS explanation.
+- Add evidence quote explanation.
+- Add AI limitation section.
+- Add treatment comparison warning.
+- Add privacy explanation.",Backlog,High,3,"area:frontend, medical-safety, mvp",RadReport AI,Milestone 9: App Polish,Core Frontend Design System,Feature
+Build Axios API client,"User story:
+As a frontend developer, I want a reusable API client.
+
+Acceptance criteria:
+- API base URL is configured.
+- Supabase access token is attached.
+- 401s are handled.
+- Errors are normalized.
+
+Tasks:
+- Create services/api.ts.
+- Attach Supabase access token.
+- Add response interceptor.
+- Handle 401.
+- Normalize errors.
+- Export typed helpers.",Backlog,Urgent,3,"area:frontend, mvp",RadReport AI,Milestone 9: App Polish,API Client and State Management,Feature
+Configure React Query,"User story:
+As a user, I want data fetching to feel fast and reliable.
+
+Acceptance criteria:
+- React Query provider is configured.
+- Query keys are organized.
+- Mutations invalidate relevant data.
+
+Tasks:
+- Add React Query provider.
+- Create query key factory.
+- Create usePatients.
+- Create useReports.
+- Create useTreatments.
+- Add mutation invalidation.",Backlog,Urgent,3,"area:frontend, mvp",RadReport AI,Milestone 9: App Polish,API Client and State Management,Feature
+Add shared types package,"User story:
+As a developer, I want shared types between frontend and backend.
+
+Acceptance criteria:
+- Shared package exists.
+- Common types are imported by both apps.
+- API response types are consistent.
+- Type duplication is reduced.
+
+Tasks:
+- Create packages/shared.
+- Add Patient type.
+- Add Report type.
+- Add Treatment type.
+- Add AI extraction types.
+- Add enum constants.
+- Update backend imports.
+- Update frontend imports.",Backlog,High,5,"area:infra, area:frontend, area:backend, mvp",RadReport AI,Milestone 9: App Polish,API Client and State Management,Feature
+Add backend API tests,"User story:
+As a developer, I want backend tests for critical flows.
+
+Acceptance criteria:
+- Auth middleware is tested.
+- Patient CRUD is tested.
+- Report upload validation is tested.
+- Claude calls are mocked.
+- RLS assumptions are covered where possible.
+
+Tasks:
+- Add test framework.
+- Test protected route behavior.
+- Test patient CRUD.
+- Test treatment CRUD.
+- Test PDF upload validation.
+- Test duplicate prevention.
+- Mock Claude service.
+- Mock Supabase where needed.",Backlog,High,8,"area:backend, mvp",RadReport AI,Milestone 10: Testing,Testing and QA,Feature
+Add frontend tests,"User story:
+As a developer, I want frontend tests for key user flows.
+
+Acceptance criteria:
+- Auth pages are tested.
+- Patient form is tested.
+- File dropzone validation is tested.
+- Report card rendering is tested.
+
+Tasks:
+- Add React Testing Library.
+- Test login form.
+- Test register form.
+- Test patient form.
+- Test file dropzone.
+- Test report card.
+- Test treatment comparison form.",Backlog,High,5,"area:frontend, mvp",RadReport AI,Milestone 10: Testing,Testing and QA,Feature
+Add Playwright E2E tests,"User story:
+As a developer, I want end-to-end tests for the core app journey.
+
+Acceptance criteria:
+- User can register/login.
+- User can create patient.
+- User can upload report.
+- User can view processed result.
+- User can add treatment.
+
+Tasks:
+- Add Playwright.
+- Create test user setup.
+- Test register/login.
+- Test create patient.
+- Test upload PDF.
+- Test report detail.
+- Test add treatment.
+- Test logout.",Backlog,High,8,"area:frontend, area:backend, mvp",RadReport AI,Milestone 10: Testing,Testing and QA,Feature
+Create manual QA checklist,"User story:
+As a developer, I want a repeatable checklist before release.
+
+Acceptance criteria:
+- QA checklist covers core flows.
+- Security checks are included.
+- AI failure cases are included.
+- Mobile and dark mode checks are included.
+
+Tasks:
+- Add QA checklist doc.
+- Include auth checks.
+- Include patient CRUD checks.
+- Include PDF upload checks.
+- Include AI processing checks.
+- Include failed report checks.
+- Include dark mode checks.
+- Include mobile checks.
+- Include PHI logging checks.",Backlog,High,2,"area:ux, medical-safety, mvp",RadReport AI,Milestone 10: Testing,Testing and QA,Feature
