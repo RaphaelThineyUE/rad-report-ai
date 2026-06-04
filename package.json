@@ -1,0 +1,14 @@
+{
+  "name": "rad-report-ai",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently --kill-others-on-fail --names backend,frontend -c cyan,magenta \"pnpm --filter backend dev\" \"pnpm --filter frontend dev\"",
+    "build": "pnpm --filter backend build && pnpm --filter frontend build",
+    "test": "pnpm --filter backend test && pnpm --filter frontend test",
+    "lint": "pnpm -r lint"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
