@@ -3,6 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { usePatient, useDeletePatient } from '@/hooks/usePatients';
 import { PatientAvatar, StageBadge } from '@/components/patients/StageBadge';
 import { EditPatientDialog } from '@/components/patients/EditPatientDialog';
+import { ReportsTab } from '@/components/patients/ReportsTab';
+import { TreatmentsTab } from '@/components/patients/TreatmentsTab';
+import { TimelineTab } from '@/components/patients/TimelineTab';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 
@@ -98,9 +101,9 @@ export default function PatientDetail() {
 
       {/* Tab content */}
       {activeTab === 'overview' && <OverviewTab patient={patient} />}
-      {activeTab === 'reports' && <PlaceholderTab icon="FileText" title="No reports yet" desc="Radiology reports will appear here once uploaded. (Coming in Milestone 6)" />}
-      {activeTab === 'treatments' && <PlaceholderTab icon="Pill" title="No treatments yet" desc="Treatment records will appear here once added. (Coming in Milestone 7)" />}
-      {activeTab === 'timeline' && <PlaceholderTab icon="GitBranch" title="Timeline coming soon" desc="A chronological view of all events will be available in Milestone 7." />}
+      {activeTab === 'reports' && <ReportsTab patientId={patient.id} />}
+      {activeTab === 'treatments' && <TreatmentsTab patientId={patient.id} />}
+      {activeTab === 'timeline' && <TimelineTab patientId={patient.id} />}
 
       {/* Edit dialog */}
       {editOpen && <EditPatientDialog patient={patient} onClose={() => setEditOpen(false)} />}
@@ -165,16 +168,6 @@ function OverviewTab({ patient }: { patient: { notes: string | null; stage: stri
         <div className="kv"><span className="k">Date of birth</span><span className="v mono">{patient.date_of_birth ? patient.date_of_birth.slice(0, 10) : '—'}</span></div>
         <div className="kv"><span className="k">Follow-up</span><span className="v" style={{ color: 'var(--fg-4)', fontStyle: 'italic' }}>Not scheduled</span></div>
       </div>
-    </div>
-  );
-}
-
-function PlaceholderTab({ icon, title, desc }: { icon: string; title: string; desc: string }) {
-  return (
-    <div style={{ textAlign: 'center', padding: '64px 24px', color: 'var(--fg-3)' }}>
-      <Icon name={icon} size={40} />
-      <h3 className="t-h3" style={{ marginTop: 16, marginBottom: 8 }}>{title}</h3>
-      <p style={{ color: 'var(--fg-4)', maxWidth: 400, margin: '0 auto' }}>{desc}</p>
     </div>
   );
 }

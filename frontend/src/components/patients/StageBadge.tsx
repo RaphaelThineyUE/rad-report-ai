@@ -1,5 +1,3 @@
-import React from 'react';
-
 const STAGE_STYLE: Record<string, string> = {
   'Stage I': 's-success',
   'Stage II': 's-warning',

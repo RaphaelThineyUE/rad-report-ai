@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { IRouter, Router } from 'express';
 import { body } from 'express-validator';
 import { requireAuth } from '../middleware/auth';
 import {
@@ -11,7 +11,7 @@ import {
 import { AuthRequest } from '../middleware/auth';
 import { Request, Response, NextFunction } from 'express';
 
-const router = Router();
+const router: IRouter = Router();
 
 const createValidators = [
   body('name')

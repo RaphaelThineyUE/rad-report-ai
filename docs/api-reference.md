@@ -120,6 +120,12 @@ Partial update — any subset of patient fields.
 
 Multipart form upload. Field name: `file`. PDF only, max 20 MB.
 
+**Multipart fields**
+```text
+file: <pdf>
+patient_id: <uuid>
+```
+
 **Response** `200`
 ```json
 { "file_url": "string", "filename": "string", "file_size": 12345 }
