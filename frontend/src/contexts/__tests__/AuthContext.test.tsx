@@ -101,6 +101,7 @@ describe('AuthContext', () => {
   });
 
   it('should call signInWithOAuth with google provider', async () => {
+    vi.stubGlobal('location', { origin: 'https://example.com' });
     const mockAuth = supabaseModule.supabase.auth as any;
     mockAuth.getSession.mockResolvedValue({ data: { session: null }, error: null });
     mockAuth.onAuthStateChange.mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } });
@@ -116,22 +117,29 @@ describe('AuthContext', () => {
 
     expect(mockAuth.signInWithOAuth).toHaveBeenCalledWith({
       provider: 'google',
-      options: { redirectTo: expect.stringContaining('/worklist') },
+      options: { redirectTo: 'https://example.com/worklist' },
     });
   });
 
-  it('should expose signInWithGoogle on context', () => {
+  it('should expose signInWithGoogle as a function on context', async () => {
     const mockAuth = supabaseModule.supabase.auth as any;
     mockAuth.getSession.mockResolvedValue({ data: { session: null }, error: null });
     mockAuth.onAuthStateChange.mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } });
 
+    let capturedFn: unknown;
+    function Capture() {
+      const ctx = useAuth();
+      capturedFn = ctx.signInWithGoogle;
+      return null;
+    }
+
     render(
       <AuthProvider>
-        <TestComponentWithGoogle />
+        <Capture />
       </AuthProvider>
     );
 
-    expect(screen.getByRole('button', { name: 'Sign in with Google' })).toBeInTheDocument();
+    await waitFor(() => expect(typeof capturedFn).toBe('function'));
   });
 });
 
