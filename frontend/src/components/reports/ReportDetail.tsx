@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/Button';
-import { BiRadsBadge } from '@/components/ui/BiRads';
+import { BiRads } from '@/components/ui/BiRads';
 import { Icon } from '@/components/ui/Icon';
 import type { Report } from '@/hooks/useReports';
 
@@ -146,7 +146,7 @@ export function ReportDetail({ report, isOpen, onClose, onOpenPDF, isLoadingPDF 
                     BI-RADS Assessment
                   </h3>
                   <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                    <BiRadsBadge value={report.birads_value} size="lg" />
+                    <BiRads value={report.birads_value} size="lg" />
                     <div>
                       <div style={{ fontSize: 13, fontWeight: 600 }}>BI-RADS {report.birads_value}</div>
                       {report.birads_confidence && (

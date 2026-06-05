@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { BiRadsBadge } from '@/components/ui/BiRads';
+import { BiRads } from '@/components/ui/BiRads';
 import { Icon } from '@/components/ui/Icon';
 import type { Report } from '@/hooks/useReports';
 
@@ -89,7 +89,7 @@ export function ReportCard({
           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
             {report.birads_value !== null && report.birads_value !== undefined && (
               <>
-                <BiRadsBadge value={report.birads_value} />
+                <BiRads value={report.birads_value} />
                 <div style={{ fontSize: 13, color: 'var(--fg-2)' }}>
                   <span style={{ fontWeight: 600 }}>BI-RADS {report.birads_value}</span>
                   {report.birads_confidence && (
