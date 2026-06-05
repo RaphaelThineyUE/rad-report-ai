@@ -13,8 +13,8 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "types": ["node"]
+    "types": ["node", "jest"]
   },
-  "include": ["src/**/*.ts", "!src/**/*.test.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist", "src/test"]
 }

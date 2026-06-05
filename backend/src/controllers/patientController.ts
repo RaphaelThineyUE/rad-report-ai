@@ -93,13 +93,14 @@ export async function createPatient(req: AuthRequest, res: Response): Promise<vo
   }
 
   // Log the patient creation action
+  const userAgent = req.get('user-agent');
   await logPatientChange(
     req.userId,
     data.id,
     'CREATE',
     undefined,
     req.ip,
-    req.get('user-agent')
+    Array.isArray(userAgent) ? userAgent[0] : userAgent
   );
 
   res.status(201).json(data);
@@ -163,6 +164,7 @@ export async function updatePatient(req: AuthRequest, res: Response): Promise<vo
   }
 
   // Log the patient update action
+  const userAgent2 = req.get('user-agent');
   await logPatientChange(
     req.userId,
     id,
@@ -174,7 +176,7 @@ export async function updatePatient(req: AuthRequest, res: Response): Promise<vo
       ])
     ),
     req.ip,
-    req.get('user-agent')
+    Array.isArray(userAgent2) ? userAgent2[0] : userAgent2
   );
 
   res.json(data);
@@ -195,13 +197,14 @@ export async function deletePatient(req: AuthRequest, res: Response): Promise<vo
   }
 
   // Log the patient deletion action
+  const userAgent3 = req.get('user-agent');
   await logPatientChange(
     req.userId,
     id,
     'DELETE',
     undefined,
     req.ip,
-    req.get('user-agent')
+    Array.isArray(userAgent3) ? userAgent3[0] : userAgent3
   );
 
   res.status(204).send();

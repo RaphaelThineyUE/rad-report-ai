@@ -7,10 +7,10 @@ import { extractTextFromPdf, isValidPdf } from '../services/pdfService';
 import {
   analyzeReport,
   generateSummary,
-  cleanupIdentifiers,
   detectBiradsTrend,
 } from '../services/claudeService';
 import { logUpload, logView, logDelete, logProcessing } from '../services/auditService';
+import { deidentifyText, getDeidentificationStats } from '../services/deidentificationService';
 
 const STORAGE_BUCKET = process.env.STORAGE_BUCKET ?? 'reports';
 
@@ -120,13 +120,14 @@ export async function uploadReport(req: AuthRequest, res: Response): Promise<voi
   }
 
   // Log the file upload action
+  const userAgent = req.get('user-agent');
   await logUpload(
     req.userId,
     filename,
     patientId,
     req.file.size,
     req.ip,
-    req.get('user-agent')
+    Array.isArray(userAgent) ? userAgent[0] : userAgent
   );
 
   res.json({
@@ -252,12 +253,13 @@ export async function getReport(req: AuthRequest, res: Response): Promise<void> 
   }
 
   // Log the report view action
+  const userAgent2 = req.get('user-agent');
   await logView(
     req.userId,
     id,
     data.patient_id,
     req.ip,
-    req.get('user-agent')
+    Array.isArray(userAgent2) ? userAgent2[0] : userAgent2
   );
 
   res.json(data);
@@ -298,7 +300,7 @@ export async function deleteReport(req: AuthRequest, res: Response): Promise<voi
   const client = createUserClient(req.accessToken);
   const { data: report, error: reportError } = await client
     .from('radiology_reports')
-    .select('id, file_url')
+    .select('id, file_url, patient_id')
     .eq('id', id)
     .single();
 
@@ -330,13 +332,14 @@ export async function deleteReport(req: AuthRequest, res: Response): Promise<voi
   }
 
   // Log the report deletion action
+  const userAgent3 = req.get('user-agent');
   await logDelete(
     req.userId,
     id,
     report.patient_id,
     'User requested deletion',
     req.ip,
-    req.get('user-agent')
+    Array.isArray(userAgent3) ? userAgent3[0] : userAgent3
   );
 
   res.status(204).send();
@@ -405,13 +408,17 @@ export async function processReport(req: AuthRequest, res: Response): Promise<vo
     }
 
     // Extract text from PDF
-    let extractedText = await extractTextFromPdf(fileData);
+    const extractedText = await extractTextFromPdf(fileData);
     const rawText = extractedText;
 
-    // Clean up identifiers
-    extractedText = await cleanupIdentifiers(extractedText);
+    // Log de-identification stats
+    const deidentificationStats = getDeidentificationStats(rawText, deidentifyText(rawText));
+    logger.info('De-identification statistics', {
+      reportId: id,
+      stats: deidentificationStats,
+    });
 
-    // Analyze the report
+    // Analyze the report (de-identification happens inside analyzeReport)
     const analysis = await analyzeReport(extractedText);
 
     // Generate summary if not already present
@@ -467,6 +474,7 @@ export async function processReport(req: AuthRequest, res: Response): Promise<vo
     logger.info('Successfully processed report', { userId: req.userId, reportId: id, processingTime });
 
     // Log the report processing action
+    const userAgent4 = req.get('user-agent');
     await logProcessing(
       req.userId,
       id,
@@ -477,7 +485,7 @@ export async function processReport(req: AuthRequest, res: Response): Promise<vo
         birads_value: updatedReport.birads_value,
       },
       req.ip,
-      req.get('user-agent')
+      Array.isArray(userAgent4) ? userAgent4[0] : userAgent4
     );
 
     res.json({
@@ -490,6 +498,7 @@ export async function processReport(req: AuthRequest, res: Response): Promise<vo
     logger.error('processReport error', { userId: req.userId, reportId: id, error: message });
 
     // Log the report processing failure
+    const userAgent5 = req.get('user-agent');
     await logProcessing(
       req.userId,
       id,
@@ -500,7 +509,7 @@ export async function processReport(req: AuthRequest, res: Response): Promise<vo
         processing_time_ms: Date.now() - startTime,
       },
       req.ip,
-      req.get('user-agent')
+      Array.isArray(userAgent5) ? userAgent5[0] : userAgent5
     );
 
     // Try to update status to failed

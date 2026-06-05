@@ -58,9 +58,9 @@ const PHI_PATTERNS: PHIPattern[] = [
     placeholder: '[MRN]',
     description: 'Medical Record Number',
   },
-  // Health Plan/Insurance ID numbers
+  // Health Plan/Insurance ID numbers (simplified pattern)
   {
-    regex: /\b(?:Insurance\s+ID|Policy\s+Number|Member\s+ID|Group\s+Number)[-:\s]*[A-Z0-9]{4,}\b/gi,
+    regex: /\b(?:Insurance\s+ID|Policy\s+Number|Member\s+ID|Group\s+Number|ID)[-:\s]+[A-Z0-9\-]{5,}\b/gi,
     placeholder: '[INSURANCE_ID]',
     description: 'Insurance ID number',
   },
@@ -70,9 +70,9 @@ const PHI_PATTERNS: PHIPattern[] = [
     placeholder: '[PATIENT_NAME]',
     description: 'Patient name',
   },
-  // Street addresses: Number + Street (simplified)
+  // Street addresses: Number + Street Name + Type (more specific)
   {
-    regex: /\b\d+\s+[A-Za-z\s]+(?:Street|St|Road|Rd|Avenue|Ave|Boulevard|Blvd|Lane|Ln|Drive|Dr|Circle|Ct|Court|Way|Parkway|Pkwy)\b/gi,
+    regex: /\b\d+\s+(?:[A-Z][a-z]*\s+)*(?:Street|St\.?|Road|Rd\.?|Avenue|Ave\.?|Boulevard|Blvd\.?|Lane|Ln\.?|Drive|Dr\.?|Circle|Ct\.?|Court|Way|Parkway|Pkwy\.?|Place|Pl\.?)\b/gi,
     placeholder: '[ADDRESS]',
     description: 'Street address',
   },
