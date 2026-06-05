@@ -125,6 +125,157 @@ export async function uploadReport(req: AuthRequest, res: Response): Promise<voi
   });
 }
 
+/**
+ * Batch upload multiple reports (MIG-67)
+ * Accepts up to 50 PDF files and processes them sequentially
+ */
+export async function batchUploadReports(req: AuthRequest, res: Response): Promise<void> {
+  if (!req.files || (Array.isArray(req.files) && req.files.length === 0)) {
+    res.status(400).json({ error: 'No files provided' });
+    return;
+  }
+
+  const files = Array.isArray(req.files) ? req.files : [req.files];
+  const patientId = String(req.body.patient_id ?? '').trim();
+
+  if (!patientId) {
+    res.status(422).json({ error: 'patient_id is required' });
+    return;
+  }
+
+  // Validate file count
+  if (files.length > 50) {
+    res.status(422).json({ error: 'Maximum 50 files per batch' });
+    return;
+  }
+
+  const client = createUserClient(req.accessToken);
+  const results: Array<{
+    filename: string;
+    status: 'success' | 'error';
+    file_url?: string;
+    file_size?: number;
+    error?: string;
+  }> = [];
+
+  // Process each file sequentially
+  for (const file of files) {
+    try {
+      // Validate file type
+      if (file.mimetype !== 'application/pdf') {
+        results.push({
+          filename: file.originalname,
+          status: 'error',
+          error: 'Only PDF files are supported',
+        });
+        continue;
+      }
+
+      // Check for duplicates
+      const { data: duplicate, error: duplicateError } = await client
+        .from('radiology_reports')
+        .select('id')
+        .eq('patient_id', patientId)
+        .eq('filename', file.originalname)
+        .maybeSingle();
+
+      if (duplicateError) {
+        results.push({
+          filename: file.originalname,
+          status: 'error',
+          error: 'Failed to check for duplicates',
+        });
+        continue;
+      }
+
+      if (duplicate) {
+        results.push({
+          filename: file.originalname,
+          status: 'error',
+          error: 'File with this name already exists for patient',
+        });
+        continue;
+      }
+
+      // Upload file to storage
+      const path = `${req.userId}/${patientId}/${Date.now()}-${normalizeFilename(file.originalname)}`;
+      const { error: uploadError } = await supabaseAdmin.storage
+        .from(STORAGE_BUCKET)
+        .upload(path, file.buffer, { contentType: file.mimetype, upsert: false });
+
+      if (uploadError) {
+        results.push({
+          filename: file.originalname,
+          status: 'error',
+          error: 'Failed to upload to storage',
+        });
+        continue;
+      }
+
+      // Create report record in database
+      const { data: newReport, error: createError } = await client
+        .from('radiology_reports')
+        .insert({
+          patient_id: patientId,
+          filename: file.originalname,
+          file_url: path,
+          file_size: file.size,
+          status: 'pending',
+        })
+        .select('id')
+        .single();
+
+      if (createError || !newReport) {
+        logger.error('batchUploadReports database error', {
+          userId: req.userId,
+          patientId,
+          filename: file.originalname,
+          error: createError?.message,
+        });
+        results.push({
+          filename: file.originalname,
+          status: 'error',
+          error: 'Failed to create report record',
+        });
+        continue;
+      }
+
+      results.push({
+        filename: file.originalname,
+        status: 'success',
+        file_url: path,
+        file_size: file.size,
+      });
+
+      logger.info('Successfully batch uploaded report', {
+        userId: req.userId,
+        patientId,
+        filename: file.originalname,
+        fileSize: file.size,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      results.push({
+        filename: file.originalname,
+        status: 'error',
+        error: message,
+      });
+    }
+  }
+
+  // Count successes and failures
+  const successCount = results.filter(r => r.status === 'success').length;
+  const failureCount = results.filter(r => r.status === 'error').length;
+
+  res.json({
+    patient_id: patientId,
+    total_files: files.length,
+    successful: successCount,
+    failed: failureCount,
+    results,
+  });
+}
+
 export async function getReportSignedUrl(req: AuthRequest, res: Response): Promise<void> {
   const { id } = req.params;
   const client = createUserClient(req.accessToken);

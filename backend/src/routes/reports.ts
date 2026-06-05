@@ -10,6 +10,7 @@ import {
   listReports,
   updateReport,
   uploadReport,
+  batchUploadReports,
   processReport,
 } from '../controllers/reportController';
 
@@ -34,7 +35,13 @@ function wrapAuth(handler: (req: AuthRequest, res: Response) => Promise<void>) {
 
 const router: IRouter = Router();
 
+// Single file upload
 router.post('/upload', requireAuth, upload.single('file'), wrapAuth(uploadReport));
+
+// Batch file upload (MIG-67)
+router.post('/batch-upload', requireAuth, upload.array('files', 50), wrapAuth(batchUploadReports));
+
+// Get signed URL for report
 router.get('/:id/url', requireAuth, wrapAuth(getReportSignedUrl));
 
 router.post('/', requireAuth, createValidators, wrapAuth(createReport));
