@@ -90,6 +90,8 @@ export function BatchUploadDrawer({
     setStage('uploading');
     setOverallProgress(0);
 
+    const reportIds: string[] = [];
+
     const uploadPromises = selectedFiles.map(async (fileState) => {
       const key = fileState.file.name;
 
@@ -132,12 +134,14 @@ export function BatchUploadDrawer({
         );
 
         // Create report entry
-        await api.post('/api/reports', {
+        const createResponse = await api.post<{ id: string }>('/api/reports', {
           patient_id: patientId,
           filename: uploadResponse.data.filename,
           file_url: uploadResponse.data.file_url,
           file_size: uploadResponse.data.file_size,
         });
+
+        reportIds.push(createResponse.data.id);
 
         // Mark as done uploading
         setFileStates((prev) => {
@@ -171,20 +175,21 @@ export function BatchUploadDrawer({
 
     // Check if all uploaded successfully
     const hasErrors = selectedFiles.some((f) => f.error !== null);
-    if (!hasErrors) {
+    if (!hasErrors && reportIds.length > 0) {
       setStage('extracting');
-      // Simulate AI extraction
-      let v = 0;
-      const extractInterval = setInterval(() => {
-        v += 9 + Math.random() * 12;
-        if (v >= 100) {
-          clearInterval(extractInterval);
-          setStage('done');
-          setOverallProgress(100);
-        } else {
-          setOverallProgress(Math.min(100, Math.round(v)));
+
+      // Process all reports in parallel
+      const processPromises = reportIds.map(async (reportId) => {
+        try {
+          await api.post(`/api/reports/${reportId}/process`);
+        } catch (error) {
+          console.error(`Failed to process report ${reportId}:`, error);
         }
-      }, 180);
+      });
+
+      await Promise.all(processPromises);
+      setStage('done');
+      setOverallProgress(100);
     } else {
       setStage('idle');
     }

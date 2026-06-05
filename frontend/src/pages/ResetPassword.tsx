@@ -52,7 +52,7 @@ export default function ResetPassword() {
     setLoading(true);
 
     try {
-      await api.post('/auth/reset-password', { password });
+      await api.post('/api/auth/reset-password', { password });
       setSuccess(true);
       setTimeout(() => navigate('/login'), 3000);
     } catch (err) {
