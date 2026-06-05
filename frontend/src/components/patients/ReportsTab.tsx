@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import axios from 'axios';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
-import { ConsolidatedView } from '@/components/analytics';
+import { ConsolidatedView, BiRadsTrendSparkline } from '@/components/analytics';
 import { ReportCard, ReportDetail } from '@/components/reports';
 import {
   useCreateReport,
@@ -13,6 +13,7 @@ import {
   type ReportStatus,
   type UploadReportResponse,
 } from '@/hooks/useReports';
+import { useBiRadsTrend } from '@/hooks/useBiRadsTrend';
 import { api } from '@/lib/api';
 
 interface ReportsTabProps {
@@ -33,6 +34,7 @@ export function ReportsTab({ patientId, patientName }: ReportsTabProps) {
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
 
   const sortedReports = useMemo(() => reports ?? [], [reports]);
+  const biRadsTrendData = useBiRadsTrend(reports);
 
   function openPicker() {
     inputRef.current?.click();
@@ -126,6 +128,13 @@ export function ReportsTab({ patientId, patientName }: ReportsTabProps) {
         </div>
       </div>
 
+      {biRadsTrendData.length >= 2 && (
+        <div className="card card-pad" style={{ marginBottom: 16 }}>
+          <h4 className="t-h4" style={{ margin: '0 0 12px 0', fontSize: 14 }}>BI-RADS Trend</h4>
+          <BiRadsTrendSparkline data={biRadsTrendData} size="md" />
+        </div>
+      )}
+
       {errorMessage && (
         <div style={{ marginBottom: 12, padding: '10px 14px', borderRadius: 'var(--r-sm)', background: 'var(--danger-50)', color: 'var(--danger-700)' }}>
           {errorMessage}
@@ -173,6 +182,7 @@ export function ReportsTab({ patientId, patientName }: ReportsTabProps) {
         onClose={() => setSelectedReport(null)}
         onOpenPDF={handleOpenReport}
         isLoadingPDF={signedUrl.isPending}
+        patientId={patientId}
       />
     </div>
   );

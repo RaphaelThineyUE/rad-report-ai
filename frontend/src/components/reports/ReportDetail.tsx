@@ -1,6 +1,10 @@
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { BiRads } from '@/components/ui/BiRads';
+import { BiRadsTrendSparkline } from '@/components/analytics';
 import { Icon } from '@/components/ui/Icon';
+import { useReports } from '@/hooks/useReports';
+import { useBiRadsTrend } from '@/hooks/useBiRadsTrend';
 import type { Report } from '@/hooks/useReports';
 
 interface ReportDetailProps {
@@ -9,10 +13,14 @@ interface ReportDetailProps {
   onClose: () => void;
   onOpenPDF?: (report: Report) => void;
   isLoadingPDF?: boolean;
+  patientId?: string;
 }
 
-export function ReportDetail({ report, isOpen, onClose, onOpenPDF, isLoadingPDF }: ReportDetailProps) {
+export function ReportDetail({ report, isOpen, onClose, onOpenPDF, isLoadingPDF, patientId }: ReportDetailProps) {
   if (!isOpen || !report) return null;
+
+  const { data: allReports } = useReports(patientId);
+  const biRadsTrendData = useBiRadsTrend(allReports);
 
   const formattedDate = new Date(report.created_at).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -77,6 +85,18 @@ export function ReportDetail({ report, isOpen, onClose, onOpenPDF, isLoadingPDF 
 
         {/* Content */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'grid', gap: 20 }}>
+          {/* BI-RADS Trend (if 2+ reports) */}
+          {biRadsTrendData.length >= 2 && (
+            <div>
+              <h3 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 600, color: 'var(--fg-1)' }}>
+                BI-RADS Trend
+              </h3>
+              <div style={{ height: 60 }}>
+                <BiRadsTrendSparkline data={biRadsTrendData} size="md" />
+              </div>
+            </div>
+          )}
+
           {/* File Information */}
           <div>
             <h3 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 600, color: 'var(--fg-1)' }}>
