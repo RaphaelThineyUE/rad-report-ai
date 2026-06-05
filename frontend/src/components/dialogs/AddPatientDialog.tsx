@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useCreatePatient, GENDERS, CANCER_STAGES, BIOMARKER_STATUSES } from '@/hooks/usePatients';
 import { Button, Icon } from '@/components/ui';
+import type { AxiosError } from 'axios';
 
 interface AddPatientDialogProps {
   onClose: () => void;
@@ -24,6 +25,7 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
     menopausal_status: '',
     initial_treatment_plan: '',
   });
+  const [submitError, setSubmitError] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -38,6 +40,7 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError('');
     try {
       await createPatient.mutateAsync({
         full_name: formData.full_name,
@@ -56,8 +59,13 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
         initial_treatment_plan: formData.initial_treatment_plan || undefined,
       });
       onClose();
-    } catch (error) {
-      console.error('Failed to create patient:', error);
+    } catch (err) {
+      const axiosErr = err as AxiosError<{ error?: string; errors?: Array<{ msg: string }> }>;
+      const detail = axiosErr.response?.data?.error
+        ?? axiosErr.response?.data?.errors?.map(e => e.msg).join(', ')
+        ?? axiosErr.message
+        ?? 'Failed to create patient';
+      setSubmitError(detail);
     }
   };
 
@@ -74,10 +82,22 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
 
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
+            {submitError && (
+              <div style={{
+                background: 'var(--error-100)', border: '1px solid var(--error-200)',
+                borderRadius: 'var(--r-sm)', padding: 12, marginBottom: 16,
+                color: 'var(--error-700)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8,
+              }}>
+                <Icon name="alert-circle" size={16} />
+                {submitError}
+              </div>
+            )}
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
               <div>
-                <label className="t-label">Full Name *</label>
+                <label htmlFor="ap-full-name" className="t-label">Full Name *</label>
                 <input
+                  id="ap-full-name"
                   type="text"
                   name="full_name"
                   value={formData.full_name}
@@ -88,8 +108,9 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
                 />
               </div>
               <div>
-                <label className="t-label">Date of Birth *</label>
+                <label htmlFor="ap-dob" className="t-label">Date of Birth *</label>
                 <input
+                  id="ap-dob"
                   type="date"
                   name="date_of_birth"
                   value={formData.date_of_birth}
@@ -103,8 +124,9 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
               <div>
-                <label className="t-label">Gender</label>
+                <label htmlFor="ap-gender" className="t-label">Gender</label>
                 <select
+                  id="ap-gender"
                   name="gender"
                   value={formData.gender || ''}
                   onChange={handleChange}
@@ -118,8 +140,9 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
                 </select>
               </div>
               <div>
-                <label className="t-label">Ethnicity</label>
+                <label htmlFor="ap-ethnicity" className="t-label">Ethnicity</label>
                 <input
+                  id="ap-ethnicity"
                   type="text"
                   name="ethnicity"
                   value={formData.ethnicity}
@@ -132,8 +155,9 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
               <div>
-                <label className="t-label">Diagnosis Date *</label>
+                <label htmlFor="ap-diagnosis-date" className="t-label">Diagnosis Date *</label>
                 <input
+                  id="ap-diagnosis-date"
                   type="date"
                   name="diagnosis_date"
                   value={formData.diagnosis_date}
@@ -144,8 +168,9 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
                 />
               </div>
               <div>
-                <label className="t-label">Cancer Type *</label>
+                <label htmlFor="ap-cancer-type" className="t-label">Cancer Type *</label>
                 <input
+                  id="ap-cancer-type"
                   type="text"
                   name="cancer_type"
                   value={formData.cancer_type}
@@ -159,8 +184,9 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
               <div>
-                <label className="t-label">Cancer Stage</label>
+                <label htmlFor="ap-cancer-stage" className="t-label">Cancer Stage</label>
                 <select
+                  id="ap-cancer-stage"
                   name="cancer_stage"
                   value={formData.cancer_stage || ''}
                   onChange={handleChange}
@@ -174,8 +200,9 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
                 </select>
               </div>
               <div>
-                <label className="t-label">Tumor Size (cm)</label>
+                <label htmlFor="ap-tumor-size" className="t-label">Tumor Size (cm)</label>
                 <input
+                  id="ap-tumor-size"
                   type="number"
                   name="tumor_size_cm"
                   value={formData.tumor_size_cm}
@@ -190,8 +217,9 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 16 }}>
               <div>
-                <label className="t-label">ER Status</label>
+                <label htmlFor="ap-er-status" className="t-label">ER Status</label>
                 <select
+                  id="ap-er-status"
                   name="er_status"
                   value={formData.er_status || ''}
                   onChange={handleChange}
@@ -205,8 +233,9 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
                 </select>
               </div>
               <div>
-                <label className="t-label">PR Status</label>
+                <label htmlFor="ap-pr-status" className="t-label">PR Status</label>
                 <select
+                  id="ap-pr-status"
                   name="pr_status"
                   value={formData.pr_status || ''}
                   onChange={handleChange}
@@ -220,8 +249,9 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
                 </select>
               </div>
               <div>
-                <label className="t-label">HER2 Status</label>
+                <label htmlFor="ap-her2-status" className="t-label">HER2 Status</label>
                 <select
+                  id="ap-her2-status"
                   name="her2_status"
                   value={formData.her2_status || ''}
                   onChange={handleChange}
@@ -237,8 +267,9 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <label className="t-label">Menopausal Status</label>
+              <label htmlFor="ap-menopausal" className="t-label">Menopausal Status</label>
               <input
+                id="ap-menopausal"
                 type="text"
                 name="menopausal_status"
                 value={formData.menopausal_status}
@@ -249,8 +280,9 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
             </div>
 
             <div>
-              <label className="t-label">Initial Treatment Plan</label>
+              <label htmlFor="ap-treatment" className="t-label">Initial Treatment Plan</label>
               <textarea
+                id="ap-treatment"
                 name="initial_treatment_plan"
                 value={formData.initial_treatment_plan}
                 onChange={handleChange}

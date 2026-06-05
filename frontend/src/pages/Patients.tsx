@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Avatar } from '@/components/ui';
 import { usePatients, type Patient } from '@/hooks/usePatients';
 import { AddPatientDialog } from '@/components/dialogs/AddPatientDialog';
@@ -15,11 +15,16 @@ export default function Patients({ search }: PatientsProps) {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [loadingDemo, setLoadingDemo] = useState(false);
+  const onboardingDismissed = useRef(false);
 
-  // Show onboarding modal on first visit (no patients, not loading)
+  // Show onboarding on first visit when no patients exist; hide once patients are added
   useEffect(() => {
-    if (!isLoading && patients && patients.length === 0 && !showAddDialog) {
-      setShowOnboarding(true);
+    if (!isLoading && patients) {
+      if (patients.length === 0 && !showAddDialog && !onboardingDismissed.current) {
+        setShowOnboarding(true);
+      } else if (patients.length > 0) {
+        setShowOnboarding(false);
+      }
     }
   }, [patients, isLoading, showAddDialog]);
 
@@ -30,6 +35,7 @@ export default function Patients({ search }: PatientsProps) {
       // This would create 2 sample patients with 3 reports each
       // For now, just close the modal and let users add their own data
       setTimeout(() => {
+        onboardingDismissed.current = true;
         setShowOnboarding(false);
         setLoadingDemo(false);
       }, 1000);
@@ -136,7 +142,10 @@ export default function Patients({ search }: PatientsProps) {
       {showOnboarding && (
         <OnboardingModal
           isOpen={showOnboarding}
-          onClose={() => setShowOnboarding(false)}
+          onClose={() => {
+            onboardingDismissed.current = true;
+            setShowOnboarding(false);
+          }}
           onLoadDemo={handleLoadDemo}
           isLoading={loadingDemo}
         />
