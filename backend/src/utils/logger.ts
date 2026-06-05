@@ -1,3 +1,5 @@
+import { captureLogError } from './sentry';
+
 const PHI_PATTERN = /\b\d{4}-\d{2}-\d{2}\b|\b[A-Z][a-z]+ [A-Z][a-z]+\b/g;
 
 function redact(value: unknown): unknown {
@@ -15,7 +17,9 @@ export const logger = {
     console.warn(JSON.stringify({ level: 'warn', msg, ...sanitize(meta) }));
   },
   error: (msg: string, meta?: Record<string, unknown>) => {
-    console.error(JSON.stringify({ level: 'error', msg, ...sanitize(meta) }));
+    const sanitizedMeta = sanitize(meta);
+    console.error(JSON.stringify({ level: 'error', msg, ...sanitizedMeta }));
+    captureLogError(msg, meta, sanitizedMeta);
   },
 };
 

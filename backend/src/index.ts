@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import { validateEnv } from './utils/validateEnv';
+import { initSentry } from './utils/sentry';
 validateEnv();
+initSentry();
 
 import express, { Express } from 'express';
 import cors from 'cors';
