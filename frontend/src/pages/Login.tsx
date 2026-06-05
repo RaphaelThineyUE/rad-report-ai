@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@/components/ui';
 import logoLockup from '@/assets/logo-lockup.svg';
-import { api } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 
 const INPUT_STYLE: React.CSSProperties = {

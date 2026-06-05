@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Avatar, Button } from '@/components/ui';
+import { Avatar } from '@/components/ui';
 import { usePatients, type Patient } from '@/hooks/usePatients';
 import { AddPatientDialog } from '@/components/dialogs/AddPatientDialog';
 import { PatientDetail } from '@/components/PatientDetail';
