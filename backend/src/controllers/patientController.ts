@@ -5,6 +5,10 @@ import { createUserClient } from '../services/supabaseClient';
 import { logger } from '../utils/logger';
 import { logPatientChange } from '../services/auditService';
 
+function normalizeString(val: string | string[] | undefined): string | undefined {
+  return Array.isArray(val) ? val[0] : val;
+}
+
 interface PatientBody {
   full_name: string;
   date_of_birth: string;
@@ -93,14 +97,13 @@ export async function createPatient(req: AuthRequest, res: Response): Promise<vo
   }
 
   // Log the patient creation action
-  const userAgent = req.get('user-agent');
   await logPatientChange(
     req.userId,
     data.id,
     'CREATE',
     undefined,
-    req.ip,
-    Array.isArray(userAgent) ? userAgent[0] : userAgent
+    normalizeString(req.ip as any),
+    normalizeString(req.get('user-agent'))
   );
 
   res.status(201).json(data);
@@ -164,7 +167,6 @@ export async function updatePatient(req: AuthRequest, res: Response): Promise<vo
   }
 
   // Log the patient update action
-  const userAgent2 = req.get('user-agent');
   await logPatientChange(
     req.userId,
     id,
@@ -175,8 +177,8 @@ export async function updatePatient(req: AuthRequest, res: Response): Promise<vo
         { new: val },
       ])
     ),
-    req.ip,
-    Array.isArray(userAgent2) ? userAgent2[0] : userAgent2
+    normalizeString(req.ip as any),
+    normalizeString(req.get('user-agent'))
   );
 
   res.json(data);
@@ -197,14 +199,13 @@ export async function deletePatient(req: AuthRequest, res: Response): Promise<vo
   }
 
   // Log the patient deletion action
-  const userAgent3 = req.get('user-agent');
   await logPatientChange(
     req.userId,
     id,
     'DELETE',
     undefined,
-    req.ip,
-    Array.isArray(userAgent3) ? userAgent3[0] : userAgent3
+    normalizeString(req.ip as any),
+    normalizeString(req.get('user-agent'))
   );
 
   res.status(204).send();

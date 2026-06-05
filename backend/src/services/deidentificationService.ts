@@ -14,8 +14,15 @@ interface PHIPattern {
 /**
  * Define all PHI patterns to be de-identified
  * Patterns are applied in order for accuracy and to avoid overlapping replacements
+ * NOTE: Order matters - more specific patterns should come before more general ones
  */
 const PHI_PATTERNS: PHIPattern[] = [
+  // Street addresses: Number + Street Name + Type (more specific - check before names)
+  {
+    regex: /\b\d+\s+(?:[A-Z][a-z]*\s+)*(?:Street|St\.?|Road|Rd\.?|Avenue|Ave\.?|Boulevard|Blvd\.?|Lane|Ln\.?|Drive|Dr\.?|Circle|Ct\.?|Court|Way|Parkway|Pkwy\.?|Place|Pl\.?)\b/gi,
+    placeholder: '[ADDRESS]',
+    description: 'Street address',
+  },
   // Social Security Numbers: XXX-XX-XXXX or XXXXXXXXX
   {
     regex: /\b\d{3}-?\d{2}-?\d{4}\b/g,
@@ -64,23 +71,18 @@ const PHI_PATTERNS: PHIPattern[] = [
     placeholder: '[INSURANCE_ID]',
     description: 'Insurance ID number',
   },
-  // Names: Common pattern (Capitalized First Last names)
-  {
-    regex: /\b([A-Z][a-z]+)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/g,
-    placeholder: '[PATIENT_NAME]',
-    description: 'Patient name',
-  },
-  // Street addresses: Number + Street Name + Type (more specific)
-  {
-    regex: /\b\d+\s+(?:[A-Z][a-z]*\s+)*(?:Street|St\.?|Road|Rd\.?|Avenue|Ave\.?|Boulevard|Blvd\.?|Lane|Ln\.?|Drive|Dr\.?|Circle|Ct\.?|Court|Way|Parkway|Pkwy\.?|Place|Pl\.?)\b/gi,
-    placeholder: '[ADDRESS]',
-    description: 'Street address',
-  },
-  // Zip codes: XXXXX or XXXXX-XXXX
+  // Zip codes: XXXXX or XXXXX-XXXX (check before names to avoid partial matches)
   {
     regex: /\b\d{5}(?:-\d{4})?\b/g,
     placeholder: '[ZIP]',
     description: 'Zip code',
+  },
+  // Names: Common pattern (Capitalized First Last names) - check last to avoid false positives
+  // More conservative: require "Patient:" or context
+  {
+    regex: /(?:Patient|Name|Dr\.?)\s*[:.]?\s*([A-Z][a-z]+)\s+([A-Z][a-z]+)/gi,
+    placeholder: '[PATIENT_NAME]',
+    description: 'Patient name',
   },
 ];
 
