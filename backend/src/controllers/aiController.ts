@@ -4,11 +4,97 @@ import { AuthRequest } from '../middleware/auth';
 import { createUserClient } from '../services/supabaseClient';
 import { logger } from '../utils/logger';
 import {
+  analyzeReport,
+  generateSummary,
   consolidateReports,
   compareTreatments,
   detectBiradsTrend,
   matchSourceQuotes,
+  cleanupIdentifiers,
 } from '../services/claudeService';
+
+/**
+ * Analyze report from raw text
+ */
+export async function analyzeReportText(
+  req: AuthRequest,
+  res: Response
+): Promise<void> {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(422).json({ errors: errors.array() });
+    return;
+  }
+
+  const { report_text } = req.body;
+
+  try {
+    // Clean identifiers for privacy
+    const cleanedText = await cleanupIdentifiers(report_text);
+
+    // Analyze the report
+    const analysis = await analyzeReport(cleanedText);
+
+    logger.info('Successfully analyzed report text', {
+      userId: req.userId,
+      textLength: report_text.length,
+    });
+
+    res.json({
+      analysis,
+      original_text_length: report_text.length,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('analyzeReportText error', {
+      userId: req.userId,
+      error: message,
+    });
+    res.status(500).json({ error: 'Analysis failed', details: message });
+  }
+}
+
+/**
+ * Generate summary from raw text
+ */
+export async function generateReportSummary(
+  req: AuthRequest,
+  res: Response
+): Promise<void> {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(422).json({ errors: errors.array() });
+    return;
+  }
+
+  const { report_text } = req.body;
+
+  try {
+    // Clean identifiers for privacy
+    const cleanedText = await cleanupIdentifiers(report_text);
+
+    // Generate summary
+    const result = await generateSummary(cleanedText);
+
+    logger.info('Successfully generated summary', {
+      userId: req.userId,
+      textLength: report_text.length,
+    });
+
+    res.json({
+      summary: result.summary,
+      clinical_disclaimer: result.clinical_disclaimer,
+      original_text_length: report_text.length,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('generateReportSummary error', {
+      userId: req.userId,
+      error: message,
+    });
+    res.status(500).json({ error: 'Summary generation failed', details: message });
+  }
+}
 
 /**
  * Consolidate multiple reports for a patient

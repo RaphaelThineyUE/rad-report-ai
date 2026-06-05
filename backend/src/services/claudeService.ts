@@ -22,6 +22,8 @@ const client = new Anthropic({
 
 const MODEL = 'claude-3-5-sonnet-20241022';
 
+const CLINICAL_DISCLAIMER = `⚠️ CLINICAL REVIEW REQUIRED: This analysis is AI-generated and must be reviewed by a qualified radiologist. Do not use as a substitute for professional medical judgment. All recommendations should be verified against the original report and clinical context.`;
+
 /**
  * Main analysis function that extracts key clinical data from a radiology report
  */
@@ -84,6 +86,7 @@ Return a valid JSON object with these fields. Provide evidence for key assertion
       recommendations: normalizeRecommendations(analysisData.recommendations || []),
       red_flags: analysisData.red_flags || [],
       raw_analysis: responseText,
+      clinical_disclaimer: CLINICAL_DISCLAIMER,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -95,7 +98,7 @@ Return a valid JSON object with these fields. Provide evidence for key assertion
 /**
  * Generate a summary of a single report
  */
-export async function generateSummary(reportText: string): Promise<string> {
+export async function generateSummary(reportText: string): Promise<SummaryResult> {
   try {
     const response = await client.messages.create({
       model: MODEL,
@@ -113,7 +116,10 @@ export async function generateSummary(reportText: string): Promise<string> {
     const summary =
       response.content[0].type === 'text' ? response.content[0].text : '';
     logger.info('Successfully generated summary');
-    return summary;
+    return {
+      summary,
+      clinical_disclaimer: CLINICAL_DISCLAIMER,
+    };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     logger.error('Failed to generate summary', { error: message });
@@ -166,6 +172,7 @@ Return valid JSON with fields: overall_summary, key_trends, overall_birads, clin
       key_trends: consolidation.key_trends || [],
       overall_birads: consolidation.overall_birads || 0,
       clinical_implications: consolidation.clinical_implications || '',
+      clinical_disclaimer: CLINICAL_DISCLAIMER,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -220,6 +227,7 @@ Return valid JSON with:
       treatment_responses: comparison.treatment_responses || [],
       recommendations: comparison.recommendations || [],
       evidence_summary: comparison.evidence_summary || '',
+      clinical_disclaimer: CLINICAL_DISCLAIMER,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -394,6 +402,12 @@ export interface AnalysisResult {
   recommendations: Recommendation[];
   red_flags: string[];
   raw_analysis: string;
+  clinical_disclaimer: string;
+}
+
+export interface SummaryResult {
+  summary: string;
+  clinical_disclaimer: string;
 }
 
 export interface ConsolidationResult {
@@ -401,6 +415,7 @@ export interface ConsolidationResult {
   key_trends: string[];
   overall_birads: number;
   clinical_implications: string;
+  clinical_disclaimer: string;
 }
 
 export interface ComparisonResult {
@@ -410,6 +425,7 @@ export interface ComparisonResult {
   }>;
   recommendations: string[];
   evidence_summary: string;
+  clinical_disclaimer: string;
 }
 
 export interface BiradsTrendResult {

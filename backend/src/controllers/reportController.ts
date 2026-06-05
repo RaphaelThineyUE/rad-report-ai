@@ -385,7 +385,11 @@ export async function processReport(req: AuthRequest, res: Response): Promise<vo
     const analysis = await analyzeReport(extractedText);
 
     // Generate summary if not already present
-    const summary = analysis.summary || (await generateSummary(extractedText));
+    let summary = analysis.summary;
+    if (!summary) {
+      const summaryResult = await generateSummary(extractedText);
+      summary = summaryResult.summary;
+    }
 
     // Detect BI-RADS trend if available
     let biradsTrend = null;

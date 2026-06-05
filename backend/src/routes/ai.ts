@@ -2,6 +2,8 @@ import { IRouter, NextFunction, Request, Response, Router } from 'express';
 import { body } from 'express-validator';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 import {
+  analyzeReportText,
+  generateReportSummary,
   consolidatePatientReports,
   comparePatientTreatments,
   detectPatientBiradsTrend,
@@ -15,6 +17,22 @@ function wrapAuth(handler: (req: AuthRequest, res: Response) => Promise<void>) {
 }
 
 const router: IRouter = Router();
+
+// Analyze report from raw text
+router.post(
+  '/analyze',
+  requireAuth,
+  [body('report_text').isString().notEmpty().withMessage('report_text must be a non-empty string')],
+  wrapAuth(analyzeReportText)
+);
+
+// Generate summary from raw text
+router.post(
+  '/summarize',
+  requireAuth,
+  [body('report_text').isString().notEmpty().withMessage('report_text must be a non-empty string')],
+  wrapAuth(generateReportSummary)
+);
 
 // Consolidate reports
 router.post(
