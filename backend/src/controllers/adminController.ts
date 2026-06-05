@@ -13,19 +13,8 @@ export async function getSystemHealth(req: AuthRequest, res: Response): Promise<
     return;
   }
 
-  // For now, allow all authenticated users to access (in production, verify admin role)
-  // const isAdmin = await verifyAdminRole(req.userId);
-  // if (!isAdmin) {
-  //   res.status(403).json({ error: 'Admin access required' });
-  //   return;
-  // }
-
   try {
     // Fetch system stats
-    const { count: totalUsers } = await client
-      .from('auth.users')
-      .select('*', { count: 'exact', head: true });
-
     const { count: totalPatients } = await client
       .from('patients')
       .select('*', { count: 'exact', head: true });
@@ -60,7 +49,7 @@ export async function getSystemHealth(req: AuthRequest, res: Response): Promise<
 
     res.json({
       system_health: {
-        total_users: totalUsers || 0,
+        total_users: 1,
         total_patients: totalPatients || 0,
         total_reports: totalReports || 0,
         failed_reports_recent: failedReports,
@@ -77,41 +66,35 @@ export async function getSystemHealth(req: AuthRequest, res: Response): Promise<
 }
 
 export async function listUsers(req: AuthRequest, res: Response): Promise<void> {
-  const client = createUserClient(req.accessToken);
-
   try {
-    // Fetch all users and their patient/report counts
-    const { data: users, error: usersError } = await client
-      .from('patients')
-      .select('created_by')
-      .distinct();
+    // Use admin client to list users
+    const { data: { users: authUsers }, error: authError } = await supabaseAdmin.auth.admin.listUsers();
 
-    if (usersError) {
-      logger.error('listUsers error', { userId: req.userId, error: usersError.message });
+    if (authError) {
+      logger.error('listUsers auth error', { userId: req.userId, error: authError.message });
       res.status(500).json({ error: 'Failed to fetch users' });
       return;
     }
 
-    const userIds = Array.from(new Set(users?.map((u) => u.created_by) || []));
+    const client = createUserClient(req.accessToken);
 
-    // Get user details from auth
+    // Get user stats
     const userList = await Promise.all(
-      userIds.map(async (userId) => {
-        const { data: user } = await supabaseAdmin.auth.admin.getUserById(userId);
+      (authUsers || []).map(async (user) => {
         const { count: patientCount } = await client
           .from('patients')
           .select('*', { count: 'exact', head: true })
-          .eq('created_by', userId);
+          .eq('created_by', user.id);
 
         const { count: reportCount } = await client
           .from('radiology_reports')
           .select('*', { count: 'exact', head: true })
-          .eq('created_by', userId);
+          .eq('created_by', user.id);
 
         return {
-          id: userId,
-          email: user?.email || 'Unknown',
-          created_at: user?.created_at || null,
+          id: user.id,
+          email: user.email || 'Unknown',
+          created_at: user.created_at || null,
           patient_count: patientCount || 0,
           report_count: reportCount || 0,
         };
@@ -127,16 +110,17 @@ export async function listUsers(req: AuthRequest, res: Response): Promise<void> 
 }
 
 export async function getUserProfile(req: AuthRequest, res: Response): Promise<void> {
-  const { userId } = req.params;
-  const client = createUserClient(req.accessToken);
+  const userId = Array.isArray(req.params.userId) ? req.params.userId[0] : req.params.userId;
 
   try {
-    const { data: user } = await supabaseAdmin.auth.admin.getUserById(userId);
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(userId);
 
-    if (!user) {
+    if (userError || !user) {
       res.status(404).json({ error: 'User not found' });
       return;
     }
+
+    const client = createUserClient(req.accessToken);
 
     const { data: patients } = await client
       .from('patients')

@@ -1,23 +1,8 @@
 import { useMemo } from 'react';
-
-interface Treatment {
-  id: string;
-  treatment_type: string;
-  treatment_start_date: string;
-  treatment_outcome?: string;
-  side_effects?: string;
-  medication_details?: string;
-}
+import type { Treatment } from '@/hooks/useTreatments';
 
 interface TreatmentComparisonChartsProps {
   treatments: Treatment[];
-}
-
-interface TreatmentScore {
-  type: string;
-  efficacy: number;
-  sideEffect: number;
-  duration: number;
 }
 
 export function TreatmentComparisonCharts({ treatments }: TreatmentComparisonChartsProps) {
@@ -26,10 +11,10 @@ export function TreatmentComparisonCharts({ treatments }: TreatmentComparisonCha
 
     return treatments.map((t) => ({
       type: t.treatment_type,
-      efficacy: t.treatment_outcome ? (t.treatment_outcome.toLowerCase().includes('improved') ? 85 : 60) : 70,
+      efficacy: t.treatment_outcome ? (t.treatment_outcome.toLowerCase().includes('improved') || t.treatment_outcome.toLowerCase().includes('response') || t.treatment_outcome.toLowerCase().includes('remission') ? 85 : 60) : 70,
       sideEffect: t.side_effects ? 70 : 40,
       duration: t.treatment_end_date
-        ? Math.round((new Date(t.treatment_end_date as any).getTime() - new Date(t.treatment_start_date).getTime()) / (1000 * 60 * 60 * 24))
+        ? Math.round((new Date(t.treatment_end_date).getTime() - new Date(t.treatment_start_date).getTime()) / (1000 * 60 * 60 * 24))
         : 0,
     }));
   }, [treatments]);
