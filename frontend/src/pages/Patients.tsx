@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Avatar } from '@/components/ui';
 import { usePatients, type Patient } from '@/hooks/usePatients';
 import { AddPatientDialog } from '@/components/dialogs/AddPatientDialog';
+import { OnboardingModal } from '@/components/dialogs/OnboardingModal';
 import { PatientDetail } from '@/components/PatientDetail';
 
 interface PatientsProps {
@@ -12,6 +13,31 @@ export default function Patients({ search }: PatientsProps) {
   const { data: patients, isLoading, error } = usePatients();
   const [selected, setSelected] = useState<Patient | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [loadingDemo, setLoadingDemo] = useState(false);
+
+  // Show onboarding modal on first visit (no patients, not loading)
+  useEffect(() => {
+    if (!isLoading && patients && patients.length === 0 && !showAddDialog) {
+      setShowOnboarding(true);
+    }
+  }, [patients, isLoading, showAddDialog]);
+
+  const handleLoadDemo = async () => {
+    setLoadingDemo(true);
+    try {
+      // TODO: Implement demo data seeding
+      // This would create 2 sample patients with 3 reports each
+      // For now, just close the modal and let users add their own data
+      setTimeout(() => {
+        setShowOnboarding(false);
+        setLoadingDemo(false);
+      }, 1000);
+    } catch (error) {
+      console.error('Failed to load demo data:', error);
+      setLoadingDemo(false);
+    }
+  };
 
   const rows = (patients || []).filter(p =>
     !search || (p.full_name + p.id).toLowerCase().includes(search.toLowerCase())
@@ -59,8 +85,8 @@ export default function Patients({ search }: PatientsProps) {
           Loading patients...
         </div>
       ) : rows.length === 0 ? (
-        <div className="card card-pad" style={{ color: 'var(--fg-3)', textAlign: 'center' }}>
-          No patients found
+        <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--fg-3)' }}>
+          <p style={{ margin: 0 }}>No patients found. Start by adding a new patient or loading demo data.</p>
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
@@ -105,6 +131,15 @@ export default function Patients({ search }: PatientsProps) {
 
       {showAddDialog && (
         <AddPatientDialog onClose={() => setShowAddDialog(false)} />
+      )}
+
+      {showOnboarding && (
+        <OnboardingModal
+          isOpen={showOnboarding}
+          onClose={() => setShowOnboarding(false)}
+          onLoadDemo={handleLoadDemo}
+          isLoading={loadingDemo}
+        />
       )}
     </div>
   );
