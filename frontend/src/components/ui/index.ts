@@ -1,4 +1,5 @@
 export { Icon } from './Icon';
+export { GoogleIcon } from './GoogleIcon';
 export { Avatar } from './Avatar';
 export { Badge } from './Badge';
 export { BiRads } from './BiRads';

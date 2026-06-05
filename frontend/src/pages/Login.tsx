@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Icon } from '@/components/ui';
+import { Link, useNavigate } from 'react-router-dom';
+import { Icon, GoogleIcon } from '@/components/ui';
 import logoLockup from '@/assets/logo-lockup.svg';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 
 const INPUT_STYLE: React.CSSProperties = {
   width: '100%', fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--fg-1)',
@@ -12,33 +13,40 @@ const INPUT_STYLE: React.CSSProperties = {
 };
 
 export default function Login() {
-  const [email, setEmail] = useState('r.kaur@stmary-imaging.org');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { signInWithGoogle } = useAuth();
 
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
       if (signInError || !data.session) {
         setError(signInError?.message || 'Failed to sign in');
         return;
       }
-
       navigate('/worklist');
-    } catch (err) {
+    } catch {
       setError('An error occurred. Please try again.');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleGoogle() {
+    setError('');
+    setGoogleLoading(true);
+    try {
+      await signInWithGoogle();
+    } catch {
+      setError('Google sign-in failed. Please try again.');
+      setGoogleLoading(false);
     }
   }
 
@@ -80,7 +88,7 @@ export default function Login() {
       }}>
         <form onSubmit={handleSignIn} style={{ width: '100%', maxWidth: 360 }} className="fade-up">
           <h2 className="t-h2" style={{ marginBottom: 6 }}>Sign in</h2>
-          <p className="t-body" style={{ marginTop: 0, marginBottom: 28 }}>
+          <p className="t-body" style={{ marginTop: 0, marginBottom: 24 }}>
             Use your clinical workspace credentials.
           </p>
 
@@ -88,14 +96,31 @@ export default function Login() {
             <div style={{
               background: 'var(--error-100)', border: '1px solid var(--error-200)',
               borderRadius: 'var(--r-sm)', padding: 12, marginBottom: 16,
-              color: 'var(--error-700)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8
+              color: 'var(--error-700)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8,
             }}>
               <Icon name="alert-circle" size={16} />
               {error}
             </div>
           )}
 
-          <label style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-2)', display: 'block', marginBottom: 6 }}>
+          <button
+            type="button"
+            onClick={handleGoogle}
+            disabled={googleLoading}
+            className="btn btn-secondary"
+            style={{ width: '100%', justifyContent: 'center', padding: 12, gap: 10, marginBottom: 16, opacity: googleLoading ? 0.6 : 1 }}
+          >
+            <GoogleIcon />
+            {googleLoading ? 'Redirecting…' : 'Continue with Google'}
+          </button>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+            <div style={{ flex: 1, height: 1, background: 'var(--border-2)' }} />
+            <span style={{ fontSize: 12, color: 'var(--fg-4)', fontWeight: 500 }}>or</span>
+            <div style={{ flex: 1, height: 1, background: 'var(--border-2)' }} />
+          </div>
+
+          <label htmlFor="login-email" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-2)', display: 'block', marginBottom: 6 }}>
             Work email
           </label>
           <div style={{ position: 'relative', marginBottom: 16 }}>
@@ -103,6 +128,7 @@ export default function Login() {
               <Icon name="mail" size={17} />
             </span>
             <input
+              id="login-email"
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
@@ -111,7 +137,7 @@ export default function Login() {
             />
           </div>
 
-          <label style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-2)', display: 'block', marginBottom: 6 }}>
+          <label htmlFor="login-password" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-2)', display: 'block', marginBottom: 6 }}>
             Password
           </label>
           <div style={{ position: 'relative', marginBottom: 10 }}>
@@ -119,6 +145,7 @@ export default function Login() {
               <Icon name="lock" size={17} />
             </span>
             <input
+              id="login-password"
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
@@ -131,7 +158,7 @@ export default function Login() {
             <button
               type="button"
               onClick={() => navigate('/forgot-password')}
-              style={{ fontSize: 13, color: 'var(--fg-brand)', fontWeight: 600, textDecoration: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              style={{ fontSize: 13, color: 'var(--fg-brand)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
             >
               Forgot password?
             </button>
@@ -145,6 +172,13 @@ export default function Login() {
           >
             {loading ? 'Signing in...' : 'Sign in securely'}
           </button>
+
+          <p style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: 'var(--fg-3)' }}>
+            Don't have an account?{' '}
+            <Link to="/signup" style={{ color: 'var(--fg-brand)', fontWeight: 600, textDecoration: 'none' }}>
+              Sign up
+            </Link>
+          </p>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 18, color: 'var(--fg-4)', fontSize: 11.5 }}>
             <Icon name="shield" size={13} />
