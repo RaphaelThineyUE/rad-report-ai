@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { MetricCard } from '@/components/ui';
 import { api } from '@/lib/api';
+import { useExportAnalytics } from '@/hooks/useExport';
 
 interface AnalyticsData {
   summary: {
@@ -18,6 +19,7 @@ interface AnalyticsData {
 export default function Analytics() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const exportAnalytics = useExportAnalytics();
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
@@ -62,13 +64,7 @@ export default function Analytics() {
 
   const handleExportCsv = async () => {
     try {
-      const params = new URLSearchParams();
-      if (filters.startDate) params.append('startDate', filters.startDate);
-      if (filters.endDate) params.append('endDate', filters.endDate);
-      if (filters.cancerStage) params.append('cancerStage', filters.cancerStage);
-      if (filters.treatmentType) params.append('treatmentType', filters.treatmentType);
-
-      window.location.href = `/api/analytics/export/csv?${params.toString()}`;
+      await exportAnalytics(filters);
     } catch (error) {
       console.error('Failed to export CSV:', error);
     }

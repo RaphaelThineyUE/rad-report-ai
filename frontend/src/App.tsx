@@ -12,9 +12,11 @@ import ResetPassword from '@/pages/ResetPassword';
 import Worklist from '@/pages/Worklist';
 import Patients from '@/pages/Patients';
 import Analytics from '@/pages/Analytics';
+import AdminDashboard from '@/pages/AdminDashboard';
+import AdminUsers from '@/pages/AdminUsers';
 import Settings from '@/pages/Settings';
 
-type NavId = 'worklist' | 'patients' | 'analytics' | 'settings';
+type NavId = 'worklist' | 'patients' | 'analytics' | 'admin-dashboard' | 'admin-users' | 'settings';
 
 function AppShell() {
   const navigate = useNavigate();
@@ -31,11 +33,13 @@ function AppShell() {
   return (
     <AppLayout active={active} onNav={handleNav} search={search} setSearch={setSearch}>
       <Routes>
-        <Route path="/worklist"  element={<Worklist  search={search} />} />
-        <Route path="/patients"  element={<Patients  search={search} />} />
-        <Route path="/analytics" element={<Analytics />} />
-        <Route path="/settings"  element={<Settings />} />
-        <Route path="*"          element={<Navigate to="/worklist" replace />} />
+        <Route path="/worklist"         element={<Worklist  search={search} />} />
+        <Route path="/patients"         element={<Patients  search={search} />} />
+        <Route path="/analytics"        element={<Analytics />} />
+        <Route path="/admin-dashboard"  element={<AdminDashboard />} />
+        <Route path="/admin-users"      element={<AdminUsers />} />
+        <Route path="/settings"         element={<Settings />} />
+        <Route path="*"                 element={<Navigate to="/worklist" replace />} />
       </Routes>
     </AppLayout>
   );

@@ -3,6 +3,7 @@ import { BiRads } from '@/components/ui/BiRads';
 import { BiRadsTrendSparkline } from '@/components/analytics';
 import { useReports } from '@/hooks/useReports';
 import { useBiRadsTrend } from '@/hooks/useBiRadsTrend';
+import { useExportReport } from '@/hooks/useExport';
 import type { Report } from '@/hooks/useReports';
 
 interface ReportDetailProps {
@@ -19,6 +20,7 @@ export function ReportDetail({ report, isOpen, onClose, onOpenPDF, isLoadingPDF,
 
   const { data: allReports } = useReports(patientId);
   const biRadsTrendData = useBiRadsTrend(allReports);
+  const exportReport = useExportReport();
 
   const formattedDate = new Date(report.created_at).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -271,6 +273,14 @@ export function ReportDetail({ report, isOpen, onClose, onOpenPDF, isLoadingPDF,
             gap: 8,
           }}
         >
+          <Button
+            variant="secondary"
+            style={{ flex: 1 }}
+            icon="Download"
+            onClick={() => exportReport(report.id)}
+          >
+            Export
+          </Button>
           <Button
             variant="secondary"
             style={{ flex: 1 }}

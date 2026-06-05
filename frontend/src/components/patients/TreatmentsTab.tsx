@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
+import { TreatmentComparisonCharts } from '@/components/treatments/TreatmentComparisonCharts';
 import {
   TREATMENT_OUTCOMES,
   TREATMENT_TYPES,
@@ -218,6 +219,11 @@ export function TreatmentsTab({ patientId }: TreatmentsTabProps) {
         </div>
       ) : (
         <div style={{ display: 'grid', gap: 10 }}>
+          {items.length > 1 && (
+            <div style={{ marginBottom: 8 }}>
+              <TreatmentComparisonCharts treatments={items} />
+            </div>
+          )}
           {items.map((item) => (
             <div key={item.id} className="card card-pad" style={{ display: 'grid', gap: 8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
