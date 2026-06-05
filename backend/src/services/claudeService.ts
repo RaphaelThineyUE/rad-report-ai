@@ -308,34 +308,95 @@ export async function detectBiradsTrend(
 
 /**
  * Clean up personal identifiers from text
+ * Uses both deterministic regex patterns and Claude for comprehensive PII redaction
  */
 export async function cleanupIdentifiers(text: string): Promise<string> {
   try {
+    let cleaned = text;
+
+    // Deterministic redaction of common PII patterns
+    // Medical Record Numbers (MRN): various formats
+    cleaned = cleaned.replace(
+      /\b(?:MRN|Medical Record Number|Record #|Acct #|Account #)[:\s]+([A-Z0-9-]{4,20})/gi,
+      'MRN: [REDACTED]'
+    );
+
+    // Social Security Numbers
+    cleaned = cleaned.replace(
+      /\b(?:SSN|Social Security)[:\s]+(\d{3}-\d{2}-\d{4})/g,
+      'SSN: [REDACTED]'
+    );
+
+    // Date of Birth patterns (multiple formats)
+    cleaned = cleaned.replace(
+      /\b(?:DOB|Date of Birth|Born)[:\s]+(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}[/-]\d{2}[/-]\d{2})/gi,
+      'DOB: [REDACTED]'
+    );
+
+    // Phone numbers
+    cleaned = cleaned.replace(
+      /\b(?:Phone|Tel)[:\s]*\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})/g,
+      'Phone: [REDACTED]'
+    );
+
+    // Email addresses
+    cleaned = cleaned.replace(
+      /[\w\.-]+@[\w\.-]+\.\w+/g,
+      '[REDACTED]@example.com'
+    );
+
+    // Patient ID formats
+    cleaned = cleaned.replace(
+      /\b(?:Patient ID|PID|PT ID)[:\s]+([A-Z0-9-]{5,15})/gi,
+      'Patient ID: [REDACTED]'
+    );
+
+    // Insurance/Policy numbers
+    cleaned = cleaned.replace(
+      /\b(?:Policy|Insurance|Group)[:\s]+([A-Z0-9-]{6,20})/gi,
+      'Policy: [REDACTED]'
+    );
+
+    // Use Claude for additional context-aware redaction
     const response = await client.messages.create({
       model: MODEL,
       max_tokens: 2000,
-      system: `Remove all personal health information (names, medical record numbers, dates of birth, etc.)
-from this text. Replace with [REDACTED]. Preserve the clinical content.`,
+      system: `Review this medical text that has already been partially redacted.
+Look for any remaining personally identifiable information (names, initials, facility names, provider names) and replace with [REDACTED].
+Preserve all clinical and diagnostic content. Return the cleaned text.`,
       messages: [
         {
           role: 'user',
-          content: text,
+          content: cleaned,
         },
       ],
     });
 
-    const cleaned =
-      response.content[0].type === 'text' ? response.content[0].text : '';
-    logger.info('Successfully cleaned identifiers');
-    return cleaned;
+    const fullyClean =
+      response.content[0].type === 'text' ? response.content[0].text : cleaned;
+
+    logger.info('Successfully cleaned identifiers', {
+      originalLength: text.length,
+      cleanedLength: fullyClean.length,
+    });
+
+    return fullyClean;
   } catch (error) {
-    logger.warn('Failed to cleanup identifiers, returning original text');
-    return text;
+    logger.warn('Failed to cleanup identifiers with Claude, using regex-only approach');
+    // If Claude call fails, return text cleaned by regex patterns only
+    return text
+      .replace(/\b(?:MRN|Medical Record Number)[:\s]+([A-Z0-9-]{4,20})/gi, 'MRN: [REDACTED]')
+      .replace(/\b(?:SSN|Social Security)[:\s]+(\d{3}-\d{2}-\d{4})/g, 'SSN: [REDACTED]')
+      .replace(/\b(?:DOB|Date of Birth)[:\s]+(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})/gi, 'DOB: [REDACTED]')
+      .replace(/\b(?:Phone|Tel)[:\s]*\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})/g, 'Phone: [REDACTED]')
+      .replace(/[\w\.-]+@[\w\.-]+\.\w+/g, '[REDACTED]@example.com')
+      .replace(/\b(?:Patient ID|PID)[:\s]+([A-Z0-9-]{5,15})/gi, 'Patient ID: [REDACTED]');
   }
 }
 
 /**
  * Match source quotes from the original text
+ * Verifies that Claude's findings are actually present in the report
  */
 export async function matchSourceQuotes(
   findings: string[],
@@ -345,25 +406,62 @@ export async function matchSourceQuotes(
 
   try {
     for (const finding of findings) {
-      // Simple keyword extraction approach
-      const keywords = finding.split(/\s+/).slice(0, 5).join(' ');
-      const regex = new RegExp(
-        `([^.\n]*${keywords}[^.\n]*)`,
+      const matchedQuotes: string[] = [];
+
+      // Strategy 1: Try exact phrase matching (case-insensitive)
+      const exactRegex = new RegExp(
+        `([^.!?]*${escapeRegExp(finding)}[^.!?]*)`,
         'gi'
       );
-      const matches = reportText.match(regex);
+      const exactMatches = reportText.match(exactRegex);
+      if (exactMatches) {
+        matchedQuotes.push(...exactMatches.slice(0, 2));
+      }
 
-      if (matches) {
-        quotes.set(finding, matches.slice(0, 3));
+      // Strategy 2: If no exact match, try fuzzy matching with key phrases
+      if (matchedQuotes.length === 0) {
+        const keywords = finding
+          .split(/\s+/)
+          .filter(w => w.length > 3) // Only use words > 3 chars
+          .slice(0, 3)
+          .join('|');
+
+        if (keywords) {
+          const fuzzyRegex = new RegExp(
+            `([^.!?\n]{0,100}(?:${keywords})[^.!?\n]{0,100})`,
+            'gi'
+          );
+          const fuzzyMatches = reportText.match(fuzzyRegex);
+          if (fuzzyMatches) {
+            matchedQuotes.push(...fuzzyMatches.slice(0, 2));
+          }
+        }
+      }
+
+      // Store matched quotes if found
+      if (matchedQuotes.length > 0) {
+        quotes.set(finding, matchedQuotes.map(q => q.trim()));
       }
     }
 
-    logger.info('Matched source quotes', { findingsCount: findings.length });
+    logger.info('Matched source quotes', {
+      findingsCount: findings.length,
+      matchedCount: quotes.size,
+    });
+
     return quotes;
   } catch (error) {
-    logger.warn('Failed to match source quotes');
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    logger.warn('Failed to match source quotes', { error: message });
     return quotes;
   }
+}
+
+/**
+ * Escape special regex characters
+ */
+function escapeRegExp(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 // Helper functions
