@@ -1,0 +1,6 @@
+{
+  "jest.testMatch": ["<rootDir>/frontend/src/**/*.{test,spec}.{ts,tsx}"],
+  "jest.disabledWorkspaceFolder": [],
+  "jest.jestCommandLine": "yarn workspace frontend vitest run",
+  "vitest.include": ["frontend/src/**/*.{test,spec}.{ts,tsx}"]
+}

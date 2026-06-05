@@ -1,79 +1,98 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Authentication Flow', () => {
-  test('should redirect to login when accessing protected route without auth', async ({ page }) => {
-    await page.goto('/worklist', { waitUntil: 'networkidle' });
-    // Should redirect to /login
-    expect(page.url()).toContain('/login');
+test.describe('Login Page', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/login');
+    await page.waitForLoadState('networkidle');
   });
 
-  test('should display login form', async ({ page }) => {
-    await page.goto('/login', { waitUntil: 'networkidle' });
-
-    expect(await page.locator('input[type="email"]')).toBeVisible();
-    expect(await page.locator('input[type="password"]')).toBeVisible();
-    expect(await page.locator('button:has-text("Sign in securely")')).toBeVisible();
+  test('displays all login form elements', async ({ page }) => {
+    await expect(page.getByLabel('Work email')).toBeVisible();
+    await expect(page.getByLabel('Password')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Sign in securely' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Continue with Google' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Forgot password?' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sign up' })).toBeVisible();
   });
 
-  test('should show error on invalid credentials', async ({ page }) => {
-    await page.goto('/login', { waitUntil: 'networkidle' });
+  test('shows error message on invalid credentials', async ({ page }) => {
+    await test.step('Submit invalid credentials', async () => {
+      await page.getByLabel('Work email').fill('invalid@example.com');
+      await page.getByLabel('Password').fill('wrongpassword');
+      await page.getByRole('button', { name: 'Sign in securely' }).click();
+    });
 
-    await page.fill('input[type="email"]', 'invalid@example.com');
-    await page.fill('input[type="password"]', 'wrongpassword');
-    await page.click('button:has-text("Sign in securely")');
-
-    // Wait for error message
-    const errorMessage = page.locator('[role="alert"]');
-    await expect(errorMessage).toBeVisible();
+    await test.step('Verify error is shown', async () => {
+      const errorMessage = page.locator('[role="alert"]');
+      await expect(errorMessage).toBeVisible();
+    });
   });
 
-  test('should display forgot password link', async ({ page }) => {
-    await page.goto('/login', { waitUntil: 'networkidle' });
+  test('shows loading state while signing in', async ({ page }) => {
+    await page.getByLabel('Work email').fill('test@example.com');
+    await page.getByLabel('Password').fill('password123');
 
-    const forgotPasswordLink = page.locator('button:has-text("Forgot password?")');
-    await expect(forgotPasswordLink).toBeVisible();
-  });
-
-  test('should navigate to forgot password page', async ({ page }) => {
-    await page.goto('/login', { waitUntil: 'networkidle' });
-
-    await page.click('button:has-text("Forgot password?")');
-    expect(page.url()).toContain('/forgot-password');
-  });
-
-  test('should show loading state during sign in', async ({ page }) => {
-    await page.goto('/login', { waitUntil: 'networkidle' });
-
-    await page.fill('input[type="email"]', 'test@example.com');
-    await page.fill('input[type="password"]', 'password123');
-
-    const signInButton = page.locator('button:has-text("Sign in securely")');
+    const signInButton = page.getByRole('button', { name: 'Sign in securely' });
     await signInButton.click();
 
-    // Check if button shows loading state
-    const loadingButton = page.locator('button:has-text("Signing in...")');
-    expect(await loadingButton.isVisible()).toBeTruthy();
+    await expect(page.getByRole('button', { name: 'Signing in...' })).toBeVisible();
+  });
+
+  test('navigates to forgot password page', async ({ page }) => {
+    await page.getByRole('button', { name: 'Forgot password?' }).click();
+    await expect(page).toHaveURL(/\/forgot-password/);
+  });
+
+  test('navigates to sign up page via link', async ({ page }) => {
+    await page.getByRole('link', { name: 'Sign up' }).click();
+    await expect(page).toHaveURL(/\/signup/);
+  });
+
+  test('sign in with valid credentials redirects to worklist', async ({ page }) => {
+    const email = process.env.E2E_TEST_EMAIL;
+    const password = process.env.E2E_TEST_PASSWORD;
+    if (!email || !password) test.skip(true, 'E2E_TEST_EMAIL / E2E_TEST_PASSWORD not set');
+
+    await test.step('Enter credentials', async () => {
+      await page.getByLabel('Work email').fill(email!);
+      await page.getByLabel('Password').fill(password!);
+    });
+
+    await test.step('Submit and verify redirect', async () => {
+      await page.getByRole('button', { name: 'Sign in securely' }).click();
+      await expect(page).toHaveURL(/\/worklist/, { timeout: 15000 });
+    });
   });
 });
 
-test.describe('Protected Routes', () => {
-  test('should not allow access to /patients without auth', async ({ page }) => {
-    await page.goto('/patients', { waitUntil: 'networkidle' });
-    expect(page.url()).toContain('/login');
+test.describe('Sign Up Page', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/signup');
+    await page.waitForLoadState('networkidle');
   });
 
-  test('should not allow access to /analytics without auth', async ({ page }) => {
-    await page.goto('/analytics', { waitUntil: 'networkidle' });
-    expect(page.url()).toContain('/login');
+  test('displays all sign-up form elements', async ({ page }) => {
+    await expect(page.getByLabel('Full name')).toBeVisible();
+    await expect(page.getByLabel('Work email')).toBeVisible();
+    await expect(page.getByLabel('Password')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Create account' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Continue with Google' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sign in' })).toBeVisible();
   });
 
-  test('should not allow access to /settings without auth', async ({ page }) => {
-    await page.goto('/settings', { waitUntil: 'networkidle' });
-    expect(page.url()).toContain('/login');
+  test('navigates to login page via sign-in link', async ({ page }) => {
+    await page.getByRole('link', { name: 'Sign in' }).click();
+    await expect(page).toHaveURL(/\/login/);
   });
+});
 
-  test('should not allow access to /worklist without auth', async ({ page }) => {
-    await page.goto('/worklist', { waitUntil: 'networkidle' });
-    expect(page.url()).toContain('/login');
-  });
+test.describe('Protected Route Redirects', () => {
+  const protectedRoutes = ['/worklist', '/patients', '/analytics', '/settings'];
+
+  for (const route of protectedRoutes) {
+    test(`redirects unauthenticated user from ${route} to login`, async ({ page }) => {
+      await page.goto(route, { waitUntil: 'networkidle' });
+      await expect(page).toHaveURL(/\/login/);
+    });
+  }
 });
