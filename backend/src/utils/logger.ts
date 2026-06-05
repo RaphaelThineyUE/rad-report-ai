@@ -1,4 +1,4 @@
-import { captureLogError } from './sentry';
+import * as Sentry from '@sentry/node';
 
 const PHI_PATTERN = /\b\d{4}-\d{2}-\d{2}\b|\b[A-Z][a-z]+ [A-Z][a-z]+\b/g;
 
@@ -11,15 +11,19 @@ function redact(value: unknown): unknown {
 
 export const logger = {
   info: (msg: string, meta?: Record<string, unknown>) => {
-    console.log(JSON.stringify({ level: 'info', msg, ...sanitize(meta) }));
+    const sanitized = sanitize(meta);
+    console.log(JSON.stringify({ level: 'info', msg, ...sanitized }));
+    Sentry.captureMessage(msg, 'info');
   },
   warn: (msg: string, meta?: Record<string, unknown>) => {
-    console.warn(JSON.stringify({ level: 'warn', msg, ...sanitize(meta) }));
+    const sanitized = sanitize(meta);
+    console.warn(JSON.stringify({ level: 'warn', msg, ...sanitized }));
+    Sentry.captureMessage(msg, 'warning');
   },
   error: (msg: string, meta?: Record<string, unknown>) => {
-    const sanitizedMeta = sanitize(meta);
-    console.error(JSON.stringify({ level: 'error', msg, ...sanitizedMeta }));
-    captureLogError(msg, meta, sanitizedMeta);
+    const sanitized = sanitize(meta);
+    console.error(JSON.stringify({ level: 'error', msg, ...sanitized }));
+    Sentry.captureException(new Error(msg), { extra: sanitized });
   },
 };
 

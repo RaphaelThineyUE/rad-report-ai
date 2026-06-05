@@ -39,7 +39,7 @@ export default function Settings() {
 
   async function fetchUser() {
     try {
-      const response = await api.get('/auth/me');
+      const response = await api.get('/api/auth/me');
       setUser(response.data);
       setFullName(response.data.full_name || '');
       setEmail(response.data.email);
@@ -62,7 +62,7 @@ export default function Settings() {
       if (fullName !== (user?.full_name || '')) updates.full_name = fullName;
       if (email !== user?.email) updates.email = email;
 
-      const response = await api.patch('/auth/me', updates);
+      const response = await api.patch('/api/auth/me', updates);
       setUser(response.data);
       setSuccess('Profile updated successfully');
       setTimeout(() => setSuccess(''), 3000);
@@ -96,7 +96,7 @@ export default function Settings() {
     setLoading(true);
 
     try {
-      await api.patch('/auth/me', { password: newPassword });
+      await api.patch('/api/auth/me', { password: newPassword });
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -114,7 +114,7 @@ export default function Settings() {
     setError('');
 
     try {
-      await api.delete('/auth/me');
+      await api.delete('/api/auth/me');
       await supabase.auth.signOut();
       navigate('/login');
     } catch (err) {
