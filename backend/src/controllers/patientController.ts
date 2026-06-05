@@ -170,3 +170,70 @@ export async function deletePatient(req: AuthRequest, res: Response): Promise<vo
 
   res.status(204).send();
 }
+
+export async function exportPatientBundle(req: AuthRequest, res: Response): Promise<void> {
+  const { id } = req.params;
+  const client = createUserClient(req.accessToken);
+
+  const { data: patient, error: patientError } = await client
+    .from('patients')
+    .select('*')
+    .eq('id', id)
+    .eq('created_by', req.userId)
+    .single();
+
+  if (patientError || !patient) {
+    res.status(404).json({ error: 'Patient not found' });
+    return;
+  }
+
+  const { data: reports, error: reportsError } = await client
+    .from('radiology_reports')
+    .select('id, filename, created_at, status, birads_value, summary, findings, recommendations')
+    .eq('patient_id', id);
+
+  if (reportsError) {
+    logger.error('exportPatientBundle reports error', { userId: req.userId, patientId: id, error: reportsError.message });
+    res.status(500).json({ error: 'Failed to fetch patient reports' });
+    return;
+  }
+
+  const { data: treatments, error: treatmentsError } = await client
+    .from('treatment_records')
+    .select('*')
+    .eq('patient_id', id);
+
+  if (treatmentsError) {
+    logger.error('exportPatientBundle treatments error', { userId: req.userId, patientId: id, error: treatmentsError.message });
+    res.status(500).json({ error: 'Failed to fetch patient treatments' });
+    return;
+  }
+
+  const exportData = {
+    patient: {
+      id: patient.id,
+      full_name: patient.full_name,
+      date_of_birth: patient.date_of_birth,
+      gender: patient.gender,
+      ethnicity: patient.ethnicity,
+      diagnosis_date: patient.diagnosis_date,
+      cancer_type: patient.cancer_type,
+      cancer_stage: patient.cancer_stage,
+      tumor_size_cm: patient.tumor_size_cm,
+      lymph_node_positive: patient.lymph_node_positive,
+      er_status: patient.er_status,
+      pr_status: patient.pr_status,
+      her2_status: patient.her2_status,
+      menopausal_status: patient.menopausal_status,
+      initial_treatment_plan: patient.initial_treatment_plan,
+      created_at: patient.created_at,
+      updated_at: patient.updated_at,
+    },
+    reports: reports ?? [],
+    treatments: treatments ?? [],
+  };
+
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Content-Disposition', `attachment; filename="patient-${id}.json"`);
+  res.json(exportData);
+}

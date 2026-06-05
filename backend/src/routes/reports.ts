@@ -12,6 +12,7 @@ import {
   uploadReport,
   batchUploadReports,
   processReport,
+  exportReportJson,
 } from '../controllers/reportController';
 
 const maxFileSizeMb = Number(process.env.MAX_FILE_SIZE_MB ?? 20);
@@ -46,6 +47,7 @@ router.get('/:id/url', requireAuth, wrapAuth(getReportSignedUrl));
 
 router.post('/', requireAuth, createValidators, wrapAuth(createReport));
 router.get('/', requireAuth, wrapAuth(listReports));
+router.get('/:id/export', requireAuth, wrapAuth(exportReportJson));
 router.get('/:id', requireAuth, wrapAuth(getReport));
 router.post('/:id/process', requireAuth, wrapAuth(processReport));
 router.patch('/:id', requireAuth, wrapAuth(updateReport));

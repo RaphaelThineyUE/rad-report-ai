@@ -7,6 +7,7 @@ import {
   getPatient,
   listPatients,
   updatePatient,
+  exportPatientBundle,
 } from '../controllers/patientController';
 
 const GENDERS = ['Male', 'Female', 'Other'] as const;
@@ -57,6 +58,7 @@ const router: IRouter = Router();
 
 router.get('/', requireAuth, wrapAuth(listPatients));
 router.post('/', requireAuth, createValidators, wrapAuth(createPatient));
+router.get('/:id/export', requireAuth, wrapAuth(exportPatientBundle));
 router.get('/:id', requireAuth, wrapAuth(getPatient));
 router.patch('/:id', requireAuth, updateValidators, wrapAuth(updatePatient));
 router.delete('/:id', requireAuth, wrapAuth(deletePatient));

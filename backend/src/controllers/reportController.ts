@@ -465,6 +465,53 @@ export async function deleteReport(req: AuthRequest, res: Response): Promise<voi
   res.status(204).send();
 }
 
+export async function exportReportJson(req: AuthRequest, res: Response): Promise<void> {
+  const { id } = req.params;
+  const client = createUserClient(req.accessToken);
+
+  const { data: report, error } = await client
+    .from('radiology_reports')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error || !report) {
+    res.status(404).json({ error: 'Report not found' });
+    return;
+  }
+
+  const exportData = {
+    id: report.id,
+    filename: report.filename,
+    created_at: report.created_at,
+    updated_at: report.updated_at,
+    status: report.status,
+    extraction: {
+      birads_value: report.birads_value,
+      birads_confidence: report.birads_confidence,
+      birads_evidence: report.birads_evidence,
+      breast_density_value: report.breast_density_value,
+      breast_density_evidence: report.breast_density_evidence,
+      exam_type: report.exam_type,
+      exam_laterality: report.exam_laterality,
+      exam_evidence: report.exam_evidence,
+      comparison_prior_exam_date: report.comparison_prior_exam_date,
+      comparison_evidence: report.comparison_evidence,
+      findings: report.findings,
+      recommendations: report.recommendations,
+      red_flags: report.red_flags,
+    },
+    verification: {
+      summary: report.summary,
+      processing_time_ms: report.processing_time_ms,
+    },
+  };
+
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Content-Disposition', `attachment; filename="report-${id}.json"`);
+  res.json(exportData);
+}
+
 export async function processReport(req: AuthRequest, res: Response): Promise<void> {
   const { id } = req.params;
   const client = createUserClient(req.accessToken);
