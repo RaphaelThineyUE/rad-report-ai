@@ -85,19 +85,21 @@ export async function updateMe(req: Request, res: Response): Promise<void> {
 
   // Log password change if password was updated
   if (password) {
+    const userAgent = req.get('user-agent');
     await logPasswordChange(
       userId,
       req.ip,
-      req.get('user-agent')
+      Array.isArray(userAgent) ? userAgent[0] : userAgent
     );
   }
 
   // Log email change if email was updated
   if (email) {
+    const userAgent2 = req.get('user-agent');
     await logEmailChange(
       userId,
       req.ip,
-      req.get('user-agent')
+      Array.isArray(userAgent2) ? userAgent2[0] : userAgent2
     );
   }
 
@@ -177,10 +179,11 @@ export async function deleteAccount(req: Request, res: Response): Promise<void> 
   }
 
   // Log the account deletion action
+  const userAgent3 = req.get('user-agent');
   await logAccountDeletion(
     userId,
     req.ip,
-    req.get('user-agent')
+    Array.isArray(userAgent3) ? userAgent3[0] : userAgent3
   );
 
   res.json({ message: 'Account deleted successfully' });
