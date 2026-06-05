@@ -7,6 +7,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { AppLayout } from '@/components/layout/AppLayout';
 import Login from '@/pages/Login';
+import SignUp from '@/pages/SignUp';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import Worklist from '@/pages/Worklist';
@@ -48,6 +49,7 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login"             element={<Login />} />
+            <Route path="/signup"            element={<SignUp />} />
             <Route path="/forgot-password"   element={<ForgotPassword />} />
             <Route path="/reset-password"    element={<ResetPassword />} />
             <Route path="/*" element={<ProtectedRoute><AppShell /></ProtectedRoute>} />
