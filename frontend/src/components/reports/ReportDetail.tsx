@@ -1,8 +1,6 @@
-import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { BiRads } from '@/components/ui/BiRads';
 import { BiRadsTrendSparkline } from '@/components/analytics';
-import { Icon } from '@/components/ui/Icon';
 import { useReports } from '@/hooks/useReports';
 import { useBiRadsTrend } from '@/hooks/useBiRadsTrend';
 import type { Report } from '@/hooks/useReports';
@@ -166,7 +164,7 @@ export function ReportDetail({ report, isOpen, onClose, onOpenPDF, isLoadingPDF,
                     BI-RADS Assessment
                   </h3>
                   <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                    <BiRads value={report.birads_value} size="lg" />
+                    <BiRads value={String(report.birads_value)} size="lg" />
                     <div>
                       <div style={{ fontSize: 13, fontWeight: 600 }}>BI-RADS {report.birads_value}</div>
                       {report.birads_confidence && (

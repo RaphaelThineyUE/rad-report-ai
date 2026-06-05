@@ -1,3 +1,4 @@
+import type { MouseEvent } from 'react';
 import { Icon } from './Icon';
 
 type Variant = 'primary' | 'secondary' | 'ghost';
@@ -7,7 +8,7 @@ interface ButtonProps {
   size?: 'sm' | 'md';
   icon?: string;
   children?: React.ReactNode;
-  onClick?: () => void;
+  onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
   style?: React.CSSProperties;
   disabled?: boolean;
   type?: 'button' | 'submit' | 'reset';

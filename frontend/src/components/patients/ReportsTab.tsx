@@ -10,7 +10,6 @@ import {
   useReports,
   useReportSignedUrl,
   type Report,
-  type ReportStatus,
   type UploadReportResponse,
 } from '@/hooks/useReports';
 import { useBiRadsTrend } from '@/hooks/useBiRadsTrend';

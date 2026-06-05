@@ -13,6 +13,12 @@ export interface Report {
   status: ReportStatus;
   summary: string | null;
   birads_value: number | null;
+  birads_confidence: string | null;
+  processing_time_ms: number | null;
+  breast_density_value: string | null;
+  exam_type: string | null;
+  exam_laterality: string | null;
+  red_flags: string[] | null;
   created_at: string;
   updated_at: string;
 }

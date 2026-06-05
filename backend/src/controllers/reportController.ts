@@ -135,7 +135,9 @@ export async function batchUploadReports(req: AuthRequest, res: Response): Promi
     return;
   }
 
-  const files = Array.isArray(req.files) ? req.files : [req.files];
+  const files: Express.Multer.File[] = Array.isArray(req.files)
+    ? req.files
+    : Object.values(req.files).flat();
   const patientId = String(req.body.patient_id ?? '').trim();
 
   if (!patientId) {
