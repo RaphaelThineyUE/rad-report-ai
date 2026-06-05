@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import logoLockup from '@/assets/logo-lockup.svg';
 import logomark from '@/assets/logomark.svg';
 
-type NavId = 'worklist' | 'patients' | 'analytics' | 'settings';
+type NavId = 'worklist' | 'patients' | 'analytics' | 'admin-dashboard' | 'admin-users' | 'settings';
 
 interface SidebarProps {
   active: NavId;
@@ -17,6 +17,12 @@ const NAV_ITEMS: { id: NavId; label: string; icon: string }[] = [
   { id: 'worklist',  label: 'Worklist',  icon: 'file-text' },
   { id: 'patients',  label: 'Patients',  icon: 'users' },
   { id: 'analytics', label: 'Analytics', icon: 'bar-chart' },
+  { id: 'admin-dashboard', label: 'Admin',  icon: 'shield' },
+];
+
+const ADMIN_ITEMS: { id: NavId; label: string; icon: string }[] = [
+  { id: 'admin-dashboard', label: 'System Health', icon: 'activity' },
+  { id: 'admin-users',     label: 'Users',          icon: 'users-cog' },
 ];
 
 export function Sidebar({ active, onNav, collapsed }: SidebarProps) {
@@ -40,7 +46,7 @@ export function Sidebar({ active, onNav, collapsed }: SidebarProps) {
           : <img src={logoLockup} alt="RadReport AI" />}
       </div>
       <nav className="nav">
-        {NAV_ITEMS.map(it => (
+        {NAV_ITEMS.filter(it => it.id !== 'admin-dashboard').map(it => (
           <button
             key={it.id}
             className={`nav-item${active === it.id ? ' active' : ''}`}
@@ -50,6 +56,22 @@ export function Sidebar({ active, onNav, collapsed }: SidebarProps) {
             {!collapsed && <span className="nav-label">{it.label}</span>}
           </button>
         ))}
+        {!collapsed && (
+          <>
+            <div style={{ borderTop: '1px solid var(--border-2)', margin: '8px 0' }} />
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--fg-4)', padding: '8px 12px', textTransform: 'uppercase', letterSpacing: 0.5 }}>Admin</div>
+            {ADMIN_ITEMS.map(it => (
+              <button
+                key={it.id}
+                className={`nav-item${active === it.id ? ' active' : ''}`}
+                onClick={() => onNav(it.id)}
+              >
+                <Icon name={it.icon} size={19} />
+                <span className="nav-label">{it.label}</span>
+              </button>
+            ))}
+          </>
+        )}
       </nav>
       <div className="side-foot nav">
         <button

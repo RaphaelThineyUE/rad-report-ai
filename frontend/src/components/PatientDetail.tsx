@@ -4,6 +4,7 @@ import { ReportsTab } from './patients/ReportsTab';
 import { TreatmentsTab } from './patients/TreatmentsTab';
 import { TimelineTab } from './patients/TimelineTab';
 import { useAppLayoutContext } from './layout/AppLayout';
+import { useExportPatient } from '@/hooks/useExport';
 import type { Patient } from '@/hooks/usePatients';
 
 interface PatientDetailProps {
@@ -16,6 +17,7 @@ type TabId = 'reports' | 'treatments' | 'timeline';
 export function PatientDetail({ patient, onClose }: PatientDetailProps) {
   const [activeTab, setActiveTab] = useState<TabId>('reports');
   const { setCurrentPatientId } = useAppLayoutContext();
+  const exportPatient = useExportPatient();
 
   // Set patient ID in app context when this detail is opened
   useEffect(() => {
@@ -150,6 +152,9 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
             background: 'var(--bg-subtle)',
           }}
         >
+          <Button variant="secondary" onClick={() => exportPatient(patient.id)} icon="download">
+            Export
+          </Button>
           <Button variant="secondary" onClick={onClose}>
             Close
           </Button>
