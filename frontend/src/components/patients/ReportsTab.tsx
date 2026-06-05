@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { ConsolidatedView } from '@/components/analytics';
+import { ReportCard, ReportDetail } from '@/components/reports';
 import {
   useCreateReport,
   useDeleteReport,
@@ -19,12 +20,6 @@ interface ReportsTabProps {
   patientName?: string;
 }
 
-const STATUS_COLORS: Record<ReportStatus, React.CSSProperties> = {
-  pending: { color: 'var(--warning-700)', background: 'var(--warning-50)', borderColor: '#f6e2b3' },
-  processing: { color: 'var(--rose-700)', background: 'var(--rose-50)', borderColor: 'var(--rose-200)' },
-  completed: { color: 'var(--success-700)', background: 'var(--success-50)', borderColor: 'var(--success-200)' },
-  failed: { color: 'var(--danger-700)', background: 'var(--danger-50)', borderColor: 'var(--danger-200)' },
-};
 
 export function ReportsTab({ patientId, patientName }: ReportsTabProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -35,6 +30,7 @@ export function ReportsTab({ patientId, patientName }: ReportsTabProps) {
   const [uploading, setUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showConsolidated, setShowConsolidated] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
 
   const sortedReports = useMemo(() => reports ?? [], [reports]);
 
@@ -149,46 +145,15 @@ export function ReportsTab({ patientId, patientName }: ReportsTabProps) {
       ) : (
         <div style={{ display: 'grid', gap: 12 }}>
           {sortedReports.map((report) => (
-            <div key={report.id} className="card card-pad" style={{ display: 'grid', gap: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontWeight: 600, color: 'var(--fg-1)', wordBreak: 'break-word' }}>{report.filename}</div>
-                  <div className="mono" style={{ color: 'var(--fg-4)', fontSize: 12 }}>
-                    Added {report.created_at.slice(0, 10)}
-                    {report.file_size ? ` · ${Math.max(report.file_size / (1024 * 1024), 0.01).toFixed(2)} MB` : ''}
-                  </div>
-                </div>
-                <span style={{ border: '1px solid', borderRadius: 'var(--r-pill)', padding: '2px 10px', fontSize: 12, fontWeight: 600, ...STATUS_COLORS[report.status] }}>
-                  {report.status}
-                </span>
-              </div>
-
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  icon={signedUrl.isPending ? 'Loader2' : 'arrow-up-right'}
-                  onClick={() => {
-                    void handleOpenReport(report);
-                  }}
-                  disabled={signedUrl.isPending}
-                >
-                  Open PDF
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  icon="Trash2"
-                  style={{ color: 'var(--danger-700)', borderColor: 'var(--danger-200)' }}
-                  onClick={() => {
-                    void handleDeleteReport(report);
-                  }}
-                  disabled={deleteReport.isPending}
-                >
-                  Delete
-                </Button>
-              </div>
-            </div>
+            <ReportCard
+              key={report.id}
+              report={report}
+              onOpenDetail={setSelectedReport}
+              onOpenPDF={handleOpenReport}
+              onDelete={handleDeleteReport}
+              isLoadingPDF={signedUrl.isPending}
+              isDeleting={deleteReport.isPending}
+            />
           ))}
         </div>
       )}
@@ -201,6 +166,14 @@ export function ReportsTab({ patientId, patientName }: ReportsTabProps) {
           onClose={() => setShowConsolidated(false)}
         />
       )}
+
+      <ReportDetail
+        report={selectedReport}
+        isOpen={selectedReport !== null}
+        onClose={() => setSelectedReport(null)}
+        onOpenPDF={handleOpenReport}
+        isLoadingPDF={signedUrl.isPending}
+      />
     </div>
   );
 }
