@@ -102,8 +102,8 @@ export async function createPatient(req: AuthRequest, res: Response): Promise<vo
     data.id,
     'CREATE',
     undefined,
-    normalizeString(req.ip as any),
-    normalizeString(req.get('user-agent'))
+    normalizeString(req.ip as any) as string,
+    normalizeString(req.get('user-agent'))as string
   );
 
   res.status(201).json(data);
@@ -177,8 +177,8 @@ export async function updatePatient(req: AuthRequest, res: Response): Promise<vo
         { new: val },
       ])
     ),
-    normalizeString(req.ip as any),
-    normalizeString(req.get('user-agent'))
+    normalizeString(req.ip as any) as string,
+    normalizeString(req.get('user-agent'))as string
   );
 
   res.json(data);
@@ -204,8 +204,8 @@ export async function deletePatient(req: AuthRequest, res: Response): Promise<vo
     id,
     'DELETE',
     undefined,
-    normalizeString(req.ip as any),
-    normalizeString(req.get('user-agent'))
+    normalizeString(req.ip as any) as string,
+    normalizeString(req.get('user-agent'))as string
   );
 
   res.status(204).send();

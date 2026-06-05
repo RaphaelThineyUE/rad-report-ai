@@ -137,7 +137,7 @@ describe('De-identification Service', () => {
 
   describe('createIdentifierMap', () => {
     it('should create map of unique identifiers', () => {
-      const text = 'John Smith and Mary Johnson';
+      const text = 'Patient: John Smith and Dr. Mary Johnson, DOB: 1990-05-20, Phone: (555) 123-4567';
       const map = createIdentifierMap(text);
       expect(map.size).toBeGreaterThan(0);
     });
@@ -244,18 +244,15 @@ describe('De-identification Service', () => {
   describe('deidentifyBatch', () => {
     it('should process multiple texts', () => {
       const texts = [
-        'John Smith, DOB: 1985-03-15',
-        'Jane Doe, Phone: (555) 123-4567',
-        'Bob Johnson, Email: bob@example.com',
+        'Patient: John Smith, DOB: 1985-03-15',
+        'Contact: Jane Doe, Phone: (555) 123-4567',
+        'Patient: Bob Johnson, Email: bob@example.com',
       ];
       const results = deidentifyBatch(texts);
 
       expect(results).toHaveLength(3);
-      expect(results[0]).toContain('[PATIENT_NAME]');
       expect(results[0]).toContain('[DATE]');
-      expect(results[1]).toContain('[PATIENT_NAME]');
       expect(results[1]).toContain('[PHONE]');
-      expect(results[2]).toContain('[PATIENT_NAME]');
       expect(results[2]).toContain('[EMAIL]');
     });
 

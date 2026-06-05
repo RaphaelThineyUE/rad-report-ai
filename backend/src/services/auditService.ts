@@ -12,6 +12,14 @@ interface AuditLogEntry {
   user_agent?: string;
 }
 
+
+/**
+ * Helper to normalize string|string[] to string|undefined
+ */
+function normalizeValue(val: unknown): string | undefined {
+  if (Array.isArray(val)) return val[0];
+  return typeof val === 'string' ? val : undefined;
+}
 /**
  * Helper function to log audit entries with PHI redaction
  * RAD-M8-3: Uses auditLogger for automatic PHI redaction
@@ -28,8 +36,8 @@ async function createAuditLog(entry: AuditLogEntry): Promise<void> {
         action: entry.action,
         resource_type: entry.resource_type,
         resource_id: entry.resource_id,
-        ip_address: entry.ip_address,
-        user_agent: entry.user_agent,
+        ip_address: normalizeValue(entry.ip_address),
+        user_agent: normalizeValue(entry.user_agent),
         metadata: safeMetadata,
       });
 
