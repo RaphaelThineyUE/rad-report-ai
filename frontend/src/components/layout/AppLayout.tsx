@@ -1,4 +1,4 @@
-import { useState, createContext, useContext } from 'react';
+import { useState, createContext, useContext, useEffect } from 'react';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { BatchUploadDrawer } from '@/components/drawers/BatchUploadDrawer';
@@ -33,6 +33,19 @@ export function AppLayout({ active, onNav, search, setSearch, children }: AppLay
   const [collapsed, setCollapsed] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [currentPatientId, setCurrentPatientId] = useState<string | null>(null);
+
+  // Auto-collapse sidebar on resize to smaller screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 768) {
+        setCollapsed(true);
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <AppLayoutContext.Provider value={{ setCurrentPatientId, uploadOpen, setUploadOpen }}>

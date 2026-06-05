@@ -273,6 +273,122 @@ button { font-family: inherit; cursor: pointer; }
 .t-overline { font-family: var(--font-sans); font-size: 11px; line-height: 1.3; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-3); }
 .t-data { font-family: var(--font-mono); font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; color: var(--fg-1); }
 
+/* Mobile Responsive Design */
+
+/* Tablet (768px) */
+@media (max-width: 768px) {
+  /* Auto-collapse sidebar on tablet */
+  .sidebar { width: 72px; }
+
+  /* Adjust topbar for tablet */
+  .topbar { padding: 0 16px; }
+  .search-box { max-width: 300px; }
+
+  /* Reduce modal/drawer widths */
+  .drawer { width: 100%; max-width: 100%; }
+  .modal { max-width: 95vw; }
+
+  /* Adjust card padding */
+  .card-pad { padding: 16px; }
+
+  /* Reduce font sizes for tablet */
+  .t-h1 { font-size: 28px; }
+  .t-h2 { font-size: 23px; }
+  .t-h3 { font-size: 18px; }
+  .t-h4 { font-size: 15px; }
+  .t-body { font-size: 14px; }
+  .t-body-sm { font-size: 12px; }
+
+  /* Adjust button sizes */
+  .btn { padding: 8px 14px; font-size: 14px; }
+  .btn-sm { padding: 6px 10px; font-size: 12px; }
+
+  /* Table improvements for tablet */
+  .tbl thead th { padding: 0 12px 10px; font-size: 10px; }
+  .tbl tbody td { padding: 12px 12px; font-size: 13px; }
+
+  /* Make content padding more compact */
+  .content { padding: 20px; }
+}
+
+/* Mobile (375px - 767px) */
+@media (max-width: 767px) {
+  /* Hide sidebar, use only topbar navigation */
+  .sidebar { width: 0; padding: 0; overflow: hidden; border-right: none; flex: 0; }
+  .sidebar.collapsed { width: 0; }
+
+  /* Expand main content area */
+  .main { flex: 1; }
+
+  /* Mobile topbar adjustments */
+  .topbar { padding: 0 12px; height: 56px; }
+  .search-box { max-width: 200px; flex: 0; }
+
+  /* Full-width drawers and modals */
+  .drawer { width: 100%; max-width: 100%; }
+  .modal { max-width: 100vw; max-height: 100vh; border-radius: 0; }
+  .scrim { background: var(--bg-overlay); }
+
+  /* Reduce content padding */
+  .content { padding: 12px; }
+
+  /* Card adjustments for mobile */
+  .card { border-radius: var(--r-md); }
+  .card-pad { padding: 12px; }
+
+  /* Reduce font sizes more aggressively */
+  .t-display { font-size: 32px; }
+  .t-h1 { font-size: 24px; }
+  .t-h2 { font-size: 20px; }
+  .t-h3 { font-size: 16px; }
+  .t-h4 { font-size: 14px; }
+  .t-body { font-size: 13px; line-height: 1.5; }
+  .t-body-sm { font-size: 11px; }
+  .t-caption { font-size: 11px; }
+
+  /* Compact buttons */
+  .btn { padding: 7px 12px; font-size: 13px; }
+  .btn-sm { padding: 5px 10px; font-size: 11px; }
+
+  /* Reduce table sizes */
+  .tbl thead th { padding: 0 8px 8px; font-size: 9px; }
+  .tbl tbody td { padding: 10px 8px; font-size: 12px; }
+
+  /* Adjust spacing */
+  .nav { gap: 1px; }
+  .nav-item { padding: 8px 10px; gap: 10px; }
+
+  /* Mobile-friendly avatar size */
+  .avatar { width: 32px; height: 32px; font-size: 12px; }
+
+  /* Make icon buttons more touch-friendly */
+  button { min-height: 44px; min-width: 44px; }
+
+  /* Adjust grid layouts for mobile */
+  .chip-row { gap: 6px; }
+
+  /* Fix drawer header for mobile */
+  .drawer-head { padding: 16px 12px; }
+  .drawer-body { padding: 16px 12px; }
+  .drawer-foot { padding: 12px; gap: 8px; }
+
+  /* Responsive list items */
+  .kv { padding: 8px 0; font-size: 12px; }
+
+  /* Adjust modal padding */
+  .modal { padding: 16px; }
+
+  /* Make tables scrollable */
+  .tbl { display: block; overflow-x: auto; }
+  .tbl thead, .tbl tbody, .tbl tr, .tbl th, .tbl td {
+    display: block;
+  }
+  .tbl thead { display: none; }
+  .tbl tbody tr { margin-bottom: 10px; border: 1px solid var(--border-1); padding: 8px; border-radius: var(--r-sm); }
+  .tbl tbody td { padding: 6px 0; border-top: none; text-align: right; position: relative; padding-left: 50%; }
+  .tbl tbody td:before { content: attr(data-label); position: absolute; left: 6px; font-weight: 600; font-size: 11px; color: var(--fg-3); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; transition: none !important; }
 }
