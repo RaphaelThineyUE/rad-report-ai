@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import * as supabaseModule from '@/lib/supabase';
 
@@ -10,6 +11,7 @@ vi.mock('@/lib/supabase', () => ({
       getSession: vi.fn(),
       signOut: vi.fn(),
       onAuthStateChange: vi.fn(),
+      signInWithOAuth: vi.fn(),
     },
   },
 }));
@@ -97,4 +99,45 @@ describe('AuthContext', () => {
 
     consoleError.mockRestore();
   });
+
+  it('should call signInWithOAuth with google provider', async () => {
+    const mockAuth = supabaseModule.supabase.auth as any;
+    mockAuth.getSession.mockResolvedValue({ data: { session: null }, error: null });
+    mockAuth.onAuthStateChange.mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } });
+    mockAuth.signInWithOAuth.mockResolvedValue({ data: {}, error: null });
+
+    render(
+      <AuthProvider>
+        <TestComponentWithGoogle />
+      </AuthProvider>
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Sign in with Google' }));
+
+    expect(mockAuth.signInWithOAuth).toHaveBeenCalledWith({
+      provider: 'google',
+      options: { redirectTo: expect.stringContaining('/worklist') },
+    });
+  });
+
+  it('should expose signInWithGoogle on context', () => {
+    const mockAuth = supabaseModule.supabase.auth as any;
+    mockAuth.getSession.mockResolvedValue({ data: { session: null }, error: null });
+    mockAuth.onAuthStateChange.mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } });
+
+    render(
+      <AuthProvider>
+        <TestComponentWithGoogle />
+      </AuthProvider>
+    );
+
+    expect(screen.getByRole('button', { name: 'Sign in with Google' })).toBeInTheDocument();
+  });
 });
+
+function TestComponentWithGoogle() {
+  const { signInWithGoogle } = useAuth();
+  return (
+    <button onClick={() => signInWithGoogle()}>Sign in with Google</button>
+  );
+}

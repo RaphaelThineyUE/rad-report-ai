@@ -7,6 +7,7 @@ interface AuthContextType {
   session: Session | null;
   isLoading: boolean;
   logout: () => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,7 +22,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
-
         if (data.session) {
           setSession(data.session);
           setUser(data.session.user);
@@ -39,24 +39,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       setIsLoading(false);
-
       if (event === 'SIGNED_OUT') {
         setUser(null);
         setSession(null);
       }
     });
 
-    return () => {
-      data.subscription.unsubscribe();
-    };
+    return () => { data.subscription.unsubscribe(); };
   }, []);
 
   const logout = async () => {
     await supabase.auth.signOut();
   };
 
+  const signInWithGoogle = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin + '/worklist' },
+    });
+  };
+
   return (
-    <AuthContext.Provider value={{ user, session, isLoading, logout }}>
+    <AuthContext.Provider value={{ user, session, isLoading, logout, signInWithGoogle }}>
       {children}
     </AuthContext.Provider>
   );
