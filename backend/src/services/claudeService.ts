@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { logger } from '../utils/logger';
+import { deidentifyText, validateDeidentification } from './deidentificationService';
 
 // Import types locally since shared package uses relative paths
 interface Finding {
@@ -29,6 +30,17 @@ export async function analyzeReport(reportText: string): Promise<AnalysisResult>
   const startTime = Date.now();
 
   try {
+    // De-identify text before sending to Claude API
+    const deidentifiedText = deidentifyText(reportText);
+
+    // Validate de-identification to ensure no PHI remains
+    const validation = validateDeidentification(deidentifiedText);
+    if (!validation.isValid) {
+      logger.warn('De-identified text contains potential PHI - proceeding with caution', {
+        remainingPatterns: validation.patternsFound,
+      });
+    }
+
     const systemPrompt = `You are an expert radiologist analyzing mammography reports. Extract the following information from the report text:
 
 1. Summary (1-2 sentences of the key finding)
@@ -42,9 +54,11 @@ export async function analyzeReport(reportText: string): Promise<AnalysisResult>
 9. Clinical recommendations
 10. Any red flags or urgent findings
 
-Return a valid JSON object with these fields. Provide evidence for key assertions.`;
+Return a valid JSON object with these fields. Provide evidence for key assertions.
 
-    const userPrompt = `Please analyze this radiology report:\n\n${reportText}`;
+IMPORTANT: The report text has been de-identified for privacy. Patient names, dates of birth, medical record numbers, and other identifying information have been replaced with placeholders. Focus your analysis on clinical findings and medical data only.`;
+
+    const userPrompt = `Please analyze this radiology report:\n\n${deidentifiedText}`;
 
     const response = await client.messages.create({
       model: MODEL,
@@ -97,15 +111,18 @@ Return a valid JSON object with these fields. Provide evidence for key assertion
  */
 export async function generateSummary(reportText: string): Promise<string> {
   try {
+    // De-identify text before sending to Claude API
+    const deidentifiedText = deidentifyText(reportText);
+
     const response = await client.messages.create({
       model: MODEL,
       max_tokens: 300,
       system:
-        'You are a clinical summarizer. Create a concise, one-paragraph summary of the key findings.',
+        'You are a clinical summarizer. Create a concise, one-paragraph summary of the key findings. Note: The report has been de-identified for privacy protection.',
       messages: [
         {
           role: 'user',
-          content: `Summarize this radiology report:\n\n${reportText}`,
+          content: `Summarize this radiology report:\n\n${deidentifiedText}`,
         },
       ],
     });
@@ -128,7 +145,13 @@ export async function consolidateReports(
   reports: Array<{ text: string; date: string }>
 ): Promise<ConsolidationResult> {
   try {
-    const reportsText = reports
+    // De-identify all reports before consolidation
+    const deidentifiedReports = reports.map((r) => ({
+      ...r,
+      text: deidentifyText(r.text),
+    }));
+
+    const reportsText = deidentifiedReports
       .map((r) => `Date: ${r.date}\n${r.text}`)
       .join('\n\n---\n\n');
 
@@ -141,7 +164,9 @@ export async function consolidateReports(
 3. Overall BI-RADS assessment
 4. Clinical implications
 
-Return valid JSON with fields: overall_summary, key_trends, overall_birads, clinical_implications`,
+Return valid JSON with fields: overall_summary, key_trends, overall_birads, clinical_implications
+
+IMPORTANT: The reports have been de-identified for privacy protection. Patient identifiers and dates have been replaced with placeholders.`,
       messages: [
         {
           role: 'user',
@@ -182,6 +207,9 @@ export async function compareTreatments(
   treatments: Array<{ type: string; outcome?: string }>
 ): Promise<ComparisonResult> {
   try {
+    // De-identify report text before sending to Claude API
+    const deidentifiedText = deidentifyText(reportText);
+
     const treatmentsText = treatments
       .map(
         (t) =>
@@ -196,11 +224,13 @@ export async function compareTreatments(
 Return valid JSON with:
 - treatment_responses (array with treatment_type and assessment)
 - recommendations (array of clinical recommendations)
-- evidence_summary (string summarizing supporting evidence)`,
+- evidence_summary (string summarizing supporting evidence)
+
+IMPORTANT: The report has been de-identified for privacy protection.`,
       messages: [
         {
           role: 'user',
-          content: `Report findings:\n${reportText}\n\nTreatments:\n${treatmentsText}`,
+          content: `Report findings:\n${deidentifiedText}\n\nTreatments:\n${treatmentsText}`,
         },
       ],
     });
@@ -298,33 +328,6 @@ export async function detectBiradsTrend(
   }
 }
 
-/**
- * Clean up personal identifiers from text
- */
-export async function cleanupIdentifiers(text: string): Promise<string> {
-  try {
-    const response = await client.messages.create({
-      model: MODEL,
-      max_tokens: 2000,
-      system: `Remove all personal health information (names, medical record numbers, dates of birth, etc.)
-from this text. Replace with [REDACTED]. Preserve the clinical content.`,
-      messages: [
-        {
-          role: 'user',
-          content: text,
-        },
-      ],
-    });
-
-    const cleaned =
-      response.content[0].type === 'text' ? response.content[0].text : '';
-    logger.info('Successfully cleaned identifiers');
-    return cleaned;
-  } catch (error) {
-    logger.warn('Failed to cleanup identifiers, returning original text');
-    return text;
-  }
-}
 
 /**
  * Match source quotes from the original text

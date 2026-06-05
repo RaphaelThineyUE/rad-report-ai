@@ -10,6 +10,7 @@ import {
   cleanupIdentifiers,
   detectBiradsTrend,
 } from '../services/claudeService';
+import { logUpload, logView, logDelete, logProcessing } from '../services/auditService';
 
 const STORAGE_BUCKET = process.env.STORAGE_BUCKET ?? 'reports';
 
@@ -117,6 +118,16 @@ export async function uploadReport(req: AuthRequest, res: Response): Promise<voi
     res.status(500).json({ error: 'Failed to upload report file' });
     return;
   }
+
+  // Log the file upload action
+  await logUpload(
+    req.userId,
+    filename,
+    patientId,
+    req.file.size,
+    req.ip,
+    req.get('user-agent')
+  );
 
   res.json({
     file_url: path,
@@ -240,6 +251,15 @@ export async function getReport(req: AuthRequest, res: Response): Promise<void> 
     return;
   }
 
+  // Log the report view action
+  await logView(
+    req.userId,
+    id,
+    data.patient_id,
+    req.ip,
+    req.get('user-agent')
+  );
+
   res.json(data);
 }
 
@@ -308,6 +328,16 @@ export async function deleteReport(req: AuthRequest, res: Response): Promise<voi
     res.status(500).json({ error: 'Failed to delete report' });
     return;
   }
+
+  // Log the report deletion action
+  await logDelete(
+    req.userId,
+    id,
+    report.patient_id,
+    'User requested deletion',
+    req.ip,
+    req.get('user-agent')
+  );
 
   res.status(204).send();
 }
@@ -436,6 +466,20 @@ export async function processReport(req: AuthRequest, res: Response): Promise<vo
 
     logger.info('Successfully processed report', { userId: req.userId, reportId: id, processingTime });
 
+    // Log the report processing action
+    await logProcessing(
+      req.userId,
+      id,
+      report.patient_id,
+      'completed',
+      {
+        processing_time_ms: processingTime,
+        birads_value: updatedReport.birads_value,
+      },
+      req.ip,
+      req.get('user-agent')
+    );
+
     res.json({
       report: updatedReport,
       processing_time_ms: processingTime,
@@ -444,6 +488,20 @@ export async function processReport(req: AuthRequest, res: Response): Promise<vo
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     logger.error('processReport error', { userId: req.userId, reportId: id, error: message });
+
+    // Log the report processing failure
+    await logProcessing(
+      req.userId,
+      id,
+      '',
+      'failed',
+      {
+        error: message,
+        processing_time_ms: Date.now() - startTime,
+      },
+      req.ip,
+      req.get('user-agent')
+    );
 
     // Try to update status to failed
     try {

@@ -3,6 +3,7 @@ import { validationResult } from 'express-validator';
 import { AuthRequest } from '../middleware/auth';
 import { createUserClient } from '../services/supabaseClient';
 import { logger } from '../utils/logger';
+import { logPatientChange } from '../services/auditService';
 
 interface PatientBody {
   full_name: string;
@@ -91,6 +92,16 @@ export async function createPatient(req: AuthRequest, res: Response): Promise<vo
     return;
   }
 
+  // Log the patient creation action
+  await logPatientChange(
+    req.userId,
+    data.id,
+    'CREATE',
+    undefined,
+    req.ip,
+    req.get('user-agent')
+  );
+
   res.status(201).json(data);
 }
 
@@ -151,6 +162,21 @@ export async function updatePatient(req: AuthRequest, res: Response): Promise<vo
     return;
   }
 
+  // Log the patient update action
+  await logPatientChange(
+    req.userId,
+    id,
+    'UPDATE',
+    Object.fromEntries(
+      Object.entries(updates).map(([key, val]) => [
+        key,
+        { new: val },
+      ])
+    ),
+    req.ip,
+    req.get('user-agent')
+  );
+
   res.json(data);
 }
 
@@ -167,6 +193,16 @@ export async function deletePatient(req: AuthRequest, res: Response): Promise<vo
     res.status(500).json({ error: 'Failed to delete patient' });
     return;
   }
+
+  // Log the patient deletion action
+  await logPatientChange(
+    req.userId,
+    id,
+    'DELETE',
+    undefined,
+    req.ip,
+    req.get('user-agent')
+  );
 
   res.status(204).send();
 }

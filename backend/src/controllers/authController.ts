@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { supabaseAdmin } from '../services/supabaseClient';
 import { AuthRequest } from '../middleware/auth';
+import { logPasswordChange, logAccountDeletion, logEmailChange } from '../services/auditService';
 
 export async function register(req: Request, res: Response): Promise<void> {
   const errors = validationResult(req);
@@ -82,6 +83,24 @@ export async function updateMe(req: Request, res: Response): Promise<void> {
     return;
   }
 
+  // Log password change if password was updated
+  if (password) {
+    await logPasswordChange(
+      userId,
+      req.ip,
+      req.get('user-agent')
+    );
+  }
+
+  // Log email change if email was updated
+  if (email) {
+    await logEmailChange(
+      userId,
+      req.ip,
+      req.get('user-agent')
+    );
+  }
+
   res.json({
     id: data.user.id,
     email: data.user.email,
@@ -156,6 +175,13 @@ export async function deleteAccount(req: Request, res: Response): Promise<void> 
     res.status(400).json({ error: error.message });
     return;
   }
+
+  // Log the account deletion action
+  await logAccountDeletion(
+    userId,
+    req.ip,
+    req.get('user-agent')
+  );
 
   res.json({ message: 'Account deleted successfully' });
 }
