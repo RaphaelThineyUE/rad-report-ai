@@ -8,6 +8,7 @@ interface AuthContextType {
   isLoading: boolean;
   logout: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
+  signUp: (email: string, password: string, fullName: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -60,8 +61,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   };
 
+  const signUp = async (email: string, password: string, fullName: string): Promise<void> => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: fullName } },
+    });
+    if (error) throw error;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, session, isLoading, logout, signInWithGoogle }}>
+    <AuthContext.Provider value={{ user, session, isLoading, logout, signInWithGoogle, signUp }}>
       {children}
     </AuthContext.Provider>
   );

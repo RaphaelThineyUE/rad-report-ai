@@ -12,6 +12,7 @@ vi.mock('@/lib/supabase', () => ({
       signOut: vi.fn(),
       onAuthStateChange: vi.fn(),
       signInWithOAuth: vi.fn(),
+      signUp: vi.fn(),
     },
   },
 }));
@@ -140,6 +141,78 @@ describe('AuthContext', () => {
     );
 
     await waitFor(() => expect(typeof capturedFn).toBe('function'));
+  });
+
+  describe('signUp', () => {
+    function setupMocks() {
+      const mockAuth = supabaseModule.supabase.auth as any;
+      mockAuth.getSession.mockResolvedValue({ data: { session: null }, error: null });
+      mockAuth.onAuthStateChange.mockReturnValue({
+        data: { subscription: { unsubscribe: vi.fn() } },
+      });
+      return mockAuth;
+    }
+
+    function TestSignUpButton() {
+      const { signUp } = useAuth();
+      return (
+        <button onClick={() => signUp('a@b.com', 'pass12345', 'Alice')}>
+          Sign Up
+        </button>
+      );
+    }
+
+    it('exposes signUp as a function on context', async () => {
+      const mockAuth = setupMocks();
+      mockAuth.signUp.mockResolvedValue({ data: {}, error: null });
+
+      let capturedFn: unknown;
+      function Capture() {
+        const ctx = useAuth();
+        capturedFn = ctx.signUp;
+        return null;
+      }
+      render(<AuthProvider><Capture /></AuthProvider>);
+      await waitFor(() => expect(typeof capturedFn).toBe('function'));
+    });
+
+    it('calls supabase.auth.signUp with email, password, and full_name metadata', async () => {
+      const mockAuth = setupMocks();
+      mockAuth.signUp.mockResolvedValue({ data: {}, error: null });
+
+      render(<AuthProvider><TestSignUpButton /></AuthProvider>);
+      await userEvent.click(screen.getByRole('button', { name: 'Sign Up' }));
+
+      expect(mockAuth.signUp).toHaveBeenCalledWith({
+        email: 'a@b.com',
+        password: 'pass12345',
+        options: { data: { full_name: 'Alice' } },
+      });
+    });
+
+    it('throws when supabase.auth.signUp returns an error', async () => {
+      const mockAuth = setupMocks();
+      mockAuth.signUp.mockResolvedValue({
+        data: {},
+        error: { message: 'User already registered' },
+      });
+
+      let caughtError: unknown;
+      function TestSignUpCatch() {
+        const { signUp } = useAuth();
+        return (
+          <button onClick={async () => {
+            try { await signUp('a@b.com', 'pass12345', 'Alice'); }
+            catch (e) { caughtError = e; }
+          }}>
+            Sign Up
+          </button>
+        );
+      }
+      render(<AuthProvider><TestSignUpCatch /></AuthProvider>);
+      await userEvent.click(screen.getByRole('button', { name: 'Sign Up' }));
+      await waitFor(() => expect(caughtError).toBeTruthy());
+    });
   });
 });
 
