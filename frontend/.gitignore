@@ -23,3 +23,6 @@ dist-ssr
 *.sw?
 
 docs
+
+playwright-report/
+test-results/
