@@ -93,7 +93,7 @@ export default function Login() {
           </p>
 
           {error && (
-            <div style={{
+            <div role="alert" style={{
               background: 'var(--error-100)', border: '1px solid var(--error-200)',
               borderRadius: 'var(--r-sm)', padding: 12, marginBottom: 16,
               color: 'var(--error-700)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8,
