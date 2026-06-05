@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/react';
-import { initSentry } from './sentry';
+import { initSentry } from '../utils/sentry';
 
 vi.mock('@sentry/react', () => ({
   browserTracingIntegration: vi.fn(() => 'browser-tracing'),
