@@ -41,11 +41,6 @@ const gridTwoColStyle: React.CSSProperties = {
   gap: 16,
 };
 
-const gridThreeColStyle: React.CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(3, 1fr)',
-  gap: 12,
-};
 
 export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
   const createPatient = useCreatePatient();
@@ -274,7 +269,7 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
             {/* Biomarkers Section */}
             <div style={formSectionStyle}>
               <h3 className="t-h5" style={{ marginBottom: 16, color: 'var(--fg-1)' }}>Biomarkers</h3>
-              <div style={gridThreeColStyle}>
+              <div style={gridTwoColStyle}>
                 <div style={formFieldStyle}>
                   <label htmlFor="ap-er-status" className="t-label" style={labelStyle}>ER Status</label>
                   <select
@@ -305,6 +300,9 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
                     ))}
                   </select>
                 </div>
+              </div>
+
+              <div style={gridTwoColStyle}>
                 <div style={formFieldStyle}>
                   <label htmlFor="ap-her2-status" className="t-label" style={labelStyle}>HER2 Status</label>
                   <select
@@ -320,19 +318,18 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
                     ))}
                   </select>
                 </div>
-              </div>
-
-              <div style={formFieldStyle}>
-                <label htmlFor="ap-menopausal" className="t-label" style={labelStyle}>Menopausal Status</label>
-                <input
-                  id="ap-menopausal"
-                  type="text"
-                  name="menopausal_status"
-                  value={formData.menopausal_status}
-                  onChange={handleChange}
-                  style={inputStyle}
-                  placeholder="Optional"
-                />
+                <div style={formFieldStyle}>
+                  <label htmlFor="ap-menopausal" className="t-label" style={labelStyle}>Menopausal Status</label>
+                  <input
+                    id="ap-menopausal"
+                    type="text"
+                    name="menopausal_status"
+                    value={formData.menopausal_status}
+                    onChange={handleChange}
+                    style={inputStyle}
+                    placeholder="Optional"
+                  />
+                </div>
               </div>
             </div>
 
