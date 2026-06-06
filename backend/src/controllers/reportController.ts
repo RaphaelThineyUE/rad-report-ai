@@ -1,15 +1,15 @@
 import { Response } from 'express';
 import { validationResult } from 'express-validator';
-import { AuthRequest } from '../middleware/auth';
-import { createUserClient, supabaseAdmin } from '../services/supabaseClient';
-import { logger } from '../utils/logger';
-import { extractTextFromPdf, isValidPdf } from '../services/pdfService';
+import { AuthRequest } from '../middleware/auth.js';
+import { createUserClient, supabaseAdmin } from '../services/supabaseClient.js';
+import { logger } from '../utils/logger.js';
+import { extractTextFromPdf, isValidPdf } from '../services/pdfService.js';
 import {
   analyzeReport,
   generateSummary,
   cleanupIdentifiers,
   detectBiradsTrend,
-} from '../services/claudeService';
+} from '../services/claudeService.js';
 
 const STORAGE_BUCKET = process.env.STORAGE_BUCKET ?? 'reports';
 

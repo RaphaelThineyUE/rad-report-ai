@@ -1,12 +1,12 @@
 import { IRouter, Router } from 'express';
-import authRoutes from './auth';
-import patientsRouter from './patients';
-import reportsRouter from './reports';
-import treatmentsRouter from './treatments';
-import aiRoutes from './ai';
-import analyticsRouter from './analytics';
-import adminRouter from './admin';
-import organizationsRouter from './organizations';
+import authRoutes from './auth.js';
+import patientsRouter from './patients.js';
+import reportsRouter from './reports.js';
+import treatmentsRouter from './treatments.js';
+import aiRoutes from './ai.js';
+import analyticsRouter from './analytics.js';
+import adminRouter from './admin.js';
+import organizationsRouter from './organizations.js';
 
 const router: IRouter = Router();
 

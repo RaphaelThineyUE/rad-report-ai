@@ -1,7 +1,7 @@
 import { Response } from 'express';
-import { AuthRequest } from '../middleware/auth';
-import { createUserClient } from '../services/supabaseClient';
-import { logger } from '../utils/logger';
+import { AuthRequest } from '../middleware/auth.js';
+import { createUserClient } from '../services/supabaseClient.js';
+import { logger } from '../utils/logger.js';
 
 interface AnalyticsFilters {
   startDate?: string;

@@ -1,7 +1,7 @@
 import { IRouter, NextFunction, Request, Response, Router } from 'express';
 import multer from 'multer';
 import { body } from 'express-validator';
-import { requireAuth, AuthRequest } from '../middleware/auth';
+import { requireAuth, AuthRequest } from '../middleware/auth.js';
 import {
   createReport,
   deleteReport,
@@ -13,7 +13,7 @@ import {
   batchUploadReports,
   processReport,
   exportReportJson,
-} from '../controllers/reportController';
+} from '../controllers/reportController.js';
 
 const maxFileSizeMb = Number(process.env.MAX_FILE_SIZE_MB ?? 20);
 const upload = multer({

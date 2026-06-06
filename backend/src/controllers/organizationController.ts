@@ -1,7 +1,7 @@
 import { Response } from 'express';
-import { AuthRequest } from '../middleware/auth';
-import { createUserClient, supabaseAdmin } from '../services/supabaseClient';
-import { logger } from '../utils/logger';
+import { AuthRequest } from '../middleware/auth.js';
+import { createUserClient, supabaseAdmin } from '../services/supabaseClient.js';
+import { logger } from '../utils/logger.js';
 
 export async function createOrganization(req: AuthRequest, res: Response): Promise<void> {
   try {

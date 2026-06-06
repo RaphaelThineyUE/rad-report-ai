@@ -1,14 +1,14 @@
 import 'dotenv/config';
-import { validateEnv } from './utils/validateEnv';
-import { initSentry, sentryRequestHandler, sentryErrorHandler } from './utils/sentry';
+import { validateEnv } from './utils/validateEnv.js';
+import { initSentry, sentryRequestHandler, sentryErrorHandler } from './utils/sentry.js';
 
 validateEnv();
 initSentry();
 
 import express, { Express } from 'express';
 import cors from 'cors';
-import routes from './routes';
-import { errorHandler } from './middleware/errorHandler';
+import routes from './routes/index.js';
+import { errorHandler } from './middleware/errorHandler.js';
 
 const app: Express = express();
 const PORT = process.env.PORT ?? 3001;

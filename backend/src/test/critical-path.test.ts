@@ -9,7 +9,7 @@ import {
   generateSummary,
   cleanupIdentifiers,
   matchSourceQuotes,
-} from '../services/claudeService';
+} from '../services/claudeService.js';
 
 // Test utilities
 async function runTest(name: string, fn: () => Promise<void>): Promise<void> {
