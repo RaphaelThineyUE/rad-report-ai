@@ -1,0 +1,26 @@
+MAMMOGRAPHY REPORT
+
+PATIENT NAME: Jane Doe
+PATIENT ID: JD-001
+EXAM DATE: 2024-06-05
+MODALITY: Digital Mammography
+INDICATION: Routine screening
+
+TECHNIQUE:
+Bilateral digital mammographic views of the breast.
+
+FINDINGS:
+Right breast: Dense breast tissue with scattered fibroglandular densities. No masses, asymmetries, or suspicious microcalcifications identified.
+
+Left breast: Mildly dense breast tissue. Small well-circumscribed nodule measuring 8 mm at the 2 o'clock position at approximately 8 cm from the nipple. No associated calcifications.
+
+IMPRESSION:
+BI-RADS 3: Probably benign finding
+
+Bilateral dense breast tissue. Small well-circumscribed nodule in the left breast measuring 8 mm, which appears benign but warrants short-interval follow-up.
+
+RECOMMENDATIONS:
+Short-interval follow-up ultrasound of left breast nodule in 3-6 months.
+
+RADIOLOGIST: Dr. John Smith, MD
+DATE: 2024-06-05

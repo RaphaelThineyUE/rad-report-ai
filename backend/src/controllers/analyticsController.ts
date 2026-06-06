@@ -71,6 +71,7 @@ export async function getAnalytics(req: AuthRequest, res: Response): Promise<voi
   }
 
   // Fetch treatments if needed
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let treatments: any[] = [];
   if (filters.treatmentType && patientIds.length > 0) {
     const { data: treatmentData, error: treatmentError } = await client

@@ -341,7 +341,7 @@ export async function cleanupIdentifiers(text: string): Promise<string> {
 
     // Email addresses
     cleaned = cleaned.replace(
-      /[\w\.-]+@[\w\.-]+\.\w+/g,
+      /[\w.-]+@[\w.-]+\.\w+/g,
       '[REDACTED]@example.com'
     );
 
@@ -381,7 +381,7 @@ Preserve all clinical and diagnostic content. Return the cleaned text.`,
     });
 
     return fullyClean;
-  } catch (error) {
+  } catch {
     logger.warn('Failed to cleanup identifiers with Claude, using regex-only approach');
     // If Claude call fails, return text cleaned by regex patterns only
     return text
@@ -389,7 +389,7 @@ Preserve all clinical and diagnostic content. Return the cleaned text.`,
       .replace(/\b(?:SSN|Social Security)[:\s]+(\d{3}-\d{2}-\d{4})/g, 'SSN: [REDACTED]')
       .replace(/\b(?:DOB|Date of Birth)[:\s]+(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})/gi, 'DOB: [REDACTED]')
       .replace(/\b(?:Phone|Tel)[:\s]*\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})/g, 'Phone: [REDACTED]')
-      .replace(/[\w\.-]+@[\w\.-]+\.\w+/g, '[REDACTED]@example.com')
+      .replace(/[\w.-]+@[\w.-]+\.\w+/g, '[REDACTED]@example.com')
       .replace(/\b(?:Patient ID|PID)[:\s]+([A-Z0-9-]{5,15})/gi, 'Patient ID: [REDACTED]');
   }
 }
@@ -467,23 +467,29 @@ function escapeRegExp(string: string): string {
 // Helper functions
 
 function normalizeFindings(findingsData: unknown[]): Finding[] {
-  return (findingsData || []).map((f: any) => ({
-    laterality: f.laterality || 'unknown',
-    location: f.location || '',
-    description: f.description || '',
-    assessment: f.assessment || '',
-    evidence: Array.isArray(f.evidence) ? f.evidence : [],
-  }));
+  return (findingsData || []).map((f: unknown) => {
+    const finding = f as Record<string, unknown>;
+    return {
+      laterality: (finding.laterality as string) || 'unknown',
+      location: (finding.location as string) || '',
+      description: (finding.description as string) || '',
+      assessment: (finding.assessment as string) || '',
+      evidence: Array.isArray(finding.evidence) ? finding.evidence : [],
+    };
+  });
 }
 
 function normalizeRecommendations(
   recommendationsData: unknown[]
 ): Recommendation[] {
-  return (recommendationsData || []).map((r: any) => ({
-    action: r.action || '',
-    timeframe: r.timeframe || '',
-    evidence: Array.isArray(r.evidence) ? r.evidence : [],
-  }));
+  return (recommendationsData || []).map((r: unknown) => {
+    const recommendation = r as Record<string, unknown>;
+    return {
+      action: (recommendation.action as string) || '',
+      timeframe: (recommendation.timeframe as string) || '',
+      evidence: Array.isArray(recommendation.evidence) ? recommendation.evidence : [],
+    };
+  });
 }
 
 // Type definitions
