@@ -1,4 +1,4 @@
-import { Response, Request } from 'express';
+import { Response } from 'express';
 import { validationResult } from 'express-validator';
 import { AuthRequest } from '../middleware/auth';
 import { createUserClient } from '../services/supabaseClient';

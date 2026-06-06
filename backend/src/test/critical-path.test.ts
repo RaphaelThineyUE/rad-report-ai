@@ -5,16 +5,11 @@
  */
 
 import {
-  extractTextFromPdf,
-  isValidPdf,
-} from '../services/pdfService';
-import {
   analyzeReport,
   generateSummary,
   cleanupIdentifiers,
   matchSourceQuotes,
 } from '../services/claudeService';
-import { logger } from '../utils/logger';
 
 // Test utilities
 async function runTest(name: string, fn: () => Promise<void>): Promise<void> {

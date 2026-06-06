@@ -8,7 +8,7 @@
  * - Concurrent upload support
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 /**
  * Test Suite: File Upload Validation
@@ -206,30 +206,24 @@ describe('Report Upload - Error Responses', () => {
 
   it('should return 422 for missing patient_id', () => {
     const statusCode = 422;
-    const response = { error: 'patient_id is required' };
 
     expect(statusCode).toBe(422);
   });
 
   it('should return 409 for duplicate filename', () => {
     const statusCode = 409;
-    const response = {
-      error: 'A report with this filename already exists for the patient',
-    };
 
     expect(statusCode).toBe(409);
   });
 
   it('should return 500 for storage failures', () => {
     const statusCode = 500;
-    const response = { error: 'Failed to upload report file' };
 
     expect(statusCode).toBe(500);
   });
 
   it('should return 500 for database failures', () => {
     const statusCode = 500;
-    const response = { error: 'Failed to create report' };
 
     expect(statusCode).toBe(500);
   });
@@ -254,8 +248,6 @@ describe('Report Upload - Security', () => {
   });
 
   it('should enforce patient access control', () => {
-    const userId = 'user-1';
-    const patientId = 'patient-123';
     const userCanAccess = true; // Assuming auth middleware validates
 
     expect(userCanAccess).toBe(true);
