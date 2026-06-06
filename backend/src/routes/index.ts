@@ -6,6 +6,7 @@ import treatmentsRouter from './treatments';
 import aiRoutes from './ai';
 import analyticsRouter from './analytics';
 import adminRouter from './admin';
+import organizationsRouter from './organizations';
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use('/treatments', treatmentsRouter);
 router.use('/ai', aiRoutes);
 router.use('/analytics', analyticsRouter);
 router.use('/admin', adminRouter);
+router.use('/organizations', organizationsRouter);
 
 export default router;

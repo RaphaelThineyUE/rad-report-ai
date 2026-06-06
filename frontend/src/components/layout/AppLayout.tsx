@@ -3,7 +3,7 @@ import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { BatchUploadDrawer } from '@/components/drawers/BatchUploadDrawer';
 
-type NavId = 'worklist' | 'patients' | 'analytics' | 'admin-dashboard' | 'admin-users' | 'settings';
+type NavId = 'worklist' | 'patients' | 'analytics' | 'admin-dashboard' | 'admin-users' | 'teams' | 'settings';
 
 interface AppLayoutContextType {
   setCurrentPatientId: (id: string | null) => void;
