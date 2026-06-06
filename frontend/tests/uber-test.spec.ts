@@ -109,14 +109,14 @@ test.describe('UBER TEST - Complete Site Workflow', () => {
 
     // Upload first report (Mammography)
     const fileInput1 = page.locator('input[type="file"]').first();
-    await fileInput1.setInputFiles('./docs/samples/breast_mammo.pdf');
+    await fileInput1.setInputFiles('./docs/samples/breast_mammo.txt');
 
     // Wait for first upload
     await page.waitForTimeout(1000);
 
     // Upload second report (Ultrasound)
     const fileInput2 = page.locator('input[type="file"]').nth(1);
-    await fileInput2.setInputFiles('./docs/samples/breast_ultra.pdf');
+    await fileInput2.setInputFiles('./docs/samples/breast_ultra.txt');
 
     // Submit uploads
     const submitButton = page.locator('button:has-text("Upload"), button:has-text("Process")');
@@ -134,8 +134,8 @@ test.describe('UBER TEST - Complete Site Workflow', () => {
     });
 
     console.log('✓ Reports uploaded successfully');
-    console.log('  - breast_mammo.pdf (Mammography)');
-    console.log('  - breast_ultra.pdf (Ultrasound)');
+    console.log('  - breast_mammo.txt (Mammography)');
+    console.log('  - breast_ultra.txt (Ultrasound)');
   });
 
   test('4. Process reports with AI analysis', async ({ page }) => {

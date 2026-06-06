@@ -1,0 +1,26 @@
+BREAST ULTRASOUND REPORT
+
+PATIENT NAME: Jane Doe
+PATIENT ID: JD-001
+EXAM DATE: 2024-06-05
+MODALITY: Breast Ultrasound
+INDICATION: Evaluation of palpable mass and mammographic nodule
+
+TECHNIQUE:
+Real-time ultrasound of both breasts with comparison of imaging findings.
+
+FINDINGS:
+Right breast: Unremarkable. No masses or cysts identified.
+
+Left breast: Simple cyst measuring 6 mm at the 2 o'clock position, 8 cm from nipple. No internal echoes, characteristic of a simple benign cyst.
+
+IMPRESSION:
+BI-RADS 2: Benign finding
+
+Simple cyst in the left breast measuring 6 mm. No evidence of malignancy.
+
+RECOMMENDATIONS:
+No follow-up imaging needed. Benign finding.
+
+RADIOLOGIST: Dr. Sarah Johnson, MD
+DATE: 2024-06-05
