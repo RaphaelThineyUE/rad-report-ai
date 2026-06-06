@@ -107,16 +107,16 @@ test.describe('UBER TEST - Complete Site Workflow', () => {
     const uploadButton = page.locator('button:has-text("Upload"), button:has-text("Add Report")');
     await uploadButton.click();
 
-    // Upload first report
+    // Upload first report (Mammography)
     const fileInput1 = page.locator('input[type="file"]').first();
-    await fileInput1.setInputFiles('/home/user/rad-report-ai/docs/samples/breast_exam_01.txt');
+    await fileInput1.setInputFiles('./docs/samples/breast_mammo.txt');
 
     // Wait for first upload
     await page.waitForTimeout(1000);
 
-    // Upload second report
+    // Upload second report (Ultrasound)
     const fileInput2 = page.locator('input[type="file"]').nth(1);
-    await fileInput2.setInputFiles('/home/user/rad-report-ai/docs/samples/breast_exam_02.txt');
+    await fileInput2.setInputFiles('./docs/samples/breast_ultra.txt');
 
     // Submit uploads
     const submitButton = page.locator('button:has-text("Upload"), button:has-text("Process")');
@@ -126,14 +126,16 @@ test.describe('UBER TEST - Complete Site Workflow', () => {
     await page.waitForTimeout(3000);
 
     // Verify reports uploaded
-    const report1 = page.locator('text=breast_exam_01');
-    const report2 = page.locator('text=breast_exam_02');
+    const report1 = page.locator('text=breast_mammo');
+    const report2 = page.locator('text=breast_ultra');
 
     await expect(report1).toBeVisible({ timeout: 10000 }).catch(() => {
       console.log('Note: Report file names may not be visible in UI');
     });
 
     console.log('✓ Reports uploaded successfully');
+    console.log('  - breast_mammo.txt (Mammography)');
+    console.log('  - breast_ultra.txt (Ultrasound)');
   });
 
   test('4. Process reports with AI analysis', async ({ page }) => {
