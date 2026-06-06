@@ -1,6 +1,7 @@
 {
   "name": "backend",
   "version": "0.0.0",
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "DOTENV_CONFIG_PATH=.env.local tsx watch src/index.ts",
