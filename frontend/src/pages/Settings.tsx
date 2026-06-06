@@ -1,3 +1,9 @@
+/**
+ * Settings page — account management for the authenticated user.
+ * Sections: profile (name + email via PATCH /api/auth/me), password change, and danger zone (account deletion).
+ * Loads current user from GET /api/auth/me on mount; redirects to /login on fetch failure.
+ * Account deletion calls DELETE /api/auth/me then supabase.auth.signOut().
+ */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@/components/ui';

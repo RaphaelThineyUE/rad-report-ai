@@ -1,3 +1,11 @@
+/**
+ * Modal dialog for creating a new patient record.
+ * Props: onClose (() => void). Submits via useCreatePatient (TanStack Mutation).
+ * Form sections: Basic Information (name, DOB, gender, ethnicity),
+ * Diagnosis (date, cancer type/stage, tumor size, lymph node status),
+ * Biomarkers (ER/PR/HER2 status, menopausal status), Treatment Plan.
+ * Displays server-side validation errors inline.
+ */
 import { useState } from 'react';
 import { useCreatePatient, GENDERS, CANCER_STAGES, BIOMARKER_STATUSES } from '@/hooks/usePatients';
 import { Button, Icon } from '@/components/ui';

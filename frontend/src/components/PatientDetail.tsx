@@ -1,3 +1,12 @@
+/**
+ * Full-screen modal overlay showing detail for a single patient.
+ * Props: patient (Patient), onClose (() => void).
+ * Renders a tab bar (Reports | Treatments | Timeline) and delegates to
+ * ReportsTab, TreatmentsTab, and TimelineTab. Computes age from DOB,
+ * derives initials for Avatar, registers the patient ID in AppLayoutContext
+ * so the Topbar upload button targets the correct patient, and exposes
+ * an Export action via useExportPatient.
+ */
 import { useState, useMemo, useEffect } from 'react';
 import { Avatar, Button, Icon } from '@/components/ui';
 import { ReportsTab } from './patients/ReportsTab';

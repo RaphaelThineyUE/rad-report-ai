@@ -1,3 +1,9 @@
+/**
+ * Teams page — organization and membership management for the current user.
+ * Lists user's organizations from /api/organizations; selecting one loads its members.
+ * Actions: invite member by email+role (POST .../members/invite), update member role (PUT),
+ * and remove member (DELETE). No TanStack Query — all state managed via local useState.
+ */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon, Button } from '@/components/ui';

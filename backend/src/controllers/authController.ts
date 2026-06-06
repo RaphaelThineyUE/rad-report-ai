@@ -1,3 +1,10 @@
+/**
+ * Auth controller — user identity lifecycle via Supabase Auth (service-role client).
+ * Exports: register, login, getMe, updateMe, forgotPassword, resetPassword, deleteAccount.
+ * register/login delegate directly to Supabase; password reset uses the Bearer token
+ * from the magic-link email as the reset credential.
+ * All mutations use supabaseAdmin so they bypass RLS intentionally.
+ */
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { supabaseAdmin } from '../services/supabaseClient.js';

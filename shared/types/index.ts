@@ -1,3 +1,9 @@
+/**
+ * Shared TypeScript types for the rad-report-ai monorepo.
+ * Used by both frontend and backend to ensure consistent data shapes across the API boundary.
+ * Exports: Patient, RadiologyReport, Finding, Recommendation, TreatmentRecord, User, BirasTrend.
+ * BI-RADS value is numeric 0–6; BirasTrend is a deterministic derivation (no AI call).
+ */
 export interface Patient {
   id: string;
   created_by: string;

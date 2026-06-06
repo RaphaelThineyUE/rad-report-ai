@@ -1,3 +1,8 @@
+/**
+ * ForgotPassword page — accepts a work email and POSTs to /api/auth/forgot-password.
+ * On success transitions to a "check your email" confirmation view.
+ * Uses the shared two-panel brand layout; no auth state required (unauthenticated route).
+ */
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@/components/ui';

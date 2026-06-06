@@ -1,3 +1,10 @@
+/**
+ * Tab panel for viewing and managing a patient's treatment records.
+ * Props: patientId (string).
+ * Inline form supports create and edit modes (type, dates, outcome, medication,
+ * side effects, follow-up). Uses useCreateTreatment / useUpdateTreatment /
+ * useDeleteTreatment hooks. Shows TreatmentComparisonCharts when 2+ records exist.
+ */
 import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';

@@ -1,3 +1,11 @@
+/**
+ * Card component for a single radiology report in the ReportsTab list.
+ * Props: report (Report), onOpenDetail?, onOpenPDF?, onDelete?,
+ *   isLoadingPDF?, isDeleting?.
+ * Shows filename, upload date, file size, colour-coded status pill, BI-RADS
+ * badge + summary (when completed), processing spinner or failure message,
+ * a clinical disclaimer, and action buttons (View Details, Open PDF, Delete).
+ */
 import { Button } from '@/components/ui/Button';
 import { BiRads } from '@/components/ui/BiRads';
 import { Icon } from '@/components/ui/Icon';

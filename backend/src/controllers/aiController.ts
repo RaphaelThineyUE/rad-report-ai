@@ -1,3 +1,11 @@
+/**
+ * AI controller — Express handlers that expose Claude-powered analysis to the API.
+ * All text is PII-scrubbed via cleanupIdentifiers before any Anthropic call.
+ * Exports: analyzeReportText, generateReportSummary, consolidatePatientReports,
+ *   comparePatientTreatments, detectPatientBiradsTrend, extractReportQuotes.
+ * Delegates to claudeService; reads report/treatment data from Supabase using
+ * the caller's JWT so RLS enforces data ownership.
+ */
 import { Response } from 'express';
 import { validationResult } from 'express-validator';
 import { AuthRequest } from '../middleware/auth.js';

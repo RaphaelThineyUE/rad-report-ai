@@ -1,3 +1,10 @@
+/**
+ * React context that owns the Supabase authentication state for the entire app.
+ * Initialises the session from Supabase storage on mount and listens for auth state changes.
+ * Exports: AuthProvider (wraps the app), useAuth hook (returns user, session, isLoading,
+ * logout, signInWithGoogle, signUp).
+ * The session.access_token from this context is consumed by lib/api.ts for every API request.
+ */
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';

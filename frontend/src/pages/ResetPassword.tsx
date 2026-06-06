@@ -1,3 +1,9 @@
+/**
+ * ResetPassword page — landed on from the email reset link (Supabase sets session via URL hash).
+ * On mount, verifies an active Supabase session; shows an error state if the link is invalid/expired.
+ * Accepts new password + confirmation, POSTs to /api/auth/reset-password, then auto-redirects to /login.
+ * Uses the shared two-panel brand layout; unauthenticated route.
+ */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@/components/ui';

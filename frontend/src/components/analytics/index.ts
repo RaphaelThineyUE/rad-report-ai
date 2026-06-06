@@ -1,3 +1,4 @@
+/** Barrel export for analytics components: BiRadsTrendSparkline, ComparisonChart, MetricsGrid, ConsolidatedView and their associated types. */
 export { BiRadsTrendSparkline } from './BiRadsTrendSparkline';
 export type { BiRadsDataPoint } from './BiRadsTrendSparkline';
 

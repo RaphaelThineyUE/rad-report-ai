@@ -1,3 +1,13 @@
+/**
+ * Reports routes — mounted at /api/reports. All routes require requireAuth.
+ * POST /upload           — single PDF upload via multer memory storage (uploadReport)
+ * POST /batch-upload     — upload up to 50 PDFs at once (batchUploadReports)
+ * GET  /:id/url          — retrieve a signed Supabase Storage URL (getReportSignedUrl)
+ * GET  /:id/export       — export report as JSON (exportReportJson)
+ * POST /:id/process      — trigger AI processing on a stored report (processReport)
+ * Standard CRUD: POST /, GET /, GET /:id, PATCH /:id, DELETE /:id → reportController.
+ * File size limit is read from MAX_FILE_SIZE_MB env var (default 20 MB).
+ */
 import { IRouter, NextFunction, Request, Response, Router } from 'express';
 import multer from 'multer';
 import { body } from 'express-validator';

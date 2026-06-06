@@ -1,3 +1,10 @@
+/**
+ * Sentry error-monitoring setup for the Express backend.
+ * Exports `initSentry()` — initialises the SDK with profiling, configurable sample
+ * rates, and a beforeSend hook that redacts PHI (dates, names) from all events.
+ * Exports `sentryRequestHandler()` and `sentryErrorHandler()` Express middlewares,
+ * mounted first and last respectively in index.ts. No-ops when SENTRY_DSN is unset.
+ */
 import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import type { Request, Response, NextFunction } from 'express';

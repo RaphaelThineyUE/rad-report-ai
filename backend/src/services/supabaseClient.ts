@@ -1,3 +1,10 @@
+/**
+ * Supabase client factory for the backend.
+ * Exports `supabaseAdmin` (service-role client) for storage uploads and RLS-bypassing
+ * admin operations, and `createUserClient(accessToken)` which attaches the caller's
+ * JWT so that Supabase RLS policies are enforced per-user on all DB queries.
+ * Never expose supabaseAdmin or the service-role key to the frontend.
+ */
 import { createClient } from '@supabase/supabase-js';
 
 const url = process.env.SUPABASE_URL!;

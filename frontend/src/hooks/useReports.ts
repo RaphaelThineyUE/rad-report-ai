@@ -1,3 +1,10 @@
+/**
+ * TanStack Query hooks for radiology report operations against the backend API.
+ * Handles report listing, creation, deletion, signed-URL retrieval, and multi-file batch upload.
+ * All server state for reports flows through these hooks; components never call api.ts directly.
+ * Exports: useReports, useCreateReport, useDeleteReport, useReportSignedUrl, useBatchUpload.
+ * Also exports Report, CreateReportInput, UploadReportResponse, BatchUploadInput, ReportStatus types.
+ */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 

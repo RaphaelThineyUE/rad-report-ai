@@ -1,3 +1,10 @@
+/**
+ * Styled button primitive with variant and size support.
+ * Props: variant? ('primary'|'secondary'|'ghost'), size? ('sm'|'md'),
+ *   icon? (Icon name string rendered before children), children?, onClick?,
+ *   style?, disabled?, type? ('button'|'submit'|'reset').
+ * Composes CSS classes: btn, btn-{variant}, btn-sm. Icon size is 15 for sm, 16 otherwise.
+ */
 import type { MouseEvent } from 'react';
 import { Icon } from './Icon';
 

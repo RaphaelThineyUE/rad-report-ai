@@ -1,3 +1,10 @@
+/**
+ * TanStack Query hooks for patient CRUD operations against the backend API.
+ * All server state for patients flows through these hooks; components never call api.ts directly.
+ * Exports: usePatients, usePatient, useCreatePatient, useUpdatePatient, useDeletePatient.
+ * Also exports the Patient and PatientInput types and enum constant arrays
+ * (GENDERS, CANCER_STAGES, BIOMARKER_STATUSES) used by form components.
+ */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 

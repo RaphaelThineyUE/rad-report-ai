@@ -1,3 +1,10 @@
+/**
+ * Preconfigured Axios instance for all backend API calls.
+ * Request interceptor reads the active Supabase session and attaches the JWT as
+ * "Authorization: Bearer <token>" on every request.
+ * Response interceptor auto-signs-out the user and redirects to /login on any 401.
+ * Export: api (AxiosInstance) — the sole HTTP client used by all TanStack Query hooks.
+ */
 import axios from 'axios';
 import { supabase } from './supabase';
 

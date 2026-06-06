@@ -1,3 +1,10 @@
+/**
+ * Modal for comparing all completed reports for a single patient side by side.
+ * Props: patientId, patientName, reports (Report[]), onClose.
+ * Provides a date-range filter, a MetricsGrid summary, a BI-RADS line chart
+ * (ComparisonChart), and a scrollable list of individual report cards.
+ * Filters to completed reports only; all charts update reactively with date range.
+ */
 import { useMemo, useState } from 'react';
 import { Avatar, Button, Icon, BiRads } from '@/components/ui';
 import { ComparisonChart, type ComparisonDataPoint } from './ComparisonChart';
@@ -11,15 +18,6 @@ interface ConsolidatedViewProps {
   onClose: () => void;
 }
 
-/**
- * Modal component for consolidated multi-report comparison per patient.
- * Displays:
- * - Key metrics from all reports
- * - BI-RADS value trends
- * - Comparison charts for findings
- * - Date range filtering
- * - Longitudinal analysis across studies
- */
 export function ConsolidatedView({ patientId, patientName, reports, onClose }: ConsolidatedViewProps) {
   const [dateRange, setDateRange] = useState<{ start: string; end: string }>({
     start: '',

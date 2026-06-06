@@ -1,3 +1,9 @@
+/**
+ * Global Express error-handling middleware, registered last in index.ts.
+ * Exports `errorHandler` — handles Multer file-size/upload errors with specific
+ * HTTP status codes (413/422) and falls back to 500 for all other unhandled errors.
+ * Logs errors via the structured logger; never leaks stack traces to the client.
+ */
 import { Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import { logger } from '../utils/logger.js';

@@ -1,3 +1,10 @@
+/**
+ * Slide-over panel (fixed right) showing full details of one report.
+ * Props: report (Report|null), isOpen, onClose, onOpenPDF?, isLoadingPDF?, patientId?.
+ * Sections: BI-RADS trend (2+ reports), file info, processing status, AI analysis
+ * (BI-RADS assessment, summary, breast density, exam details, red flags), clinical
+ * disclaimer. Footer: Export, Open PDF, Close. Animates in via slideInRight.
+ */
 import { Button } from '@/components/ui/Button';
 import { BiRads } from '@/components/ui/BiRads';
 import { BiRadsTrendSparkline } from '@/components/analytics';

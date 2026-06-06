@@ -1,3 +1,10 @@
+/**
+ * Login page — two-panel layout (brand left, form right).
+ * Supports email/password sign-in via Supabase and Google OAuth via AuthContext.signInWithGoogle.
+ * On success navigates to /worklist; on failure shows an inline error alert.
+ * Links to /signup and /forgot-password.
+ * No TanStack Query — auth is handled directly via supabase.auth and AuthContext.
+ */
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Icon, GoogleIcon } from '@/components/ui';

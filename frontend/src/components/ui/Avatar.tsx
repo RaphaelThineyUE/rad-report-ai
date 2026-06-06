@@ -1,3 +1,9 @@
+/**
+ * Circular avatar displaying up to two initials.
+ * Props: initials (string), size? (number, default 38).
+ * Styled via the global .avatar CSS class; font size scales at 36% of the
+ * container size. Renders a plain div — no image fallback.
+ */
 interface AvatarProps {
   initials: string;
   size?: number;

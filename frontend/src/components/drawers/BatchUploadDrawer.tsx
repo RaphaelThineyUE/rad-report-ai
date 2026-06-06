@@ -1,3 +1,11 @@
+/**
+ * Right-side drawer for uploading multiple radiology PDFs to a single patient.
+ * Props: patientId (string), onClose, onComplete.
+ * Manages per-file upload state (idle → uploading → done/error) and an overall
+ * pipeline stage (idle → uploading → extracting → done). Uploads files in
+ * parallel, then triggers AI extraction via POST /api/reports/:id/process.
+ * Supports retry of failed uploads and shows a step-progress indicator.
+ */
 import { useMemo, useState } from 'react';
 import axios from 'axios';
 import { Button, Icon, FileDropzone } from '@/components/ui';

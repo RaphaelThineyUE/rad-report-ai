@@ -1,3 +1,9 @@
+/**
+ * AdminUsers page — user management list; accessible to org-admin role only.
+ * Fetches all users from GET /admin/users on mount and on manual refresh.
+ * Left panel: scrollable list of users. Right panel: selected user details
+ * (email, creation date, patient/report counts) with a Remove User action button.
+ */
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 

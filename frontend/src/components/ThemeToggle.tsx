@@ -1,3 +1,9 @@
+/**
+ * Icon button that toggles between light and dark theme.
+ * Reads isDark + setTheme from ThemeContext. Renders a sun icon in dark mode
+ * and a moon icon in light mode. Hover state uses CSS variable --bg-muted.
+ * No props; self-contained via context.
+ */
 import { useTheme } from '@/contexts/ThemeContext';
 import { Icon } from '@/components/ui';
 

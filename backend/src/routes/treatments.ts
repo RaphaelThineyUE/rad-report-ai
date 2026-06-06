@@ -1,3 +1,13 @@
+/**
+ * Treatments routes — mounted at /api/treatments. All routes require requireAuth.
+ * GET    /     — list treatments (listTreatments)
+ * POST   /     — create treatment with type/outcome/date validation (createTreatment)
+ * GET    /:id  — fetch single treatment (getTreatment)
+ * PATCH  /:id  — partial update with validation (updateTreatment)
+ * DELETE /:id  — delete treatment (deleteTreatment)
+ * Validates treatment_type against Surgery|Chemotherapy|Radiation|Hormone Therapy|
+ * Targeted Therapy|Immunotherapy|Other; outcome against 7 fixed outcome values.
+ */
 import { IRouter, NextFunction, Request, Response, Router } from 'express';
 import { body } from 'express-validator';
 import { AuthRequest, requireAuth } from '../middleware/auth.js';

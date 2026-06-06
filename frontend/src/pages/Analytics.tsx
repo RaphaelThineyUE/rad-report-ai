@@ -1,3 +1,9 @@
+/**
+ * Analytics page — report-level analytics with date, cancer-stage, and treatment-type filters.
+ * Fetches from /analytics with URLSearchParams; re-fetches when any filter changes.
+ * Displays five MetricCards, a monthly bar chart (last 12 months), BI-RADS distribution bars,
+ * and a cancer-stage list. CSV export via useExportAnalytics hook.
+ */
 import { useEffect, useState } from 'react';
 import { MetricCard } from '@/components/ui';
 import { api } from '@/lib/api';

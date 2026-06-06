@@ -1,3 +1,10 @@
+/**
+ * PatientAnalytics page — population-level analytics across demographics, diagnostics, and treatments.
+ * Fetches patients, reports, and treatments via parallel API calls; computes distributions client-side.
+ * Filterable by cancer stage (Stage 0–IV); all charts re-fetch when the filter changes.
+ * Sections: gender/cancer-type/stage/ethnicity (demographics), BI-RADS/exam-type/breast-density
+ * (diagnostics), treatment type/outcome/duration (treatments). No TanStack Query hooks used.
+ */
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import type { Patient } from '@/hooks/usePatients';

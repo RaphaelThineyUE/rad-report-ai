@@ -1,3 +1,11 @@
+/**
+ * Patient controller — CRUD and data-export for oncology patient records.
+ * Exports: listPatients, createPatient, getPatient, updatePatient,
+ *   deletePatient, exportPatientBundle.
+ * All queries use the caller's JWT client; RLS enforces created_by ownership.
+ * exportPatientBundle returns patient demographics, linked radiology reports,
+ * and treatment records as a downloadable JSON attachment (no PHI in logs).
+ */
 import { Response } from 'express';
 import { validationResult } from 'express-validator';
 import { AuthRequest } from '../middleware/auth.js';

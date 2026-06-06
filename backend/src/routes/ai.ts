@@ -1,3 +1,13 @@
+/**
+ * AI routes — mounted at /api/ai. All routes require requireAuth.
+ * POST /analyze           — analyze raw report text via Claude (analyzeReportText)
+ * POST /summarize         — generate a plain-language summary (generateReportSummary)
+ * POST /consolidate       — consolidate all reports for a patient (consolidatePatientReports)
+ * POST /compare-treatments — compare treatments against a report (comparePatientTreatments)
+ * POST /birads-trend      — deterministic BI-RADS trend detection (detectPatientBiradsTrend)
+ * POST /quotes            — extract source evidence quotes from a report (extractReportQuotes)
+ * All handlers live in aiController and call claudeService (backend-only; no direct Anthropic calls from frontend).
+ */
 import { IRouter, NextFunction, Request, Response, Router } from 'express';
 import { body } from 'express-validator';
 import { requireAuth, AuthRequest } from '../middleware/auth.js';

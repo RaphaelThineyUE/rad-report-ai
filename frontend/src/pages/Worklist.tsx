@@ -1,3 +1,9 @@
+/**
+ * Worklist page — tabular view of all radiology study rows with BI-RADS scores and statuses.
+ * Data comes from SAMPLE_PATIENTS static fixture (types/clinical); filtered by the `search` prop.
+ * Clicking a row opens ReportDrawer (slide-over) for the selected PatientRow.
+ * Exposes Filter and Export buttons (stubs). Accepts a `search` prop from the parent layout.
+ */
 import { useState } from 'react';
 import { Avatar, Badge, BiRads, Button, Icon } from '@/components/ui';
 import { ReportDrawer } from '@/components/drawers/ReportDrawer';

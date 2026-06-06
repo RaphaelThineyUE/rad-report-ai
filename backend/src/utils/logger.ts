@@ -1,3 +1,9 @@
+/**
+ * Structured JSON logger with PHI redaction, used throughout the backend.
+ * Exports `logger` with `info`, `warn`, and `error` methods. Each call serialises
+ * metadata to JSON, redacts dates (YYYY-MM-DD) and name-like patterns before logging,
+ * and forwards to Sentry (captureMessage for info/warn, captureException for error).
+ */
 import * as Sentry from '@sentry/node';
 
 const PHI_PATTERN = /\b\d{4}-\d{2}-\d{2}\b|\b[A-Z][a-z]+ [A-Z][a-z]+\b/g;

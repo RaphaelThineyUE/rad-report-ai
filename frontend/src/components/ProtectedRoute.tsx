@@ -1,3 +1,10 @@
+/**
+ * Route guard that wraps any children requiring authentication.
+ * Reads user + isLoading from AuthContext; renders a centered loading state
+ * while the session resolves, redirects to /login if unauthenticated,
+ * or renders children when a valid session exists.
+ * Props: children (ReactNode).
+ */
 import type { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';

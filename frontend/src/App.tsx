@@ -1,3 +1,10 @@
+/**
+ * Root application component. Wraps the entire app in QueryClient, ThemeProvider,
+ * AuthProvider, and BrowserRouter. Defines top-level routes: public auth pages
+ * (/login, /signup, /forgot-password, /reset-password) and a catch-all
+ * ProtectedRoute that renders AppShell. AppShell owns the AppLayout and
+ * lazy-loads all page-level route components via React.lazy + Suspense.
+ */
 import { useState, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';

@@ -1,3 +1,15 @@
+/**
+ * Organizations routes — mounted at /api/organizations. All routes require requireAuth.
+ * POST   /                          — create organization (createOrganization)
+ * GET    /                          — list organizations for current user (listOrganizations)
+ * GET    /:orgId                    — fetch single organization (getOrganization)
+ * PATCH  /:orgId                    — update organization (updateOrganization)
+ * DELETE /:orgId                    — delete organization (deleteOrganization)
+ * GET    /:orgId/members            — list members (listMembers)
+ * POST   /:orgId/members/invite     — invite a new member (inviteMember)
+ * PATCH  /:orgId/members/:memberId  — update member role (updateMemberRole)
+ * DELETE /:orgId/members/:memberId  — remove member (removeMember)
+ */
 import { IRouter, NextFunction, Request, Response, Router } from 'express';
 import { AuthRequest, requireAuth } from '../middleware/auth.js';
 import {

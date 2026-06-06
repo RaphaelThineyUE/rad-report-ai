@@ -1,3 +1,10 @@
+/**
+ * Dashboard page — overview of clinical practice metrics and upcoming follow-ups.
+ * Fetches summary stats from /api/analytics and all patients from /api/patients,
+ * then fans out per-patient treatment requests to compute follow-ups due within ±30 days.
+ * Displays five MetricCards, a patient selector with quick stats, and a follow-up reminder list.
+ * Data is fetched imperatively (not via TanStack Query) on mount via Promise.all.
+ */
 import { useEffect, useState } from 'react';
 import { MetricCard } from '@/components/ui';
 import { api } from '@/lib/api';

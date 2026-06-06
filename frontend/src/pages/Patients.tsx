@@ -1,3 +1,10 @@
+/**
+ * Patients page — card grid of all patients with client-side name/ID search filtering.
+ * Data comes from the usePatients TanStack Query hook.
+ * Clicking a card opens PatientDetail (slide-over). "Add Patient" opens AddPatientDialog.
+ * Shows OnboardingModal on first visit when the patient list is empty; dismissed via ref flag.
+ * Accepts a `search` prop from the parent layout's global search input.
+ */
 import { useState, useEffect, useRef } from 'react';
 import { Avatar } from '@/components/ui';
 import { usePatients, type Patient } from '@/hooks/usePatients';

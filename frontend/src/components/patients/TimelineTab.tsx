@@ -1,3 +1,10 @@
+/**
+ * Tab panel rendering a chronological timeline of reports and treatments.
+ * Props: patientId (string).
+ * Merges events from useReports + useTreatments, sorts by date descending,
+ * and displays each event as a card on a vertical connector line.
+ * Report events show BI-RADS value; treatment events show outcome/medication.
+ */
 import { useMemo } from 'react';
 import { Icon } from '@/components/ui/Icon';
 import { useReports } from '@/hooks/useReports';

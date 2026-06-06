@@ -1,3 +1,9 @@
+/**
+ * Express application entry point for the rad-report-ai backend.
+ * Bootstraps the server: validates env, initialises Sentry, mounts CORS/JSON middleware,
+ * registers all API routes under /api, attaches the global error handler, and starts
+ * listening on PORT (default 3001). Exports `app` for testing.
+ */
 import 'dotenv/config';
 import { validateEnv } from './utils/validateEnv.js';
 import { initSentry, sentryRequestHandler, sentryErrorHandler } from './utils/sentry.js';

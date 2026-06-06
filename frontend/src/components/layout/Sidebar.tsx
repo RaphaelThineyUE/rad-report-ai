@@ -1,3 +1,10 @@
+/**
+ * Fixed left navigation sidebar. Props: active (NavId), onNav, collapsed (boolean).
+ * Renders the logo (full lockup or logomark when collapsed), main NAV_ITEMS,
+ * a separate Admin section, a Settings link, and a user avatar with a pop-up
+ * menu that includes Settings navigation and Logout. Logout calls AuthContext
+ * and redirects to /login.
+ */
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, Icon } from '@/components/ui';

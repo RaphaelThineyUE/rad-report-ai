@@ -1,3 +1,9 @@
+/**
+ * AdminDashboard page — system-wide health metrics; accessible to org-admin role only.
+ * Fetches SystemHealth from GET /admin/health on mount and on manual refresh.
+ * Displays MetricCards (users, patients, reports, avg processing time),
+ * recent report success/failure counts, an AI reliability progress bar, and service status indicators.
+ */
 import { useEffect, useState } from 'react';
 import { MetricCard } from '@/components/ui';
 import { api } from '@/lib/api';

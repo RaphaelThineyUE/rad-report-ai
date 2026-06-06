@@ -1,3 +1,10 @@
+/**
+ * Pill-shaped status badge with a colored dot indicator.
+ * Props: status (StatusKey | string).
+ * Supported statuses: reviewed (success), processing (info), followup (warning),
+ * urgent (danger), draft (neutral). Unknown values fall back to draft.
+ * Uses global .badge and .bdot CSS classes.
+ */
 type StatusKey = 'reviewed' | 'processing' | 'followup' | 'urgent' | 'draft';
 
 const STATUS: Record<StatusKey, { cls: string; label: string }> = {

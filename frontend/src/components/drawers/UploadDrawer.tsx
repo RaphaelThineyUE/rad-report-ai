@@ -1,3 +1,10 @@
+/**
+ * Right-side drawer for uploading a single radiology PDF (demo/prototype flow).
+ * Props: onClose, onComplete. Uses a simulated upload progress rather than
+ * real API calls; stages: idle → uploading → extracting → done. Renders a
+ * drag-drop zone in idle state, an animated step-progress list during upload,
+ * and a summary card with extracted findings on completion.
+ */
 import { useState } from 'react';
 import { Button, Icon } from '@/components/ui';
 

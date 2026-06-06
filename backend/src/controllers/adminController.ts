@@ -1,3 +1,11 @@
+/**
+ * Admin controller — system-level dashboard and user management endpoints.
+ * Requires an authenticated admin user (JWT checked by auth middleware).
+ * Exports: getSystemHealth, listUsers, getUserProfile.
+ * Uses supabaseAdmin (service-role) to access auth.admin APIs;
+ * uses the caller's user client for data queries so RLS still applies.
+ * No PHI is returned; only aggregate counts and metadata.
+ */
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.js';
 import { createUserClient, supabaseAdmin } from '../services/supabaseClient.js';

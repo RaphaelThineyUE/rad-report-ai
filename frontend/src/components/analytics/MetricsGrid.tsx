@@ -1,3 +1,10 @@
+/**
+ * Responsive grid of metric cards, each showing a label, large value, optional
+ * unit, and a colour-coded icon badge. Props: metrics (MetricItem[]).
+ * MetricItem: { label, value, unit?, icon?, color? ('rose'|'success'|'warning'|'danger'|'info') }.
+ * Uses auto-fit grid with 200 px minimum column width. Renders a placeholder
+ * when the array is empty. Exports the MetricItem interface.
+ */
 import { Icon } from '@/components/ui/Icon';
 
 export interface MetricItem {
@@ -12,11 +19,6 @@ interface MetricsGridProps {
   metrics: MetricItem[];
 }
 
-/**
- * Reusable grid component for displaying key metrics.
- * Supports customizable layout and styling for different metric types.
- * Used in consolidated view and analytics dashboards.
- */
 export function MetricsGrid({ metrics }: MetricsGridProps) {
   const colorMap: Record<string, { bg: string; fg: string }> = {
     rose: { bg: 'var(--bg-rose-tint)', fg: 'var(--rose-600)' },

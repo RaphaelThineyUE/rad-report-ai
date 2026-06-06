@@ -1,3 +1,4 @@
+/** Barrel export for all UI primitives: Icon, GoogleIcon, Avatar, Badge, BiRads, Button, MetricCard, FileDropzone. */
 export { Icon } from './Icon';
 export { GoogleIcon } from './GoogleIcon';
 export { Avatar } from './Avatar';

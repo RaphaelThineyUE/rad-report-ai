@@ -1,3 +1,11 @@
+/**
+ * Anthropic Claude integration for radiology report AI analysis (backend only).
+ * Exports: analyzeReport, generateSummary, consolidateReports, compareTreatments,
+ * detectBiradsTrend, cleanupIdentifiers, matchSourceQuotes — plus their result types.
+ * All calls use claude-3-5-sonnet. cleanupIdentifiers combines deterministic regex PII
+ * redaction with a Claude pass; matchSourceQuotes verifies evidence against raw text
+ * to flag hallucinations. Every exported function appends a clinical disclaimer.
+ */
 import Anthropic from '@anthropic-ai/sdk';
 import { logger } from '../utils/logger.js';
 

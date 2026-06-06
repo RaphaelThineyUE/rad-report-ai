@@ -1,3 +1,9 @@
+/**
+ * Root API router — mounts all sub-routers under their canonical prefixes.
+ * Mounted by the Express app at /api, so every route here is relative to that base.
+ *   /auth, /patients, /reports, /treatments, /ai, /analytics, /admin, /organizations
+ * No middleware is applied here; each sub-router is responsible for its own auth guards.
+ */
 import { IRouter, Router } from 'express';
 import authRoutes from './auth.js';
 import patientsRouter from './patients.js';

@@ -1,3 +1,11 @@
+/**
+ * Analytics controller — aggregated reporting and CSV export for the dashboard.
+ * Exports: getAnalytics, exportAnalyticsCsv.
+ * getAnalytics returns summary stats, BI-RADS distribution, monthly trend, and
+ * cancer-stage breakdown filtered by optional date range / stage / treatment type.
+ * exportAnalyticsCsv streams the same filtered dataset as a downloadable CSV.
+ * Data is scoped to the authenticated user's patients via RLS (created_by filter).
+ */
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.js';
 import { createUserClient } from '../services/supabaseClient.js';

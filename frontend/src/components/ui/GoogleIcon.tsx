@@ -1,3 +1,8 @@
+/**
+ * Google logo SVG rendered as an inline icon (16×16 px).
+ * Uses the official four-colour paths (blue, green, yellow, red).
+ * aria-hidden — decorative; no props. Used inside GoogleButton.
+ */
 export function GoogleIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">

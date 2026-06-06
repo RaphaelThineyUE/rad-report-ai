@@ -1,3 +1,10 @@
+/**
+ * Sentry initialisation and error-reporting utilities for the frontend.
+ * initSentry() configures the SDK with PHI scrubbing via a beforeSend hook that redacts
+ * date patterns and proper-noun pairs from all event payloads before transmission.
+ * No-ops silently when VITE_SENTRY_DSN is absent (e.g. local dev without a DSN configured).
+ * Exports: initSentry, captureException, captureMessage.
+ */
 import * as Sentry from '@sentry/react';
 
 export function initSentry() {

@@ -1,3 +1,10 @@
+/**
+ * TanStack Query hooks for treatment record CRUD operations against the backend API.
+ * All server state for treatments flows through these hooks; components never call api.ts directly.
+ * Exports: useTreatments, useCreateTreatment, useUpdateTreatment, useDeleteTreatment.
+ * Also exports Treatment, TreatmentInput types and enum constant arrays
+ * (TREATMENT_TYPES, TREATMENT_OUTCOMES) consumed by form and display components.
+ */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 

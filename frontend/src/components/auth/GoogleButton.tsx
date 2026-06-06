@@ -1,4 +1,9 @@
-// frontend/src/components/auth/GoogleButton.tsx
+/**
+ * OAuth sign-in button for Google authentication.
+ * Calls signInWithGoogle from AuthContext on click. Displays an inline error
+ * banner on failure. Renders a full-width button with the official Google
+ * logo SVG paths and "Continue with Google" label. No props.
+ */
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 

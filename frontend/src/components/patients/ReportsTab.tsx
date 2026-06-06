@@ -1,3 +1,11 @@
+/**
+ * Tab panel for a patient's radiology reports within PatientDetail.
+ * Props: patientId (string), patientName? (string).
+ * Lists uploaded reports as ReportCards with full CRUD via useReports hooks.
+ * Supports PDF upload (multi-file), signed-URL PDF open, delete, and a
+ * "Compare Reports" ConsolidatedView modal (visible when 2+ reports exist).
+ * Shows BiRadsTrendSparkline when 2+ completed reports are available.
+ */
 import { useMemo, useRef, useState } from 'react';
 import axios from 'axios';
 import { Button } from '@/components/ui/Button';

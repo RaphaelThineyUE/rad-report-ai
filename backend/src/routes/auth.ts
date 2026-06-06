@@ -1,3 +1,13 @@
+/**
+ * Auth routes — mounted at /api/auth.
+ * POST /register         — create account (authRateLimiter + body validation → register)
+ * POST /login            — sign in (authRateLimiter + body validation → login)
+ * GET  /me               — fetch current user profile (requireAuth → getMe)
+ * PATCH /me              — update profile/email/password (requireAuth → updateMe)
+ * POST /forgot-password  — send reset email (authRateLimiter → forgotPassword)
+ * POST /reset-password   — apply new password (requireAuth + authRateLimiter → resetPassword)
+ * DELETE /me             — delete account (requireAuth → deleteAccount)
+ */
 import { Router, IRouter } from 'express';
 import { body } from 'express-validator';
 import { login, register, getMe, updateMe, forgotPassword, resetPassword, deleteAccount } from '../controllers/authController.js';

@@ -1,3 +1,9 @@
+/**
+ * HowTo page — static help content rendered as a single-expand accordion.
+ * Topics: uploading reports, reading BI-RADS scores (0–6 reference table),
+ * using the treatment comparison tool, and understanding AI limitations.
+ * Leads with a prominent medical disclaimer banner. No data fetching.
+ */
 import { useState } from 'react';
 import { Icon } from '@/components/ui';
 

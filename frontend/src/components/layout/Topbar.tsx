@@ -1,3 +1,8 @@
+/**
+ * Fixed top header bar. Props: onToggleSidebar, onUpload, search (string), setSearch.
+ * Renders sidebar toggle, global search input, an Upload Report button,
+ * ThemeToggle, a notifications bell (with dot indicator), and a compliance shield.
+ */
 import { Icon, Button } from '@/components/ui';
 import { ThemeToggle } from '@/components/ThemeToggle';
 

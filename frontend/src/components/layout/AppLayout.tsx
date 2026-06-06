@@ -1,3 +1,11 @@
+/**
+ * Root authenticated page shell. Renders Sidebar + Topbar + content area.
+ * Exports AppLayoutContext (setCurrentPatientId, uploadOpen, setUploadOpen)
+ * and useAppLayoutContext hook for child components.
+ * Props: active (NavId), onNav, search, setSearch, children.
+ * Auto-collapses the sidebar on viewports <= 768 px. Conditionally renders
+ * BatchUploadDrawer when uploadOpen and a patient is selected.
+ */
 import { useState, createContext, useContext, useEffect } from 'react';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';

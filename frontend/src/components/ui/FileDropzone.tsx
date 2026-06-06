@@ -1,3 +1,10 @@
+/**
+ * Drag-and-drop file upload zone with hidden file input.
+ * Props: accept? (MIME type, default 'application/pdf'), multiple? (default true),
+ *   disabled?, onFilesSelected ((files: File[]) => void).
+ * Highlights on drag-over, resets input value after selection so the same file
+ * can be re-selected. Shows a HIPAA notice footer.
+ */
 import { useRef, useState } from 'react';
 import { Icon } from './Icon';
 

@@ -1,3 +1,11 @@
+/**
+ * Side-by-side comparison charts for a patient's treatment records.
+ * Props: treatments (Treatment[]). Derives heuristic efficacy (keyword-based)
+ * and side-effect scores, plus duration in days per treatment.
+ * Renders three cards: Treatment Efficacy Scores (horizontal bars),
+ * Side Effect Profile (horizontal bars), and Treatment Duration Comparison
+ * (column bar chart scaled to the longest treatment).
+ */
 import { useMemo } from 'react';
 import type { Treatment } from '@/hooks/useTreatments';
 

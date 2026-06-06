@@ -1,3 +1,9 @@
+/**
+ * Colour-coded BI-RADS rating badge.
+ * Props: value (string, e.g. '1'–'5', '4A', '4B', '4C'), size? ('sm'|'md'|'lg').
+ * Color scheme: 1–2 green (success), 3 blue (info), 4A–4C orange, 5 red (danger).
+ * Unknown values fall back to the BI-RADS 3 (info) style. Uses global .birads class.
+ */
 interface BiRadsStyle {
   bg: string;
   fg: string;

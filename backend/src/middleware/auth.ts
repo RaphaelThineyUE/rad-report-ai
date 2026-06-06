@@ -1,3 +1,10 @@
+/**
+ * Express authentication middleware for the backend API.
+ * Exports `requireAuth` — validates the Bearer JWT from the Authorization header
+ * via Supabase Admin, then attaches `userId` and `accessToken` to the request.
+ * Exports the `AuthRequest` interface that extends Express Request with those fields.
+ * Routes that call this middleware can safely cast req to AuthRequest.
+ */
 import { Request, Response, NextFunction } from 'express';
 import { supabaseAdmin } from '../services/supabaseClient.js';
 

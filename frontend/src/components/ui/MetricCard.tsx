@@ -1,3 +1,10 @@
+/**
+ * Dashboard KPI card with a large value, label, icon badge, and optional delta.
+ * Props: label (string), value (string), delta? (string), deltaDir? ('up'|'down'),
+ *   icon (Icon name string).
+ * Positive delta renders in success green; negative in danger red.
+ * The delta arrow flips vertically for 'down' direction via scaleY(-1).
+ */
 import { Icon } from './Icon';
 
 interface MetricCardProps {

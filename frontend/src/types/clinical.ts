@@ -1,3 +1,9 @@
+/**
+ * Frontend-only clinical display types and static sample data used for UI development and demos.
+ * PatientRow is a flattened view model for the worklist table; Finding is an individual imaging result.
+ * SAMPLE_PATIENTS provides realistic BI-RADS 2–5 fixture records across mammography, ultrasound, and MRI.
+ * These types are distinct from the shared/ API types and are not sent to or received from the backend.
+ */
 export interface Finding {
   region: string;
   type: string;

@@ -1,3 +1,11 @@
+/**
+ * Right-side drawer showing a worklist report detail for a PatientRow.
+ * Props: patient (PatientRow), onClose.
+ * Displays patient header (avatar, name, accession), BI-RADS badge, status,
+ * modality, AI-extracted findings list with confidence bars, impression text,
+ * study details (laterality, lesion size, density, date), and an AI disclaimer.
+ * Footer actions: Export PDF and Confirm & save.
+ */
 import { Avatar, Badge, BiRads, Button, Icon } from '@/components/ui';
 import type { PatientRow } from '@/types/clinical';
 

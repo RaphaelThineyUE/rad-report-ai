@@ -1,3 +1,10 @@
+/**
+ * Compact Recharts line sparkline showing BI-RADS value progression over time.
+ * Props: data (BiRadsDataPoint[]), size? ('sm' | 'md') — controls height (32 vs 60 px).
+ * Sorts data chronologically, clamps Y-axis domain around the value range,
+ * and shows a rose-colored tooltip. Exports BiRadsDataPoint { date, value, label }.
+ * Renders a "No data" placeholder when data is empty.
+ */
 import { useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -12,11 +19,6 @@ interface BiRadsTrendSparklineProps {
   size?: 'sm' | 'md';
 }
 
-/**
- * Displays a compact BI-RADS rating trend sparkline for a patient.
- * Shows the progression of BI-RADS values over time with interactive tooltip.
- * Component is reusable across patient lists and report comparisons.
- */
 export function BiRadsTrendSparkline({ data, size = 'sm' }: BiRadsTrendSparklineProps) {
   const height = size === 'md' ? 60 : 32;
   const margin = size === 'md' ? { top: 2, right: 2, bottom: 2, left: -20 } : { top: 2, right: 2, bottom: 2, left: -25 };

@@ -1,15 +1,12 @@
+/**
+ * Derives a chronological BI-RADS trend series from a patient's completed reports.
+ * Pure memoised computation — no network calls or Claude API involved.
+ * Filters to reports with status "completed" and a non-null birads_value, then sorts by date.
+ * Export: useBiRadsTrend(reports) → BiRadsDataPoint[] — consumed by sparkline/chart components.
+ */
 import { useMemo } from 'react';
 import type { Report } from './useReports';
 import type { BiRadsDataPoint } from '@/components/analytics';
-
-/**
- * Hook to compute BI-RADS trend data from a list of reports.
- * Extracts and normalizes BI-RADS values from completed reports,
- * sorted chronologically for sparkline visualization.
- *
- * @param reports - Array of Report objects
- * @returns Array of BiRadsDataPoint objects sorted by date
- */
 export function useBiRadsTrend(reports: Report[] | undefined): BiRadsDataPoint[] {
   return useMemo(() => {
     if (!reports || !reports.length) {

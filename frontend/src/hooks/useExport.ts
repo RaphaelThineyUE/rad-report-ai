@@ -1,3 +1,9 @@
+/**
+ * Hooks for triggering backend-generated file exports via browser navigation.
+ * Each hook returns a stable callback that redirects window.location.href to the
+ * appropriate backend export endpoint, causing the browser to download the file.
+ * Exports: useExportReport, useExportPatient, useExportAnalytics.
+ */
 import { useCallback } from 'react';
 
 export function useExportReport() {

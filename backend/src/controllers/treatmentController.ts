@@ -1,3 +1,10 @@
+/**
+ * Treatment controller — CRUD for patient treatment records (treatment_records table).
+ * Exports: listTreatments, createTreatment, getTreatment, updateTreatment, deleteTreatment.
+ * listTreatments requires patient_id as a query param; ordered by treatment_start_date desc.
+ * All queries use the caller's JWT client; RLS enforces created_by ownership.
+ * Treatment data is also consumed by aiController.comparePatientTreatments for AI comparison.
+ */
 import { Response } from 'express';
 import { validationResult } from 'express-validator';
 import { AuthRequest } from '../middleware/auth.js';

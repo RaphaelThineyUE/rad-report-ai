@@ -1,3 +1,10 @@
+/**
+ * First-run welcome modal shown to new users.
+ * Props: isOpen, onClose, onLoadDemo, isLoading?.
+ * Renders three feature highlights (AI analysis, patient timeline, security),
+ * a "Load Demo Data" primary action, and a "Start Fresh" secondary action.
+ * Hidden (returns null) when isOpen is false.
+ */
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 

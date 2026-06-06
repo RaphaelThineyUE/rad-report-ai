@@ -1,3 +1,11 @@
+/**
+ * Reusable Recharts chart for comparing multiple data series over time.
+ * Props: data (ComparisonDataPoint[]), series ({ key, label, color }[]),
+ *   type? ('bar' | 'line'), title?, height? (default 300).
+ * Sorts data chronologically. Supports bar and line chart types via a single
+ * component. Used by ConsolidatedView for BI-RADS trend visualization.
+ * Exports ComparisonDataPoint interface.
+ */
 import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 
@@ -15,11 +23,6 @@ interface ComparisonChartProps {
   height?: number;
 }
 
-/**
- * Reusable comparison chart for displaying multiple metrics over time.
- * Supports both bar and line chart types for flexible visualization.
- * Used in consolidated view for multi-report comparisons.
- */
 export function ComparisonChart({
   data,
   series,

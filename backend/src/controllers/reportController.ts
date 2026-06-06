@@ -1,3 +1,12 @@
+/**
+ * Report controller — PDF upload, storage, AI processing, and export for radiology reports.
+ * Exports: uploadReport, batchUploadReports (≤50 files), createReport, listReports,
+ *   getReport, updateReport, deleteReport, getReportSignedUrl, exportReportJson, processReport.
+ * processReport: downloads PDF via supabaseAdmin storage → validates → extracts text via
+ *   pdfService → PII-scrubs via cleanupIdentifiers → analyzes via claudeService → saves results.
+ * supabaseAdmin is used for storage operations (upload, download, signed URL, delete);
+ * the caller's JWT client is used for all DB queries so RLS enforces ownership.
+ */
 import { Response } from 'express';
 import { validationResult } from 'express-validator';
 import { AuthRequest } from '../middleware/auth.js';

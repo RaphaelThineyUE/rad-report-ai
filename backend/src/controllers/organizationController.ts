@@ -1,3 +1,12 @@
+/**
+ * Organization controller — multi-tenant workspace management.
+ * Exports: createOrganization, listOrganizations, getOrganization, updateOrganization,
+ *   deleteOrganization, listMembers, inviteMember, updateMemberRole, removeMember.
+ * Owner-only guard is applied inline before destructive mutations.
+ * supabaseAdmin is used only to resolve invited users by email; all other queries
+ * use the caller's JWT client so RLS enforces membership visibility.
+ * Every mutating action writes an audit_log entry.
+ */
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.js';
 import { createUserClient, supabaseAdmin } from '../services/supabaseClient.js';

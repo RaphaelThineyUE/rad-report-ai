@@ -1,3 +1,9 @@
+/**
+ * PDF utility service used by report-upload routes before AI analysis.
+ * Exports `extractTextFromPdf(buffer)` — parses a Buffer or Blob with pdf-parse,
+ * normalises whitespace, and returns plain text.
+ * Exports `isValidPdf(buffer)` — lightweight validation that at least one page parsed.
+ */
 import pdfParse from 'pdf-parse';
 import { logger } from '../utils/logger.js';
 

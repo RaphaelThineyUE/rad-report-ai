@@ -1,3 +1,9 @@
+/**
+ * SignUp page — two-panel layout matching Login; collects full name, work email, and password.
+ * Calls AuthContext.signUp (email/password) or AuthContext.signInWithGoogle for OAuth.
+ * On success shows a "check your email" confirmation state before redirecting to /login.
+ * BrandPanel is extracted as a static JSX constant to avoid duplication with Login.
+ */
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Icon, GoogleIcon } from '@/components/ui';

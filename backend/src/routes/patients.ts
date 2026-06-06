@@ -1,3 +1,13 @@
+/**
+ * Patients routes — mounted at /api/patients. All routes require requireAuth.
+ * GET    /              — list patients (listPatients)
+ * POST   /              — create patient with full clinical validation (createPatient)
+ * GET    /:id           — fetch single patient (getPatient)
+ * PATCH  /:id           — partial update with validation (updatePatient)
+ * DELETE /:id           — delete patient (deletePatient)
+ * GET    /:id/export    — export full patient bundle (exportPatientBundle)
+ * wrapAuth bridges typed AuthRequest handlers to standard Express middleware.
+ */
 import { IRouter, NextFunction, Request, Response, Router } from 'express';
 import { body } from 'express-validator';
 import { AuthRequest, requireAuth } from '../middleware/auth.js';

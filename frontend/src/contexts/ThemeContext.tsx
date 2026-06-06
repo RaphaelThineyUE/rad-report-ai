@@ -1,3 +1,9 @@
+/**
+ * React context managing light/dark/system theme preference for the frontend.
+ * Persists the user's choice to localStorage and toggles the "dark" class on <html>.
+ * When set to "system", listens for OS-level prefers-color-scheme changes in real time.
+ * Exports: ThemeProvider (wraps the app), useTheme hook (returns theme, setTheme, isDark).
+ */
 import { createContext, useContext, useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark' | 'system';

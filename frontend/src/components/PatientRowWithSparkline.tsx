@@ -1,3 +1,10 @@
+/**
+ * Table row component for a patient in a worklist/patient list view.
+ * Props: patient (PatientRow), trendData? (BiRadsDataPoint[]), onClick? (() => void).
+ * Renders avatar, name/ID/age, accession, modality, BI-RADS badge, status badge,
+ * date, and a BiRadsTrendSparkline. Falls back to mock trend data when trendData
+ * is not provided.
+ */
 import { Avatar, Badge, BiRads, Icon } from '@/components/ui';
 import { BiRadsTrendSparkline, type BiRadsDataPoint } from '@/components/analytics';
 import type { PatientRow } from '@/types/clinical';
@@ -8,11 +15,6 @@ interface PatientRowWithSparklineProps {
   onClick?: () => void;
 }
 
-/**
- * Patient table row with integrated BI-RADS trend sparkline.
- * Shows longitudinal trend data for quick visual assessment of patient progression.
- * Can be used in any patient listing that needs historical trend visualization.
- */
 export function PatientRowWithSparkline({
   patient,
   trendData,

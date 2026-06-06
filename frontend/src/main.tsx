@@ -1,3 +1,9 @@
+/**
+ * Application entry point for the React frontend.
+ * Initialises Sentry error monitoring (via initSentry) before mounting the React tree.
+ * Wraps the root App component with Sentry.ErrorBoundary and Sentry.withProfiler
+ * to capture unhandled errors and performance profiles automatically.
+ */
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import * as Sentry from '@sentry/react'
