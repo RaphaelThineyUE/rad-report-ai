@@ -13,7 +13,6 @@
     "test:e2e": "dotenv -e .env.e2e.local -- playwright test"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.32.1",
     "@radix-ui/react-dialog": "^1.1.4",
     "@radix-ui/react-dropdown-menu": "^2.1.4",
     "@radix-ui/react-label": "^2.1.1",
@@ -30,7 +29,6 @@
     "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "framer-motion": "^11.13.1",
     "lucide-react": "^0.468.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
