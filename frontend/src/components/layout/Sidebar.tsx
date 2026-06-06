@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import logoLockup from '@/assets/logo-lockup.svg';
 import logomark from '@/assets/logomark.svg';
 
-type NavId = 'worklist' | 'patients' | 'analytics' | 'admin-dashboard' | 'admin-users' | 'teams' | 'settings';
+type NavId = 'worklist' | 'patients' | 'analytics' | 'admin-dashboard' | 'admin-users' | 'teams' | 'settings' | 'howto';
 
 interface SidebarProps {
   active: NavId;
@@ -18,6 +18,7 @@ const NAV_ITEMS: { id: NavId; label: string; icon: string }[] = [
   { id: 'patients',  label: 'Patients',  icon: 'users' },
   { id: 'analytics', label: 'Analytics', icon: 'bar-chart' },
   { id: 'teams',     label: 'Teams',     icon: 'users-plus' },
+  { id: 'howto',     label: 'How To',    icon: 'help-circle' },
   { id: 'admin-dashboard', label: 'Admin',  icon: 'shield' },
 ];
 
