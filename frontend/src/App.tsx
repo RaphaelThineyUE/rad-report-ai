@@ -16,8 +16,9 @@ import Analytics from '@/pages/Analytics';
 import AdminDashboard from '@/pages/AdminDashboard';
 import AdminUsers from '@/pages/AdminUsers';
 import Settings from '@/pages/Settings';
+import Teams from '@/pages/Teams';
 
-type NavId = 'worklist' | 'patients' | 'analytics' | 'admin-dashboard' | 'admin-users' | 'settings';
+type NavId = 'worklist' | 'patients' | 'analytics' | 'admin-dashboard' | 'admin-users' | 'settings' | 'teams';
 
 function AppShell() {
   const navigate = useNavigate();
@@ -39,6 +40,7 @@ function AppShell() {
         <Route path="/analytics"        element={<Analytics />} />
         <Route path="/admin-dashboard"  element={<AdminDashboard />} />
         <Route path="/admin-users"      element={<AdminUsers />} />
+        <Route path="/teams"            element={<Teams />} />
         <Route path="/settings"         element={<Settings />} />
         <Route path="*"                 element={<Navigate to="/worklist" replace />} />
       </Routes>
