@@ -2,7 +2,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { Icon } from '@/components/ui';
 
 export function ThemeToggle() {
-  const { theme, setTheme, isDark } = useTheme();
+  const { setTheme, isDark } = useTheme();
 
   const handleToggle = () => {
     const nextTheme = isDark ? 'light' : 'dark';

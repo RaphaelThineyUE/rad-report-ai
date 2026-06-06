@@ -11,23 +11,25 @@ import Login from '@/pages/Login';
 import SignUp from '@/pages/SignUp';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
+import Dashboard from '@/pages/Dashboard';
 import Worklist from '@/pages/Worklist';
 import Patients from '@/pages/Patients';
 import Analytics from '@/pages/Analytics';
+import PatientAnalytics from '@/pages/PatientAnalytics';
 import AdminDashboard from '@/pages/AdminDashboard';
 import AdminUsers from '@/pages/AdminUsers';
 import Settings from '@/pages/Settings';
 import Teams from '@/pages/Teams';
 import HowTo from '@/pages/HowTo';
 
-type NavId = 'worklist' | 'patients' | 'analytics' | 'admin-dashboard' | 'admin-users' | 'settings' | 'teams' | 'howto';
+type NavId = 'dashboard' | 'worklist' | 'patients' | 'analytics' | 'patient-analytics' | 'admin-dashboard' | 'admin-users' | 'settings' | 'teams' | 'howto';
 
 function AppShell() {
   const navigate = useNavigate();
   const location = useLocation();
   const [search, setSearch] = useState('');
 
-  const active = (location.pathname.slice(1) || 'worklist') as NavId;
+  const active = (location.pathname.slice(1) || 'dashboard') as NavId;
 
   function handleNav(id: NavId) {
     setSearch('');
@@ -37,15 +39,17 @@ function AppShell() {
   return (
     <AppLayout active={active} onNav={handleNav} search={search} setSearch={setSearch}>
       <Routes>
+        <Route path="/dashboard"        element={<Dashboard />} />
         <Route path="/worklist"         element={<Worklist  search={search} />} />
         <Route path="/patients"         element={<Patients  search={search} />} />
         <Route path="/analytics"        element={<Analytics />} />
+        <Route path="/patient-analytics" element={<PatientAnalytics />} />
         <Route path="/admin-dashboard"  element={<AdminDashboard />} />
         <Route path="/admin-users"      element={<AdminUsers />} />
         <Route path="/teams"            element={<Teams />} />
         <Route path="/howto"            element={<HowTo />} />
         <Route path="/settings"         element={<Settings />} />
-        <Route path="*"                 element={<Navigate to="/worklist" replace />} />
+        <Route path="*"                 element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </AppLayout>
   );
