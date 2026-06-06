@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import { supabaseAdmin } from '../services/supabaseClient';
-import { AuthRequest } from '../middleware/auth';
+import { supabaseAdmin } from '../services/supabaseClient.js';
+import { AuthRequest } from '../middleware/auth.js';
 
 export async function register(req: Request, res: Response): Promise<void> {
   const errors = validationResult(req);

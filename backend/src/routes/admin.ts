@@ -1,6 +1,6 @@
 import { IRouter, NextFunction, Request, Response, Router } from 'express';
-import { requireAuth, AuthRequest } from '../middleware/auth';
-import { getSystemHealth, listUsers, getUserProfile } from '../controllers/adminController';
+import { requireAuth, AuthRequest } from '../middleware/auth.js';
+import { getSystemHealth, listUsers, getUserProfile } from '../controllers/adminController.js';
 
 function wrapAuth(handler: (req: AuthRequest, res: Response) => Promise<void>) {
   return (req: Request, res: Response, next: NextFunction) => {

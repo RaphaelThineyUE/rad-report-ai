@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { logger } from '../utils/logger';
+import { logger } from '../utils/logger.js';
 
 // Import types locally since shared package uses relative paths
 interface Finding {

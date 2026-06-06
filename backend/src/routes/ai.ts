@@ -1,6 +1,6 @@
 import { IRouter, NextFunction, Request, Response, Router } from 'express';
 import { body } from 'express-validator';
-import { requireAuth, AuthRequest } from '../middleware/auth';
+import { requireAuth, AuthRequest } from '../middleware/auth.js';
 import {
   analyzeReportText,
   generateReportSummary,
@@ -8,7 +8,7 @@ import {
   comparePatientTreatments,
   detectPatientBiradsTrend,
   extractReportQuotes,
-} from '../controllers/aiController';
+} from '../controllers/aiController.js';
 
 function wrapAuth(handler: (req: AuthRequest, res: Response) => Promise<void>) {
   return (req: Request, res: Response, next: NextFunction) => {

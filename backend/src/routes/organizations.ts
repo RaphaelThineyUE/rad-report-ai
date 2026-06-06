@@ -1,5 +1,5 @@
 import { IRouter, NextFunction, Request, Response, Router } from 'express';
-import { AuthRequest, requireAuth } from '../middleware/auth';
+import { AuthRequest, requireAuth } from '../middleware/auth.js';
 import {
   createOrganization,
   listOrganizations,
@@ -10,7 +10,7 @@ import {
   inviteMember,
   updateMemberRole,
   removeMember,
-} from '../controllers/organizationController';
+} from '../controllers/organizationController.js';
 
 function wrapAuth(handler: (req: AuthRequest, res: Response) => Promise<void>) {
   return (req: Request, res: Response, next: NextFunction) => {

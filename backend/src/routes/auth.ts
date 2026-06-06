@@ -1,8 +1,8 @@
 import { Router, IRouter } from 'express';
 import { body } from 'express-validator';
-import { login, register, getMe, updateMe, forgotPassword, resetPassword, deleteAccount } from '../controllers/authController';
-import { requireAuth } from '../middleware/auth';
-import { authRateLimiter } from '../middleware/rateLimiter';
+import { login, register, getMe, updateMe, forgotPassword, resetPassword, deleteAccount } from '../controllers/authController.js';
+import { requireAuth } from '../middleware/auth.js';
+import { authRateLimiter } from '../middleware/rateLimiter.js';
 
 const router: IRouter = Router();
 

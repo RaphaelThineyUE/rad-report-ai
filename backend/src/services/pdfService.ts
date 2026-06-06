@@ -1,5 +1,5 @@
 import pdfParse from 'pdf-parse';
-import { logger } from '../utils/logger';
+import { logger } from '../utils/logger.js';
 
 /**
  * Extracts text content from a PDF buffer.

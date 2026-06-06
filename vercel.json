@@ -1,0 +1,9 @@
+{
+  "buildCommand": "yarn workspace frontend build",
+  "outputDirectory": "frontend/dist",
+  "installCommand": "yarn install",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

@@ -1,13 +1,13 @@
 import { IRouter, NextFunction, Request, Response, Router } from 'express';
 import { body } from 'express-validator';
-import { AuthRequest, requireAuth } from '../middleware/auth';
+import { AuthRequest, requireAuth } from '../middleware/auth.js';
 import {
   createTreatment,
   deleteTreatment,
   getTreatment,
   listTreatments,
   updateTreatment,
-} from '../controllers/treatmentController';
+} from '../controllers/treatmentController.js';
 
 const TREATMENT_TYPES = [
   'Surgery',

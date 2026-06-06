@@ -1,8 +1,8 @@
 import { Response } from 'express';
 import { validationResult } from 'express-validator';
-import { AuthRequest } from '../middleware/auth';
-import { createUserClient } from '../services/supabaseClient';
-import { logger } from '../utils/logger';
+import { AuthRequest } from '../middleware/auth.js';
+import { createUserClient } from '../services/supabaseClient.js';
+import { logger } from '../utils/logger.js';
 
 interface PatientBody {
   full_name: string;

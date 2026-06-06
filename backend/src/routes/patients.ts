@@ -1,6 +1,6 @@
 import { IRouter, NextFunction, Request, Response, Router } from 'express';
 import { body } from 'express-validator';
-import { AuthRequest, requireAuth } from '../middleware/auth';
+import { AuthRequest, requireAuth } from '../middleware/auth.js';
 import {
   createPatient,
   deletePatient,
@@ -8,7 +8,7 @@ import {
   listPatients,
   updatePatient,
   exportPatientBundle,
-} from '../controllers/patientController';
+} from '../controllers/patientController.js';
 
 const GENDERS = ['Male', 'Female', 'Other'] as const;
 const CANCER_STAGES = ['Stage 0', 'Stage I', 'Stage II', 'Stage III', 'Stage IV', 'Unknown'] as const;
