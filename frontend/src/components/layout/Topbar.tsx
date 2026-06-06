@@ -1,4 +1,5 @@
 import { Icon, Button } from '@/components/ui';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface TopbarProps {
   onToggleSidebar: () => void;
@@ -23,6 +24,7 @@ export function Topbar({ onToggleSidebar, onUpload, search, setSearch }: TopbarP
       </div>
       <div style={{ flex: 1 }} />
       <Button icon="upload" onClick={onUpload}>Upload report</Button>
+      <ThemeToggle />
       <button className="icon-btn" title="Notifications">
         <Icon name="bell" size={19} />
         <span className="dot-badge" />

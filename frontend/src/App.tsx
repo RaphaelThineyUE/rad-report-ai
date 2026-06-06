@@ -4,6 +4,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { queryClient } from '@/lib/queryClient';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { AppLayout } from '@/components/layout/AppLayout';
 import Login from '@/pages/Login';
@@ -53,18 +54,20 @@ function AppShell() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login"             element={<Login />} />
-            <Route path="/signup"            element={<SignUp />} />
-            <Route path="/forgot-password"   element={<ForgotPassword />} />
-            <Route path="/reset-password"    element={<ResetPassword />} />
-            <Route path="/*" element={<ProtectedRoute><AppShell /></ProtectedRoute>} />
-          </Routes>
-        </BrowserRouter>
-        <ReactQueryDevtools initialIsOpen={false} />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login"             element={<Login />} />
+              <Route path="/signup"            element={<SignUp />} />
+              <Route path="/forgot-password"   element={<ForgotPassword />} />
+              <Route path="/reset-password"    element={<ResetPassword />} />
+              <Route path="/*" element={<ProtectedRoute><AppShell /></ProtectedRoute>} />
+            </Routes>
+          </BrowserRouter>
+          <ReactQueryDevtools initialIsOpen={false} />
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
