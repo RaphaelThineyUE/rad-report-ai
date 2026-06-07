@@ -61,6 +61,26 @@ test.describe('Patients - Authenticated Flow', () => {
     await expect(page.getByRole('button', { name: 'Add Patient' })).toBeVisible();
   });
 
+  test('loads the patient list without an error state', async ({ page }) => {
+    // Regression guard for RAD-REPORT-AI-6: a backend RLS recursion bug on
+    // GET /api/patients made usePatients() return an error, which rendered the
+    // "Error loading patients" branch and hid the Add Patient button entirely.
+    await test.step('Verify the API call succeeded', async () => {
+      const res = await apiRequest(page, 'GET', '/api/patients');
+      expect(res.status).toBe(200);
+    });
+
+    await test.step('Verify the error state is not rendered', async () => {
+      await expect(page.getByText('Error loading patients')).not.toBeVisible();
+      await expect(page.getByText('Failed to load patients. Please try again.')).not.toBeVisible();
+    });
+
+    await test.step('Verify the page renders normally', async () => {
+      await expect(page.getByRole('heading', { name: 'Patients' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Add Patient' })).toBeVisible();
+    });
+  });
+
   test('opens Add Patient dialog with all required fields', async ({ page }) => {
     await page.getByRole('button', { name: 'Add Patient' }).click();
 
@@ -180,7 +200,7 @@ test.describe('Navigation - Authenticated', () => {
   });
 
   test('can navigate to Analytics via sidebar button', async ({ page }) => {
-    await page.getByRole('button', { name: 'Analytics' }).click();
+    await page.getByRole('button', { name: 'System Analytics' }).click();
     await expect(page).toHaveURL(/\/analytics/);
   });
 

@@ -11,7 +11,7 @@
     "lint": "eslint src --ext .ts"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.32.1",
+    "@anthropic-ai/sdk": "^0.102.0",
     "@sentry/node": "^10.56.0",
     "@sentry/profiling-node": "^10.56.0",
     "@sentry/react": "^10.56.0",
