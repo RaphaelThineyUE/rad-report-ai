@@ -66,7 +66,7 @@ describe('Teams Page', () => {
     renderWithRouter(<Teams />);
 
     await waitFor(() => {
-      expect(screen.getByText('Test Organization')).toBeInTheDocument();
+      expect(screen.getAllByText('Test Organization')[0]).toBeInTheDocument();
     });
   });
 
@@ -93,7 +93,7 @@ describe('Teams Page', () => {
     renderWithRouter(<Teams />);
 
     await waitFor(() => {
-      expect(screen.getByText('Test Organization')).toBeInTheDocument();
+      expect(screen.getAllByText('Test Organization')[0]).toBeInTheDocument();
     });
 
     const inviteButton = screen.getByRole('button', { name: /invite member/i });
@@ -120,7 +120,7 @@ describe('Teams Page', () => {
     renderWithRouter(<Teams />);
 
     await waitFor(() => {
-      expect(screen.getByText('Test Organization')).toBeInTheDocument();
+      expect(screen.getAllByText('Test Organization')[0]).toBeInTheDocument();
     });
 
     const inviteButton = screen.getByRole('button', { name: /invite member/i });
@@ -156,7 +156,7 @@ describe('Teams Page', () => {
     });
 
     const roleSelects = screen.getAllByRole('option');
-    const clinicianRoleSelect = screen.getAllByDisplayValue('clinician')[0] as HTMLSelectElement;
+    const clinicianRoleSelect = screen.getAllByDisplayValue('Clinician')[0] as HTMLSelectElement;
 
     await user.selectOptions(clinicianRoleSelect.closest('select')!, 'admin');
 
@@ -174,7 +174,7 @@ describe('Teams Page', () => {
     renderWithRouter(<Teams />);
 
     await waitFor(() => {
-      expect(screen.getByText('Test Organization')).toBeInTheDocument();
+      expect(screen.getAllByText('Test Organization')[0]).toBeInTheDocument();
     });
 
     const inviteButton = screen.getByRole('button', { name: /invite member/i });

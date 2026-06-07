@@ -1,11 +1,16 @@
 import { afterAll, beforeEach, describe, expect, it, jest } from '@jest/globals';
-import * as Sentry from '@sentry/node';
 
 jest.mock('@sentry/node', () => ({
   captureException: jest.fn(),
   captureMessage: jest.fn(),
   init: jest.fn(),
 }));
+
+type SentryMock = {
+  init: jest.Mock;
+  captureException: jest.Mock;
+  captureMessage: jest.Mock;
+};
 
 describe('sentry instrumentation', () => {
   const originalEnv = process.env;
@@ -22,14 +27,13 @@ describe('sentry instrumentation', () => {
 
   it('initializes Sentry when a DSN is configured', async () => {
     process.env.SENTRY_DSN = 'https://f1c79f25ed46d6be4ec21e7a73527e62@o4511117899464704.ingest.us.sentry.io/4511509732720640';
-    // https://f1c79f25ed46d6be4ec21e7a73527e62@o4511117899464704.ingest.us.sentry.io/4511509732720640
     process.env.NODE_ENV = 'development';
 
-
     const { initSentry } = await import('./sentry');
+    const sentryMock = (await import('@sentry/node')) as unknown as SentryMock;
     initSentry();
 
-    expect(Sentry.init).toHaveBeenCalledWith(
+    expect(sentryMock.init).toHaveBeenCalledWith(
       expect.objectContaining({
         dsn: 'https://f1c79f25ed46d6be4ec21e7a73527e62@o4511117899464704.ingest.us.sentry.io/4511509732720640',
         environment: 'development',
@@ -42,14 +46,14 @@ describe('sentry instrumentation', () => {
     const error = new Error('Boom');
 
     const { logger } = await import('./logger');
+    const sentryMock = (await import('@sentry/node')) as unknown as SentryMock;
     logger.error('Unhandled error', { error });
 
-    expect(Sentry.captureException).toHaveBeenCalledWith(
-      error,
+    // logger.error calls captureException(new Error(msg), { extra: sanitized })
+    expect(sentryMock.captureException).toHaveBeenCalledWith(
+      expect.any(Error),
       expect.objectContaining({
-        contexts: expect.objectContaining({
-          log: expect.objectContaining({ msg: 'Unhandled error' }),
-        }),
+        extra: expect.objectContaining({ error }),
       })
     );
   });

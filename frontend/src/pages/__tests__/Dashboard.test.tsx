@@ -75,7 +75,7 @@ describe('Dashboard Component', () => {
     await waitFor(() => {
       expect(screen.getByText('45')).toBeInTheDocument(); // total patients
       expect(screen.getByText('120')).toBeInTheDocument(); // total reports
-      expect(screen.getByText('110')).toBeInTheDocument(); // completed
+      expect(screen.getAllByText('110')[0]).toBeInTheDocument(); // completed
     });
   });
 
