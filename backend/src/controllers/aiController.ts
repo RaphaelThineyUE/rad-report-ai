@@ -1,6 +1,8 @@
 /**
  * AI controller — Express handlers that expose Claude-powered analysis to the API.
- * All text is PII-scrubbed via cleanupIdentifiers before any Anthropic call.
+ * All text is de-identified locally (regex via cleanupIdentifiers — patient name,
+ * DOB, addresses, direct identifiers) before any Anthropic call, so PHI never leaves
+ * the process while clinical data (dates, BI-RADS, measurements) is preserved.
  * Exports: analyzeReportText, generateReportSummary, consolidatePatientReports,
  *   comparePatientTreatments, detectPatientBiradsTrend, extractReportQuotes.
  * Delegates to claudeService; reads report/treatment data from Supabase using

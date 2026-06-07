@@ -69,7 +69,7 @@ All server state lives in `frontend/src/hooks/`: `usePatients`, `useReports`, `u
 
 ### AI services (`backend/src/services/claudeService.ts`)
 
-The Claude model is configurable via the `ANTHROPIC_MODEL` env var (default `claude-sonnet-4-6`); `claudeService.ts` is the single source of truth for model selection. Structured responses (analyze/consolidate/compare/BI-RADS-trend) are validated with Zod via `client.messages.parse()` + `zodOutputFormat()`; the schemas live in `backend/src/services/aiSchemas.ts`. PII is redacted by `cleanupIdentifiers()` in `claudeService.ts` before downstream use. Evidence quotes returned by `analyzeReport` are verified against raw text to flag hallucinations.
+The Claude model is configurable via the `ANTHROPIC_MODEL` env var (default `claude-sonnet-4-6`); `claudeService.ts` is the single source of truth for model selection. Structured responses (analyze/consolidate/compare/BI-RADS-trend) are validated with Zod via `client.messages.parse()` + `zodOutputFormat()`; the schemas live in `backend/src/services/aiSchemas.ts`. Text is de-identified entirely in-process before any Anthropic call: `cleanupIdentifiers()` delegates to `deidentify()` in `backend/src/services/deidentify.ts`. De-identification is deliberately minimal so clinical data survives — it redacts only the labelled patient name, date of birth, addresses, and non-clinical direct identifiers (MRN/SSN/phone/email/patient ID/insurance) via deterministic regex. All other dates (exam/follow-up/comparison), BI-RADS, measurements, and provider/facility names are preserved. No PHI is sent to Claude. Evidence quotes returned by `analyzeReport` are verified against raw text to flag hallucinations.
 
 ### Audit logging
 

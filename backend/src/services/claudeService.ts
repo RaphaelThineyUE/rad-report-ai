@@ -6,9 +6,11 @@
  * claude-sonnet-4-6); this module is the single source of truth for model selection.
  * Structured responses are validated with Zod via `client.messages.parse()` and the
  * `zodOutputFormat()` helper (schemas live in aiSchemas.ts), replacing regex/JSON.parse
- * extraction. cleanupIdentifiers combines deterministic regex PII redaction with a
- * Claude pass; matchSourceQuotes verifies evidence against raw text to flag
- * hallucinations. Every exported function appends a clinical disclaimer.
+ * extraction. cleanupIdentifiers delegates to the local de-identification pipeline
+ * (deterministic regex in deidentify.ts — patient name, DOB, addresses, and direct
+ * identifiers only) so PHI never reaches Anthropic while clinical data is preserved;
+ * matchSourceQuotes verifies evidence against raw text to flag hallucinations.
+ * Every exported function appends a clinical disclaimer.
  */
 import Anthropic from '@anthropic-ai/sdk';
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
@@ -21,6 +23,7 @@ import {
   type Finding,
   type Recommendation,
 } from './aiSchemas.js';
+import { deidentify } from './deidentify.js';
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -293,91 +296,13 @@ the clinical significance (low/medium/high), and a brief explanatory note.`,
 }
 
 /**
- * Clean up personal identifiers from text
- * Uses both deterministic regex patterns and Claude for comprehensive PII redaction
+ * Clean up personal identifiers from text.
+ * Delegates to the local de-identification pipeline (regex + wink-nlp NER) so that
+ * PHI never leaves the process — no Anthropic call is involved. Kept async for
+ * backward compatibility with existing callers.
  */
 export async function cleanupIdentifiers(text: string): Promise<string> {
-  try {
-    let cleaned = text;
-
-    // Deterministic redaction of common PII patterns
-    // Medical Record Numbers (MRN): various formats
-    cleaned = cleaned.replace(
-      /\b(?:MRN|Medical Record Number|Record #|Acct #|Account #)[:\s]+([A-Z0-9-]{4,20})/gi,
-      'MRN: [REDACTED]'
-    );
-
-    // Social Security Numbers
-    cleaned = cleaned.replace(
-      /\b(?:SSN|Social Security)[:\s]+(\d{3}-\d{2}-\d{4})/g,
-      'SSN: [REDACTED]'
-    );
-
-    // Date of Birth patterns (multiple formats)
-    cleaned = cleaned.replace(
-      /\b(?:DOB|Date of Birth|Born)[:\s]+(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}[/-]\d{2}[/-]\d{2})/gi,
-      'DOB: [REDACTED]'
-    );
-
-    // Phone numbers
-    cleaned = cleaned.replace(
-      /\b(?:Phone|Tel)[:\s]*\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})/g,
-      'Phone: [REDACTED]'
-    );
-
-    // Email addresses
-    cleaned = cleaned.replace(
-      /[\w.-]+@[\w.-]+\.\w+/g,
-      '[REDACTED]@example.com'
-    );
-
-    // Patient ID formats
-    cleaned = cleaned.replace(
-      /\b(?:Patient ID|PID|PT ID)[:\s]+([A-Z0-9-]{5,15})/gi,
-      'Patient ID: [REDACTED]'
-    );
-
-    // Insurance/Policy numbers
-    cleaned = cleaned.replace(
-      /\b(?:Policy|Insurance|Group)[:\s]+([A-Z0-9-]{6,20})/gi,
-      'Policy: [REDACTED]'
-    );
-
-    // Use Claude for additional context-aware redaction
-    const response = await client.messages.create({
-      model: MODEL,
-      max_tokens: 2000,
-      system: `Review this medical text that has already been partially redacted.
-Look for any remaining personally identifiable information (names, initials, facility names, provider names) and replace with [REDACTED].
-Preserve all clinical and diagnostic content. Return the cleaned text.`,
-      messages: [
-        {
-          role: 'user',
-          content: cleaned,
-        },
-      ],
-    });
-
-    const fullyClean =
-      response.content[0].type === 'text' ? response.content[0].text : cleaned;
-
-    logger.info('Successfully cleaned identifiers', {
-      originalLength: text.length,
-      cleanedLength: fullyClean.length,
-    });
-
-    return fullyClean;
-  } catch {
-    logger.warn('Failed to cleanup identifiers with Claude, using regex-only approach');
-    // If Claude call fails, return text cleaned by regex patterns only
-    return text
-      .replace(/\b(?:MRN|Medical Record Number)[:\s]+([A-Z0-9-]{4,20})/gi, 'MRN: [REDACTED]')
-      .replace(/\b(?:SSN|Social Security)[:\s]+(\d{3}-\d{2}-\d{4})/g, 'SSN: [REDACTED]')
-      .replace(/\b(?:DOB|Date of Birth)[:\s]+(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})/gi, 'DOB: [REDACTED]')
-      .replace(/\b(?:Phone|Tel)[:\s]*\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})/g, 'Phone: [REDACTED]')
-      .replace(/[\w.-]+@[\w.-]+\.\w+/g, '[REDACTED]@example.com')
-      .replace(/\b(?:Patient ID|PID)[:\s]+([A-Z0-9-]{5,15})/gi, 'Patient ID: [REDACTED]');
-  }
+  return deidentify(text);
 }
 
 /**
