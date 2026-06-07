@@ -12,8 +12,10 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { queryClient } from '@/lib/queryClient';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { NotificationProvider } from '@/contexts/NotificationContext';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { AppLayout } from '@/components/layout/AppLayout';
+import NotificationContainer from '@/components/notifications/NotificationContainer';
 
 const Login        = lazy(() => import('@/pages/Login'));
 const SignUp       = lazy(() => import('@/pages/SignUp'));
@@ -70,18 +72,21 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
-          <BrowserRouter>
-            <Suspense fallback={null}>
-              <Routes>
-                <Route path="/login"             element={<Login />} />
-                <Route path="/signup"            element={<SignUp />} />
-                <Route path="/forgot-password"   element={<ForgotPassword />} />
-                <Route path="/reset-password"    element={<ResetPassword />} />
-                <Route path="/*" element={<ProtectedRoute><AppShell /></ProtectedRoute>} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-          <ReactQueryDevtools initialIsOpen={false} />
+          <NotificationProvider>
+            <BrowserRouter>
+              <NotificationContainer />
+              <Suspense fallback={null}>
+                <Routes>
+                  <Route path="/login"             element={<Login />} />
+                  <Route path="/signup"            element={<SignUp />} />
+                  <Route path="/forgot-password"   element={<ForgotPassword />} />
+                  <Route path="/reset-password"    element={<ResetPassword />} />
+                  <Route path="/*" element={<ProtectedRoute><AppShell /></ProtectedRoute>} />
+                </Routes>
+              </Suspense>
+            </BrowserRouter>
+            <ReactQueryDevtools initialIsOpen={false} />
+          </NotificationProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
