@@ -69,7 +69,7 @@ All server state lives in `frontend/src/hooks/`: `usePatients`, `useReports`, `u
 
 ### AI services (`backend/src/services/claudeService.ts`)
 
-The Claude model is configurable via the `ANTHROPIC_MODEL` env var (default `claude-sonnet-4-6`); `claudeService.ts` is the single source of truth for model selection. PII is redacted by `cleanupIdentifiers()` in `claudeService.ts` before downstream use. Evidence quotes returned by `analyzeReport` are verified against raw text to flag hallucinations.
+The Claude model is configurable via the `ANTHROPIC_MODEL` env var (default `claude-sonnet-4-6`); `claudeService.ts` is the single source of truth for model selection. Structured responses (analyze/consolidate/compare/BI-RADS-trend) are validated with Zod via `client.messages.parse()` + `zodOutputFormat()`; the schemas live in `backend/src/services/aiSchemas.ts`. PII is redacted by `cleanupIdentifiers()` in `claudeService.ts` before downstream use. Evidence quotes returned by `analyzeReport` are verified against raw text to flag hallucinations.
 
 ### Audit logging
 
