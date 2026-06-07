@@ -3,7 +3,8 @@
  * Exports: uploadReport, batchUploadReports (≤50 files), createReport, listReports,
  *   getReport, updateReport, deleteReport, getReportSignedUrl, exportReportJson, processReport.
  * processReport: downloads PDF via supabaseAdmin storage → validates → extracts text via
- *   pdfService → PII-scrubs via cleanupIdentifiers → analyzes via claudeService → saves results.
+ *   pdfService → de-identifies locally via cleanupIdentifiers (regex + wink-nlp NER)
+ *   → analyzes via claudeService → saves results.
  * supabaseAdmin is used for storage operations (upload, download, signed URL, delete);
  * the caller's JWT client is used for all DB queries so RLS enforces ownership.
  */
