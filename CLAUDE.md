@@ -69,7 +69,7 @@ All server state lives in `frontend/src/hooks/`: `usePatients`, `useReports`, `u
 
 ### AI services (`backend/src/services/claudeService.ts`)
 
-All calls use `claude-sonnet-4-20250514`. PDF text is sanitized by `pdfService.sanitize()` to strip PII before any Anthropic call. Evidence quotes returned by `analyzeReport` are verified against raw text to flag hallucinations. BI-RADS trend detection is deterministic — no Claude call.
+The Claude model is configurable via the `ANTHROPIC_MODEL` env var (default `claude-sonnet-4-6`); `claudeService.ts` is the single source of truth for model selection. PII is redacted by `cleanupIdentifiers()` in `claudeService.ts` before downstream use. Evidence quotes returned by `analyzeReport` are verified against raw text to flag hallucinations.
 
 ### Audit logging
 

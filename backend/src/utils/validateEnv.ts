@@ -4,6 +4,10 @@
  * (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY, ANTHROPIC_API_KEY,
  * STORAGE_BUCKET, FRONTEND_URL) are present and exits the process with an error
  * message listing any missing ones if they are not.
+ *
+ * Optional: ANTHROPIC_MODEL overrides the Claude model used by claudeService.ts
+ * (defaults to claude-sonnet-4-6 when unset). It is optional and therefore not
+ * included in the required-vars check below.
  */
 const REQUIRED_VARS = [
   'SUPABASE_URL',
