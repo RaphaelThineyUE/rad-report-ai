@@ -43,6 +43,9 @@ const ICONS: Record<string, string> = {
   pen: '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
   pill: '<ellipse cx="12" cy="8" rx="3" ry="5"/><ellipse cx="12" cy="16" rx="3" ry="5"/><rect width="6" height="8" x="9" y="8" rx="3"/>',
   'Pill': '<ellipse cx="12" cy="8" rx="3" ry="5"/><ellipse cx="12" cy="16" rx="3" ry="5"/><rect width="6" height="8" x="9" y="8" rx="3"/>',
+  'check-circle': '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+  'alert-circle': '<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>',
+  info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
 };
 
 interface IconProps {
