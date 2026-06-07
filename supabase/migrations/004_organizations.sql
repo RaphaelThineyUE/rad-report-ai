@@ -71,13 +71,11 @@ CREATE POLICY "org_insert" ON organizations FOR INSERT WITH CHECK (
 );
 
 -- Organization members policies
--- Members can view members in their organizations
+-- Users can view their own membership records.
+-- (A self-referencing EXISTS would cause infinite recursion when other table policies
+-- query organization_members during RLS evaluation.)
 CREATE POLICY "org_members_select" ON organization_members FOR SELECT USING (
-  EXISTS (
-    SELECT 1 FROM organization_members om
-    WHERE om.organization_id = organization_members.organization_id
-    AND om.user_id = auth.uid()
-  )
+  user_id = auth.uid()
 );
 
 -- Only admins/owners can add members
