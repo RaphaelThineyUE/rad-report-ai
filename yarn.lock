@@ -5933,16 +5933,6 @@ why-is-node-running@^2.3.0:
     siginfo "^2.0.0"
     stackback "0.0.2"
 
-wink-eng-lite-web-model@^1.8.1:
-  version "1.8.1"
-  resolved "https://registry.yarnpkg.com/wink-eng-lite-web-model/-/wink-eng-lite-web-model-1.8.1.tgz#5f653f6e54917780d258b617630ba2f74130ba25"
-  integrity sha512-M2tSOU/rVNkDj8AS8IoKJaM7apJJjS0cN+hE8CPazfnB4A/ojyc9+7RMPk18UOiIdSyWk7MR6w8z9lWix2l5tA==
-
-wink-nlp@^2.4.0:
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/wink-nlp/-/wink-nlp-2.4.0.tgz#ba21c297a410bc67a36641273f22cd00d7e8d320"
-  integrity sha512-d02inlNJL0LLNTLoYfkxZYGrqnYDSZV4HI4WpeuyIEfpu7UcUqUW1ZYWr+JTFm4ZR6dQdzOW/FtHEQRO+o/zzA==
-
 word-wrap@^1.2.5:
   version "1.2.5"
   resolved "https://registry.yarnpkg.com/word-wrap/-/word-wrap-1.2.5.tgz#d2c45c6dd4fbce621a66f136cbe328afd0410b34"

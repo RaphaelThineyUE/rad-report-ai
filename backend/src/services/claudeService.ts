@@ -7,7 +7,8 @@
  * Structured responses are validated with Zod via `client.messages.parse()` and the
  * `zodOutputFormat()` helper (schemas live in aiSchemas.ts), replacing regex/JSON.parse
  * extraction. cleanupIdentifiers delegates to the local de-identification pipeline
- * (regex + wink-nlp NER in deidentify.ts) so PHI never reaches Anthropic;
+ * (deterministic regex in deidentify.ts — patient name, DOB, addresses, and direct
+ * identifiers only) so PHI never reaches Anthropic while clinical data is preserved;
  * matchSourceQuotes verifies evidence against raw text to flag hallucinations.
  * Every exported function appends a clinical disclaimer.
  */
