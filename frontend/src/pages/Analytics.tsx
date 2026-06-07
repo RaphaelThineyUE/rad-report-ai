@@ -46,7 +46,7 @@ export default function Analytics() {
       if (filters.cancerStage) params.append('cancerStage', filters.cancerStage);
       if (filters.treatmentType) params.append('treatmentType', filters.treatmentType);
 
-      const response = await api.get(`/analytics?${params.toString()}`);
+      const response = await api.get(`/api/analytics?${params.toString()}`);
       setData(response.data);
     } catch (error) {
       console.error('Failed to fetch analytics:', error);

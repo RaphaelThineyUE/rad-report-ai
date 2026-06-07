@@ -30,7 +30,7 @@ export default function AdminDashboard() {
 
   const fetchSystemHealth = async () => {
     try {
-      const response = await api.get('/admin/health');
+      const response = await api.get('/api/admin/health');
       setHealth(response.data);
     } catch (error) {
       console.error('Failed to fetch system health:', error);

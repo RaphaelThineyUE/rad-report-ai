@@ -244,7 +244,7 @@ export default function PatientAnalytics() {
 
       {/* Demographics Section */}
       <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Patient Demographics (MIG-131)</h2>
+        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Patient Demographics</h2>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
           <div className="card card-pad">
             <span className="t-overline">Gender Distribution</span>
@@ -384,7 +384,7 @@ export default function PatientAnalytics() {
 
       {/* Diagnostics Section */}
       <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Diagnostic Findings (MIG-132)</h2>
+        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Diagnostic Findings</h2>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
           <div className="card card-pad">
             <span className="t-overline">BI-RADS Distribution</span>
@@ -474,7 +474,7 @@ export default function PatientAnalytics() {
 
       {/* Treatment Section */}
       <div>
-        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Treatment Analysis (MIG-132)</h2>
+        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Treatment Analysis</h2>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
           <div className="card card-pad">
             <span className="t-overline">Treatment Type Distribution</span>
