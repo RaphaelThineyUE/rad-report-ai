@@ -70,8 +70,7 @@ export async function listOrganizations(req: AuthRequest, res: Response): Promis
     const client = createUserClient(req.accessToken);
     const { data, error } = await client
       .from('organizations')
-      .select('*')
-      .or(`owner_id.eq.${userId},organization_members.user_id.eq.${userId}`);
+      .select('*');
 
     if (error) {
       logger.error('Failed to list organizations', { userId, error: error.message });
