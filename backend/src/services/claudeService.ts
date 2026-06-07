@@ -4,27 +4,23 @@
  * detectBiradsTrend, cleanupIdentifiers, matchSourceQuotes — plus their result types.
  * The Claude model is configurable via the ANTHROPIC_MODEL env var (default:
  * claude-sonnet-4-6); this module is the single source of truth for model selection.
- * cleanupIdentifiers combines deterministic regex PII redaction with a Claude pass;
- * matchSourceQuotes verifies evidence against raw text to flag hallucinations.
- * Every exported function appends a clinical disclaimer.
+ * Structured responses are validated with Zod via `client.messages.parse()` and the
+ * `zodOutputFormat()` helper (schemas live in aiSchemas.ts), replacing regex/JSON.parse
+ * extraction. cleanupIdentifiers combines deterministic regex PII redaction with a
+ * Claude pass; matchSourceQuotes verifies evidence against raw text to flag
+ * hallucinations. Every exported function appends a clinical disclaimer.
  */
 import Anthropic from '@anthropic-ai/sdk';
+import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
 import { logger } from '../utils/logger.js';
-
-// Import types locally since shared package uses relative paths
-interface Finding {
-  laterality: string;
-  location: string;
-  description: string;
-  assessment: string;
-  evidence: string[];
-}
-
-interface Recommendation {
-  action: string;
-  timeframe: string;
-  evidence: string[];
-}
+import {
+  ReportAnalysisSchema,
+  ConsolidationSchema,
+  ComparisonSchema,
+  BiradsTrendSchema,
+  type Finding,
+  type Recommendation,
+} from './aiSchemas.js';
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -54,11 +50,11 @@ export async function analyzeReport(reportText: string): Promise<AnalysisResult>
 9. Clinical recommendations
 10. Any red flags or urgent findings
 
-Return a valid JSON object with these fields. Provide evidence for key assertions.`;
+Provide evidence for key assertions.`;
 
     const userPrompt = `Please analyze this radiology report:\n\n${reportText}`;
 
-    const response = await client.messages.create({
+    const message = await client.messages.parse({
       model: MODEL,
       max_tokens: 2000,
       system: systemPrompt,
@@ -68,34 +64,29 @@ Return a valid JSON object with these fields. Provide evidence for key assertion
           content: userPrompt,
         },
       ],
+      output_config: { format: zodOutputFormat(ReportAnalysisSchema) },
     });
 
-    const responseText =
-      response.content[0].type === 'text' ? response.content[0].text : '';
-
-    // Parse the JSON response
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('Failed to extract JSON from Claude response');
+    const analysisData = message.parsed_output;
+    if (!analysisData) {
+      throw new Error('Failed to parse structured analysis from Claude response');
     }
-
-    const analysisData = JSON.parse(jsonMatch[0]);
 
     const processingTime = Date.now() - startTime;
     logger.info('Successfully analyzed report with Claude', { processingTime });
 
     return {
-      summary: analysisData.summary || '',
-      birads_value: analysisData.birads_value || 0,
-      birads_confidence: analysisData.birads_confidence || 'low',
-      breast_density_value: analysisData.breast_density || '',
-      exam_type: analysisData.exam_type || 'unknown',
-      exam_laterality: analysisData.laterality || 'bilateral',
-      comparison_prior_exam_date: analysisData.prior_exam_date || null,
-      findings: normalizeFindings(analysisData.findings || []),
-      recommendations: normalizeRecommendations(analysisData.recommendations || []),
-      red_flags: analysisData.red_flags || [],
-      raw_analysis: responseText,
+      summary: analysisData.summary,
+      birads_value: analysisData.birads_value,
+      birads_confidence: analysisData.birads_confidence,
+      breast_density_value: analysisData.breast_density,
+      exam_type: analysisData.exam_type,
+      exam_laterality: analysisData.laterality,
+      comparison_prior_exam_date: analysisData.prior_exam_date,
+      findings: analysisData.findings,
+      recommendations: analysisData.recommendations,
+      red_flags: analysisData.red_flags,
+      raw_analysis: JSON.stringify(analysisData),
       clinical_disclaimer: CLINICAL_DISCLAIMER,
     };
   } catch (error) {
@@ -148,40 +139,35 @@ export async function consolidateReports(
       .map((r) => `Date: ${r.date}\n${r.text}`)
       .join('\n\n---\n\n');
 
-    const response = await client.messages.create({
+    const message = await client.messages.parse({
       model: MODEL,
       max_tokens: 1000,
       system: `You are a clinical consolidator. Review multiple radiology reports and create:
 1. An overall patient summary
 2. Key trends in findings
 3. Overall BI-RADS assessment
-4. Clinical implications
-
-Return valid JSON with fields: overall_summary, key_trends, overall_birads, clinical_implications`,
+4. Clinical implications`,
       messages: [
         {
           role: 'user',
           content: `Consolidate these reports:\n\n${reportsText}`,
         },
       ],
+      output_config: { format: zodOutputFormat(ConsolidationSchema) },
     });
 
-    const responseText =
-      response.content[0].type === 'text' ? response.content[0].text : '';
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-
-    if (!jsonMatch) {
-      throw new Error('Failed to extract JSON from consolidation response');
+    const consolidation = message.parsed_output;
+    if (!consolidation) {
+      throw new Error('Failed to parse structured consolidation from Claude response');
     }
 
-    const consolidation = JSON.parse(jsonMatch[0]);
     logger.info('Successfully consolidated reports');
 
     return {
-      overall_summary: consolidation.overall_summary || '',
-      key_trends: consolidation.key_trends || [],
-      overall_birads: consolidation.overall_birads || 0,
-      clinical_implications: consolidation.clinical_implications || '',
+      overall_summary: consolidation.overall_summary,
+      key_trends: consolidation.key_trends,
+      overall_birads: consolidation.overall_birads,
+      clinical_implications: consolidation.clinical_implications,
       clinical_disclaimer: CLINICAL_DISCLAIMER,
     };
   } catch (error) {
@@ -206,37 +192,32 @@ export async function compareTreatments(
       )
       .join('\n');
 
-    const response = await client.messages.create({
+    const message = await client.messages.parse({
       model: MODEL,
       max_tokens: 1000,
       system: `You are a clinical expert. Compare treatments against the current radiology findings.
-Return valid JSON with:
-- treatment_responses (array with treatment_type and assessment)
-- recommendations (array of clinical recommendations)
-- evidence_summary (string summarizing supporting evidence)`,
+Provide, for each treatment, an assessment of its alignment with the findings, overall
+clinical recommendations, and a summary of the supporting evidence.`,
       messages: [
         {
           role: 'user',
           content: `Report findings:\n${reportText}\n\nTreatments:\n${treatmentsText}`,
         },
       ],
+      output_config: { format: zodOutputFormat(ComparisonSchema) },
     });
 
-    const responseText =
-      response.content[0].type === 'text' ? response.content[0].text : '';
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-
-    if (!jsonMatch) {
-      throw new Error('Failed to extract JSON from comparison response');
+    const comparison = message.parsed_output;
+    if (!comparison) {
+      throw new Error('Failed to parse structured comparison from Claude response');
     }
 
-    const comparison = JSON.parse(jsonMatch[0]);
     logger.info('Successfully compared treatments');
 
     return {
-      treatment_responses: comparison.treatment_responses || [],
-      recommendations: comparison.recommendations || [],
-      evidence_summary: comparison.evidence_summary || '',
+      treatment_responses: comparison.treatment_responses,
+      recommendations: comparison.recommendations,
+      evidence_summary: comparison.evidence_summary,
       clinical_disclaimer: CLINICAL_DISCLAIMER,
     };
   } catch (error) {
@@ -266,27 +247,23 @@ export async function detectBiradsTrend(
       .map((v) => `Date: ${v.date}, BI-RADS: ${v.value}`)
       .join('\n');
 
-    const response = await client.messages.create({
+    const message = await client.messages.parse({
       model: MODEL,
       max_tokens: 300,
-      system: `Analyze BI-RADS trend. Return JSON with:
-- trend (improving/worsening/stable/insufficient_data)
-- direction (up/down/none)
-- significance (low/medium/high)
-- clinical_note (brief explanation)`,
+      system: `Analyze the BI-RADS trend across the provided assessments. Report the overall
+trend (improving/worsening/stable/insufficient_data), the direction (up/down/none),
+the clinical significance (low/medium/high), and a brief explanatory note.`,
       messages: [
         {
           role: 'user',
           content: `Analyze this BI-RADS trend:\n${valuesText}`,
         },
       ],
+      output_config: { format: zodOutputFormat(BiradsTrendSchema) },
     });
 
-    const responseText =
-      response.content[0].type === 'text' ? response.content[0].text : '';
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-
-    if (!jsonMatch) {
+    const trendData = message.parsed_output;
+    if (!trendData) {
       return {
         trend: 'insufficient_data',
         direction: 'unknown',
@@ -295,14 +272,13 @@ export async function detectBiradsTrend(
       };
     }
 
-    const trendData = JSON.parse(jsonMatch[0]);
     logger.info('Successfully detected BI-RADS trend');
 
     return {
-      trend: trendData.trend || 'insufficient_data',
-      direction: trendData.direction || 'unknown',
-      significance: trendData.significance || 'low',
-      clinical_note: trendData.clinical_note || '',
+      trend: trendData.trend,
+      direction: trendData.direction,
+      significance: trendData.significance,
+      clinical_note: trendData.clinical_note,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -472,34 +448,6 @@ export async function matchSourceQuotes(
  */
 function escapeRegExp(string: string): string {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-// Helper functions
-
-function normalizeFindings(findingsData: unknown[]): Finding[] {
-  return (findingsData || []).map((f: unknown) => {
-    const finding = f as Record<string, unknown>;
-    return {
-      laterality: (finding.laterality as string) || 'unknown',
-      location: (finding.location as string) || '',
-      description: (finding.description as string) || '',
-      assessment: (finding.assessment as string) || '',
-      evidence: Array.isArray(finding.evidence) ? finding.evidence : [],
-    };
-  });
-}
-
-function normalizeRecommendations(
-  recommendationsData: unknown[]
-): Recommendation[] {
-  return (recommendationsData || []).map((r: unknown) => {
-    const recommendation = r as Record<string, unknown>;
-    return {
-      action: (recommendation.action as string) || '',
-      timeframe: (recommendation.timeframe as string) || '',
-      evidence: Array.isArray(recommendation.evidence) ? recommendation.evidence : [],
-    };
-  });
 }
 
 // Type definitions
