@@ -8,8 +8,6 @@
  * - Concurrent upload support
  */
 
-import { describe, it, expect } from 'vitest';
-
 /**
  * Test Suite: File Upload Validation
  */

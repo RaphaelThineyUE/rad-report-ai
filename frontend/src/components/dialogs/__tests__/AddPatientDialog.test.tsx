@@ -5,10 +5,10 @@ import { AddPatientDialog } from '../AddPatientDialog';
 import * as usePatients from '@/hooks/usePatients';
 
 vi.mock('@/hooks/usePatients', () => ({
-  useCreatePatient: () => ({
+  useCreatePatient: vi.fn(() => ({
     mutateAsync: vi.fn().mockResolvedValue({ id: 'patient-1' }),
     isPending: false,
-  }),
+  })),
   GENDERS: ['Male', 'Female', 'Other'],
   CANCER_STAGES: ['Stage 0', 'Stage I', 'Stage II', 'Stage III', 'Stage IV', 'Unknown'],
   BIOMARKER_STATUSES: ['Positive', 'Negative', 'Unknown'],
