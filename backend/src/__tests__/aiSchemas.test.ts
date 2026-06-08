@@ -9,12 +9,18 @@ describe('aiSchemas', () => {
   describe('ReportAnalysisSchema', () => {
     const valid = {
       summary: 'Stable benign findings.',
-      birads_value: 2,
-      birads_confidence: 'high',
-      breast_density: 'B',
+      exam_date: '2025-06-01',
+      modality: 'mammography',
+      contrast: 'not_applicable',
       exam_type: 'screening',
       laterality: 'bilateral',
+      breast_density: 'B',
+      birads_value: 2,
+      birads_confidence: 'high',
+      clinical_history: 'Routine screening.',
+      risk_factors: [],
       prior_exam_date: '2025-01-01',
+      comparison_dates: ['2025-01-01'],
       findings: [
         {
           laterality: 'left',
@@ -22,11 +28,39 @@ describe('aiSchemas', () => {
           description: 'stable cyst',
           assessment: 'benign',
           evidence: ['simple cyst noted'],
+          finding_type: 'mass',
+          size_mm: 5,
+          per_finding_birads: 2,
+          interval_change: 'stable',
+          clock_position: null,
+          distance_from_nipple_cm: null,
+          quadrant: null,
+          depth: null,
+          shape: null,
+          margin: null,
+          calcification_morphology: null,
+          calcification_distribution: null,
+          ultrasound_features: null,
+          mri_features: null,
         },
       ],
+      lymph_nodes: [],
+      skin_nipple_changes: [],
+      implants: null,
+      post_surgical_changes: [],
+      multifocal: false,
+      multicentric: false,
+      bilateral_disease: false,
+      disease_extent: null,
       recommendations: [
         { action: 'routine screening', timeframe: '12 months', evidence: [] },
       ],
+      management: {
+        biopsy_recommended: false,
+        recommended_modality: null,
+        follow_up_interval: '12 months',
+      },
+      pathology_correlation: null,
       red_flags: [],
     };
 
@@ -73,6 +107,15 @@ describe('aiSchemas', () => {
         key_trends: ['stable density'],
         overall_birads: 2,
         clinical_implications: 'Continue routine screening.',
+        timeline: [
+          {
+            exam_date: '2025-01-01',
+            modality: 'mammography',
+            birads: 2,
+            key_change: 'stable',
+          },
+        ],
+        pathology_correlation: null,
       });
       expect(result.key_trends).toContain('stable density');
     });
