@@ -22,6 +22,11 @@ import {
   BiradsTrendSchema,
   type Finding,
   type Recommendation,
+  type LymphNode,
+  type Implant,
+  type Management,
+  type TimelinePoint,
+  type Consolidation,
 } from './aiSchemas.js';
 import { deidentify } from './deidentify.js';
 
@@ -40,20 +45,52 @@ export async function analyzeReport(reportText: string): Promise<AnalysisResult>
   const startTime = Date.now();
 
   try {
-    const systemPrompt = `You are an expert radiologist analyzing mammography reports. Extract the following information from the report text:
+    const systemPrompt = `You are an expert radiologist analyzing breast imaging reports. Extract the following information:
 
-1. Summary (1-2 sentences of the key finding)
-2. BI-RADS assessment value (0-6)
-3. Confidence in BI-RADS assessment (low/medium/high)
-4. Breast density (BI-RADS classification A-D)
-5. Exam type (screening/diagnostic/follow-up)
-6. Laterality (bilateral/left/right)
-7. Comparison with prior exams (if mentioned, include date)
-8. Key findings (location, laterality, description, assessment)
-9. Clinical recommendations
-10. Any red flags or urgent findings
+**Study Details:**
+- Exam date (format: YYYY-MM-DD if possible)
+- Modality (mammography/tomosynthesis/ultrasound/mri/other)
+- Contrast status (with/without/not_applicable)
+- Exam type (screening/diagnostic/follow-up)
+- Laterality (bilateral/left/right)
+- Breast density (A/B/C/D if applicable)
+- Clinical history (any mentioned patient presentation)
+- Risk factors (mentioned cancer risk factors)
+- Prior exam date(s) and comparison notes
+- Pathology correlation (if mentioned)
 
-Provide evidence for key assertions.`;
+**Findings for each lesion/mass:**
+- Type (mass/calcifications/asymmetry/architectural_distortion/lymph_node/other)
+- Size in mm
+- Per-finding BI-RADS category
+- Interval change (new/increased/decreased/stable/resolved/not_applicable)
+- Location: clock position, distance from nipple (cm), quadrant, depth (anterior/middle/posterior)
+- Morphology: shape (oval/round/irregular), margin (circumscribed/obscured/microlobulated/indistinct/spiculated)
+- Calcification morphology and distribution (if applicable)
+- Ultrasound features (if applicable)
+- MRI features (if applicable)
+
+**Systemic findings:**
+- Lymph nodes (region, abnormal status, morphology, size mm)
+- Implants (present, type, integrity)
+- Skin/nipple changes
+- Post-surgical changes
+
+**Disease extent (surgical planning):**
+- Multifocal (same breast, different quadrants)
+- Multicentric (different breasts)
+- Bilateral disease
+- Overall disease extent summary
+
+**Assessment & Recommendations:**
+- BI-RADS value (0-6) and confidence (low/medium/high)
+- Biopsy recommendation
+- Recommended modality for follow-up
+- Follow-up interval
+- Clinical recommendations
+- Red flags or urgent findings
+
+Provide evidence (quoted text) for all findings.`;
 
     const userPrompt = `Please analyze this radiology report:\n\n${reportText}`;
 
@@ -83,11 +120,27 @@ Provide evidence for key assertions.`;
       birads_value: analysisData.birads_value,
       birads_confidence: analysisData.birads_confidence,
       breast_density_value: analysisData.breast_density,
+      exam_date: analysisData.exam_date,
+      modality: analysisData.modality,
+      contrast: analysisData.contrast,
       exam_type: analysisData.exam_type,
       exam_laterality: analysisData.laterality,
-      comparison_prior_exam_date: analysisData.prior_exam_date,
+      clinical_history: analysisData.clinical_history,
+      risk_factors: analysisData.risk_factors,
+      prior_exam_date: analysisData.prior_exam_date,
+      comparison_dates: analysisData.comparison_dates,
       findings: analysisData.findings,
+      lymph_nodes: analysisData.lymph_nodes,
+      skin_nipple_changes: analysisData.skin_nipple_changes,
+      implants: analysisData.implants,
+      post_surgical_changes: analysisData.post_surgical_changes,
+      multifocal: analysisData.multifocal,
+      multicentric: analysisData.multicentric,
+      bilateral_disease: analysisData.bilateral_disease,
+      disease_extent: analysisData.disease_extent,
       recommendations: analysisData.recommendations,
+      management: analysisData.management,
+      pathology_correlation: analysisData.pathology_correlation,
       red_flags: analysisData.red_flags,
       raw_analysis: JSON.stringify(analysisData),
       clinical_disclaimer: CLINICAL_DISCLAIMER,
@@ -144,12 +197,17 @@ export async function consolidateReports(
 
     const message = await client.messages.parse({
       model: MODEL,
-      max_tokens: 1000,
-      system: `You are a clinical consolidator. Review multiple radiology reports and create:
-1. An overall patient summary
-2. Key trends in findings
-3. Overall BI-RADS assessment
-4. Clinical implications`,
+      max_tokens: 2000,
+      system: `You are a clinical consolidator. Review multiple radiology reports across a patient's imaging timeline and create:
+
+1. Overall summary: key findings and trajectory of disease
+2. Key trends: how findings have evolved over time
+3. Overall BI-RADS: final assessment integrating all reports
+4. Clinical implications: what this trajectory means for management
+5. Timeline: for each exam, capture exam_date (YYYY-MM-DD), modality (mammography/tomosynthesis/ultrasound/mri/other), birads value, and key_change (what changed from prior if applicable)
+6. Pathology correlation: if any surgical/pathology results are mentioned that correlate with imaging
+
+Focus on temporal trends, interval changes, and any pathology correlation mentioned.`,
       messages: [
         {
           role: 'user',
@@ -171,6 +229,8 @@ export async function consolidateReports(
       key_trends: consolidation.key_trends,
       overall_birads: consolidation.overall_birads,
       clinical_implications: consolidation.clinical_implications,
+      timeline: consolidation.timeline,
+      pathology_correlation: consolidation.pathology_correlation,
       clinical_disclaimer: CLINICAL_DISCLAIMER,
     };
   } catch (error) {
@@ -381,12 +441,28 @@ export interface AnalysisResult {
   summary: string;
   birads_value: number;
   birads_confidence: 'low' | 'medium' | 'high';
-  breast_density_value: string;
+  breast_density_value: string | null;
+  exam_date: string | null;
+  modality: string | null;
+  contrast: 'with' | 'without' | 'not_applicable' | null;
   exam_type: string;
   exam_laterality: string;
-  comparison_prior_exam_date: string | null;
+  clinical_history: string | null;
+  risk_factors: string[];
+  prior_exam_date: string | null;
+  comparison_dates: string[];
   findings: Finding[];
+  lymph_nodes: LymphNode[];
+  skin_nipple_changes: string[];
+  implants: Implant | null;
+  post_surgical_changes: string[];
+  multifocal: boolean | null;
+  multicentric: boolean | null;
+  bilateral_disease: boolean | null;
+  disease_extent: string | null;
   recommendations: Recommendation[];
+  management: Management;
+  pathology_correlation: string | null;
   red_flags: string[];
   raw_analysis: string;
   clinical_disclaimer: string;
@@ -402,6 +478,8 @@ export interface ConsolidationResult {
   key_trends: string[];
   overall_birads: number;
   clinical_implications: string;
+  timeline: TimelinePoint[];
+  pathology_correlation: string | null;
   clinical_disclaimer: string;
 }
 
