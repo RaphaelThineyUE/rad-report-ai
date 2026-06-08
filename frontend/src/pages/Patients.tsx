@@ -65,28 +65,14 @@ export default function Patients({ search }: PatientsProps) {
       .slice(0, 2);
   };
 
-  if (error) {
-    return (
-      <div className="fade-up">
-        <div className="page-head">
-          <div>
-            <h1 className="t-h1">Patients</h1>
-            <div className="sub">Error loading patients</div>
-          </div>
-        </div>
-        <div className="card card-pad" style={{ color: 'var(--fg-3)' }}>
-          Failed to load patients. Please try again.
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="fade-up">
       <div className="page-head">
         <div>
           <h1 className="t-h1">Patients</h1>
-          <div className="sub">Longitudinal records across all studies</div>
+          <div className="sub">
+            {error ? 'Error loading patients' : 'Longitudinal records across all studies'}
+          </div>
         </div>
         <button className="btn btn-primary" onClick={() => setShowAddDialog(true)}>
           Add Patient
@@ -96,6 +82,10 @@ export default function Patients({ search }: PatientsProps) {
       {isLoading ? (
         <div className="card card-pad" style={{ color: 'var(--fg-3)', textAlign: 'center' }}>
           Loading patients...
+        </div>
+      ) : error ? (
+        <div className="card card-pad" style={{ color: 'var(--fg-3)' }}>
+          Failed to load patients. Please try again.
         </div>
       ) : rows.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--fg-3)' }}>

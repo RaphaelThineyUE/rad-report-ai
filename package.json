@@ -1,7 +1,7 @@
- {
+{
   "name": "rad-report-ai",
-  "version": "0.0.0",
-  "private": true, 
+  "version": "0.0.2",
+  "private": true,
   "packageManager": "yarn@1.22.22",
   "workspaces": [
     "backend",
@@ -10,6 +10,7 @@
   ],
   "scripts": {
     "dev": "concurrently --kill-others-on-fail --names backend,frontend -c cyan,magenta \"yarn workspace backend dev\" \"yarn workspace frontend dev\"",
+    "prebuild": "node scripts/increment-version.js",
     "build": "yarn workspace backend build && yarn workspace frontend build",
     "test": "yarn workspace backend test && yarn workspace frontend test",
     "lint": "yarn workspace backend lint && yarn workspace frontend lint",

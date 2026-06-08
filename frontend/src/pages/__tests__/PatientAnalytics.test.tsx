@@ -101,7 +101,7 @@ describe('PatientAnalytics Component', () => {
     });
   });
 
-  it('displays demographics section with MIG-131 label', async () => {
+  it('displays demographics section', async () => {
     const mockApi = apiModule as any;
     mockApi.api.get
       .mockResolvedValueOnce({ data: mockPatients })
@@ -111,7 +111,7 @@ describe('PatientAnalytics Component', () => {
     render(<PatientAnalytics />);
 
     await waitFor(() => {
-      expect(screen.getByText('Patient Demographics (MIG-131)')).toBeInTheDocument();
+      expect(screen.getByText('Patient Demographics')).toBeInTheDocument();
     });
   });
 
@@ -174,7 +174,7 @@ describe('PatientAnalytics Component', () => {
     });
   });
 
-  it('displays diagnostics section with MIG-132 label', async () => {
+  it('displays diagnostics section', async () => {
     const mockApi = apiModule as any;
     mockApi.api.get
       .mockResolvedValueOnce({ data: mockPatients })
@@ -184,7 +184,7 @@ describe('PatientAnalytics Component', () => {
     render(<PatientAnalytics />);
 
     await waitFor(() => {
-      expect(screen.getByText('Diagnostic Findings (MIG-132)')).toBeInTheDocument();
+      expect(screen.getByText('Diagnostic Findings')).toBeInTheDocument();
     });
   });
 
@@ -230,7 +230,7 @@ describe('PatientAnalytics Component', () => {
     });
   });
 
-  it('displays treatment analysis section with MIG-132 label', async () => {
+  it('displays treatment analysis section', async () => {
     const mockApi = apiModule as any;
     mockApi.api.get
       .mockResolvedValueOnce({ data: mockPatients })
@@ -240,8 +240,7 @@ describe('PatientAnalytics Component', () => {
     render(<PatientAnalytics />);
 
     await waitFor(() => {
-      const mig132Labels = screen.getAllByText('Treatment Analysis (MIG-132)');
-      expect(mig132Labels.length).toBeGreaterThan(0);
+      expect(screen.getByText('Treatment Analysis')).toBeInTheDocument();
     });
   });
 

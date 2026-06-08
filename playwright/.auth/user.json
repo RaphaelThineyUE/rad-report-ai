@@ -1,0 +1,14 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:5173",
+      "localStorage": [
+        {
+          "name": "sb-ghdgkthminenqniqhjjx-auth-token",
+          "value": "{\"access_token\":\"eyJhbGciOiJFUzI1NiIsImtpZCI6IjIyZDFkODk5LTk2YmItNGY0Zi1hYjI4LWE0Y2U4OGZiNmI5YSIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2doZGdrdGhtaW5lbnFuaXFoamp4LnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiJkY2IyYmFiMS02NmM5LTQ1YzUtYTE4Zi00OGYxZjM5OGZhOTAiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzgwOTU5ODcyLCJpYXQiOjE3ODA5NTYyNzIsImVtYWlsIjoicmFwaGFlbC50aGluZXlAZ21haWwuY29tIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6eyJlbWFpbF92ZXJpZmllZCI6dHJ1ZX0sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3ODA5NTYyNzJ9XSwic2Vzc2lvbl9pZCI6IjkyNmVkOTc2LWVhODMtNGMwNi1hYjE0LTkwNmVhMWYyNWM1ZSIsImlzX2Fub255bW91cyI6ZmFsc2V9.8f8Fv7lBW426JmhU8M1DHwNDeAyvpfGi6ocxBZxnXWC8F4shsqP_TPnoZNk0XcF8q0U9E3xVf-22Jx78fHMBCw\",\"token_type\":\"bearer\",\"expires_in\":3600,\"expires_at\":1780959872,\"refresh_token\":\"oasc53sxfbx5\",\"user\":{\"id\":\"dcb2bab1-66c9-45c5-a18f-48f1f398fa90\",\"aud\":\"authenticated\",\"role\":\"authenticated\",\"email\":\"raphael.thiney@gmail.com\",\"email_confirmed_at\":\"2026-06-06T23:44:01.23525Z\",\"phone\":\"\",\"confirmed_at\":\"2026-06-06T23:44:01.23525Z\",\"last_sign_in_at\":\"2026-06-08T22:04:32.676725004Z\",\"app_metadata\":{\"provider\":\"email\",\"providers\":[\"email\"]},\"user_metadata\":{\"email_verified\":true},\"identities\":[{\"identity_id\":\"a8eb5019-8743-45fe-8c53-02683111cb7c\",\"id\":\"dcb2bab1-66c9-45c5-a18f-48f1f398fa90\",\"user_id\":\"dcb2bab1-66c9-45c5-a18f-48f1f398fa90\",\"identity_data\":{\"email\":\"raphael.thiney@gmail.com\",\"email_verified\":false,\"phone_verified\":false,\"sub\":\"dcb2bab1-66c9-45c5-a18f-48f1f398fa90\"},\"provider\":\"email\",\"last_sign_in_at\":\"2026-06-06T23:44:01.22762Z\",\"created_at\":\"2026-06-06T23:44:01.227679Z\",\"updated_at\":\"2026-06-06T23:44:01.227679Z\",\"email\":\"raphael.thiney@gmail.com\"}],\"created_at\":\"2026-06-06T23:44:01.197456Z\",\"updated_at\":\"2026-06-08T22:04:32.678962Z\",\"is_anonymous\":false},\"weak_password\":{\"message\":\"Password should contain at least one character of each: abcdefghijklmnopqrstuvwxyz, ABCDEFGHIJKLMNOPQRSTUVWXYZ, 0123456789, !@#$%^&*()_+-=[]{};':\\\"|<>?,./`~.\",\"reasons\":[\"characters\"]}}"
+        }
+      ]
+    }
+  ]
+}

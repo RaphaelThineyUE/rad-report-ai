@@ -1,12 +1,28 @@
 import request from 'supertest';
 import express from 'express';
 
+jest.mock('../services/supabaseClient', () => ({
+  supabaseAdmin: {
+    auth: {
+      signUp: jest.fn(),
+      signInWithPassword: jest.fn(),
+    },
+  },
+  createUserClient: jest.fn(),
+}));
+
+// eslint-disable-next-line import/first
+import authRouter from '../routes/auth';
+import { errorHandler } from '../middleware/errorHandler';
+
 describe('Auth API', () => {
   let app: express.Application;
 
   beforeAll(() => {
     app = express();
     app.use(express.json());
+    app.use('/api/auth', authRouter);
+    app.use(errorHandler);
   });
 
   describe('POST /api/auth/register', () => {

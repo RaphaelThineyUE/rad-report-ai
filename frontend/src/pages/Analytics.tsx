@@ -25,6 +25,7 @@ interface AnalyticsData {
 export default function Analytics() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const exportAnalytics = useExportAnalytics();
   const [filters, setFilters] = useState({
     startDate: '',
@@ -35,10 +36,12 @@ export default function Analytics() {
 
   useEffect(() => {
     fetchAnalytics();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   const fetchAnalytics = async () => {
     setLoading(true);
+    setError(null);
     try {
       const params = new URLSearchParams();
       if (filters.startDate) params.append('startDate', filters.startDate);
@@ -48,8 +51,10 @@ export default function Analytics() {
 
       const response = await api.get(`/api/analytics?${params.toString()}`);
       setData(response.data);
-    } catch (error) {
-      console.error('Failed to fetch analytics:', error);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      console.error('Failed to fetch analytics:', err);
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -80,8 +85,28 @@ export default function Analytics() {
     return <div className="fade-up"><div className="page-head"><h1 className="t-h1">Loading...</h1></div></div>;
   }
 
-  if (!data) {
-    return <div className="fade-up"><div className="page-head"><h1 className="t-h1">Failed to load analytics</h1></div></div>;
+  if (error || !data) {
+    return (
+      <div className="fade-up">
+        <div className="page-head">
+          <div>
+            <h1 className="t-h1">Analytics</h1>
+            <div className="sub">Patient population reporting</div>
+          </div>
+        </div>
+        <div className="card card-pad" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: 40 }}>
+          <span style={{ fontSize: 14, color: 'var(--fg-2)' }}>Failed to load analytics data.</span>
+          {error && <span style={{ fontSize: 12, color: 'var(--fg-4)', fontFamily: 'monospace' }}>{error}</span>}
+          <button
+            className="btn btn-primary"
+            onClick={fetchAnalytics}
+            style={{ marginTop: 8 }}
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
   }
 
   const monthLabels = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];

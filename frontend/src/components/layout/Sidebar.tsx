@@ -54,7 +54,14 @@ export function Sidebar({ active, onNav, collapsed }: SidebarProps) {
       <div className="side-logo">
         {collapsed
           ? <img src={logomark} style={{ height: 30, width: 30 }} alt="RadReport AI" />
-          : <img src={logoLockup} alt="RadReport AI" />}
+          : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <img src={logoLockup} alt="RadReport AI" />
+              <span style={{ fontSize: 11, color: 'var(--fg-4)', letterSpacing: 0.2 }}>
+                v{__APP_VERSION__}
+              </span>
+            </div>
+          )}
       </div>
       <nav className="nav">
         {NAV_ITEMS.filter(it => it.id !== 'admin-dashboard').map(it => (
