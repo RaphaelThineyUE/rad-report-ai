@@ -35,6 +35,9 @@ type ReportStatus = 'pending' | 'processing' | 'completed' | 'failed';
 interface ReportUpdateBody {
   status?: ReportStatus;
   summary?: string | null;
+  exam_date?: string | null;
+  modality?: string | null;
+  contrast?: string | null;
   birads_value?: number | null;
   birads_confidence?: 'low' | 'medium' | 'high' | null;
   birads_evidence?: unknown;
@@ -43,18 +46,35 @@ interface ReportUpdateBody {
   exam_type?: string | null;
   exam_laterality?: string | null;
   exam_evidence?: unknown;
+  clinical_history?: string | null;
+  risk_factors?: unknown;
   comparison_prior_exam_date?: string | null;
+  comparison_dates?: unknown;
   comparison_evidence?: unknown;
   findings?: unknown;
+  lymph_nodes?: unknown;
+  skin_nipple_changes?: unknown;
+  implants?: unknown;
+  post_surgical_changes?: unknown;
+  multifocal?: boolean | null;
+  multicentric?: boolean | null;
+  bilateral_disease?: boolean | null;
+  disease_extent?: string | null;
   recommendations?: unknown;
+  management?: unknown;
+  pathology_correlation?: string | null;
   red_flags?: unknown;
   processing_time_ms?: number | null;
   raw_text?: string | null;
+  analysis_json?: unknown;
 }
 
 const REPORT_UPDATE_FIELDS: (keyof ReportUpdateBody)[] = [
   'status',
   'summary',
+  'exam_date',
+  'modality',
+  'contrast',
   'birads_value',
   'birads_confidence',
   'birads_evidence',
@@ -63,13 +83,27 @@ const REPORT_UPDATE_FIELDS: (keyof ReportUpdateBody)[] = [
   'exam_type',
   'exam_laterality',
   'exam_evidence',
+  'clinical_history',
+  'risk_factors',
   'comparison_prior_exam_date',
+  'comparison_dates',
   'comparison_evidence',
   'findings',
+  'lymph_nodes',
+  'skin_nipple_changes',
+  'implants',
+  'post_surgical_changes',
+  'multifocal',
+  'multicentric',
+  'bilateral_disease',
+  'disease_extent',
   'recommendations',
+  'management',
+  'pathology_correlation',
   'red_flags',
   'processing_time_ms',
   'raw_text',
+  'analysis_json',
 ];
 
 function normalizeFilename(filename: string): string {
@@ -617,6 +651,9 @@ export async function processReport(req: AuthRequest, res: Response): Promise<vo
     const updates: ReportUpdateBody = {
       status: 'completed',
       summary,
+      exam_date: analysis.exam_date,
+      modality: analysis.modality,
+      contrast: analysis.contrast,
       birads_value: analysis.birads_value,
       birads_confidence: analysis.birads_confidence,
       birads_evidence: analysis.findings.map((f) => f.assessment),
@@ -625,13 +662,27 @@ export async function processReport(req: AuthRequest, res: Response): Promise<vo
       exam_type: analysis.exam_type,
       exam_laterality: analysis.exam_laterality,
       exam_evidence: [analysis.exam_type, analysis.exam_laterality],
+      clinical_history: analysis.clinical_history,
+      risk_factors: analysis.risk_factors,
       comparison_prior_exam_date: analysis.prior_exam_date,
+      comparison_dates: analysis.comparison_dates,
       comparison_evidence: analysis.prior_exam_date ? [analysis.prior_exam_date] : [],
       findings: analysis.findings,
+      lymph_nodes: analysis.lymph_nodes,
+      skin_nipple_changes: analysis.skin_nipple_changes,
+      implants: analysis.implants,
+      post_surgical_changes: analysis.post_surgical_changes,
+      multifocal: analysis.multifocal,
+      multicentric: analysis.multicentric,
+      bilateral_disease: analysis.bilateral_disease,
+      disease_extent: analysis.disease_extent,
       recommendations: analysis.recommendations,
+      management: analysis.management,
+      pathology_correlation: analysis.pathology_correlation,
       red_flags: analysis.red_flags,
       processing_time_ms: processingTime,
       raw_text: rawText,
+      analysis_json: JSON.parse(analysis.raw_analysis),
     };
 
     // Update the report in the database
