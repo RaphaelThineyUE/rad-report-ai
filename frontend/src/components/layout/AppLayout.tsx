@@ -11,7 +11,7 @@ import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { BatchUploadDrawer } from '@/components/drawers/BatchUploadDrawer';
 
-type NavId = 'dashboard' | 'worklist' | 'patients' | 'analytics' | 'patient-analytics' | 'admin-dashboard' | 'admin-users' | 'teams' | 'settings' | 'howto';
+type NavId = 'dashboard' | 'worklist' | 'patients' | 'analytics' | 'patient-analytics' | 'admin-dashboard' | 'admin-users' | 'teams' | 'settings' | 'howto' | 'test';
 
 interface AppLayoutContextType {
   setCurrentPatientId: (id: string | null) => void;

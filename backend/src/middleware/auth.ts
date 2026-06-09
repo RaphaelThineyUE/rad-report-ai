@@ -36,3 +36,32 @@ export async function requireAuth(
   (req as AuthRequest).accessToken = token;
   next();
 }
+
+export async function requireAdmin(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const header = req.headers.authorization;
+  if (!header?.startsWith('Bearer ')) {
+    res.status(401).json({ error: 'Missing authorization token' });
+    return;
+  }
+
+  const token = header.slice(7);
+  const { data, error } = await supabaseAdmin.auth.getUser(token);
+
+  if (error || !data.user) {
+    res.status(401).json({ error: 'Invalid or expired token' });
+    return;
+  }
+
+  if (data.user.role !== 'admin') {
+    res.status(403).json({ error: 'Admin access required' });
+    return;
+  }
+
+  (req as AuthRequest).userId = data.user.id;
+  (req as AuthRequest).accessToken = token;
+  next();
+}

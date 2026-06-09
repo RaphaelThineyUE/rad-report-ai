@@ -38,14 +38,23 @@ const MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-6';
 
 const CLINICAL_DISCLAIMER = `⚠️ CLINICAL REVIEW REQUIRED: This analysis is AI-generated and must be reviewed by a qualified radiologist. Do not use as a substitute for professional medical judgment. All recommendations should be verified against the original report and clinical context.`;
 
+interface AnalysisOptions {
+  prompt_variant?: 'default' | 'strict' | 'lenient';
+  model?: string;
+  temperature?: number;
+}
+
 /**
  * Main analysis function that extracts key clinical data from a radiology report
  */
-export async function analyzeReport(reportText: string): Promise<AnalysisResult> {
+export async function analyzeReport(reportText: string, options?: AnalysisOptions): Promise<AnalysisResult> {
   const startTime = Date.now();
+  const modelToUse = options?.model ?? MODEL;
+  const temperature = options?.temperature ?? 0.7;
+  const variant = options?.prompt_variant ?? 'default';
 
   try {
-    const systemPrompt = `You are an expert radiologist analyzing breast imaging reports. Extract the following information:
+    let systemPrompt = `You are an expert radiologist analyzing breast imaging reports. Extract the following information:
 
 **Study Details:**
 - Exam date (format: YYYY-MM-DD if possible)
@@ -92,10 +101,17 @@ export async function analyzeReport(reportText: string): Promise<AnalysisResult>
 
 Provide evidence (quoted text) for all findings.`;
 
+    // Apply variant-specific prompt modifications
+    if (variant === 'strict') {
+      systemPrompt += `\n\n**STRICT MODE:** Only include findings with HIGH confidence. Use exact language from the report. Do not infer or extrapolate. When uncertain, mark confidence as "low" rather than guessing values.`;
+    } else if (variant === 'lenient') {
+      systemPrompt += `\n\n**LENIENT MODE:** Be comprehensive and include all mentioned findings, even those with lower confidence. Infer logical implications from the report. Mark lower-confidence findings but include them.`;
+    }
+
     const userPrompt = `Please analyze this radiology report:\n\n${reportText}`;
 
     const message = await client.messages.parse({
-      model: MODEL,
+      model: modelToUse,
       max_tokens: 2000,
       system: systemPrompt,
       messages: [

@@ -8,10 +8,12 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import { api } from '@/lib/api';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
+  role: 'user' | 'admin' | null;
   isLoading: boolean;
   logout: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
@@ -23,6 +25,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [role, setRole] = useState<'user' | 'admin' | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -33,6 +36,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (data.session) {
           setSession(data.session);
           setUser(data.session.user);
+
+          // Fetch user role from backend
+          try {
+            const response = await api.get('/api/auth/me');
+            setRole(response.data.role);
+          } catch (roleError) {
+            console.error('Failed to fetch user role:', roleError);
+            setRole('user');
+          }
         }
       } catch (error) {
         console.error('Failed to get session:', error);
@@ -50,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (event === 'SIGNED_OUT') {
         setUser(null);
         setSession(null);
+        setRole(null);
       }
     });
 
@@ -78,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, isLoading, logout, signInWithGoogle, signUp }}>
+    <AuthContext.Provider value={{ user, session, role, isLoading, logout, signInWithGoogle, signUp }}>
       {children}
     </AuthContext.Provider>
   );
