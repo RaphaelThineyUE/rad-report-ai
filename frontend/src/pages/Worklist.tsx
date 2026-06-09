@@ -40,6 +40,7 @@ export default function Worklist({ search }: WorklistProps) {
           age: new Date().getFullYear() - new Date(patient.date_of_birth).getFullYear(),
           sex: (patient.gender || '').charAt(0),
           initials: patient.full_name.split(' ').map(n => n.charAt(0)).join('').slice(0, 2),
+          filename: report.filename,
           accession: report.id.slice(0, 12).toUpperCase(),
           modality: report.exam_type || 'Unknown',
           birads: report.birads_value?.toString() || '—',
@@ -117,12 +118,12 @@ export default function Worklist({ search }: WorklistProps) {
                       <div>
                         <div style={{ fontWeight: 600, color: 'var(--fg-1)', fontSize: 14 }}>{p.name}</div>
                         <div className="mono" style={{ fontSize: 11.5, color: 'var(--fg-4)' }}>
-                          {p.id} · {p.age}{p.sex}
+                          {p.age}{p.sex}
                         </div>
                       </div>
                     </div>
                   </td>
-                  <td className="mono">{p.accession}</td>
+                  <td className="mono">{p.filename}</td>
                   <td>{p.modality}</td>
                   <td><BiRads value={p.birads} /></td>
                   <td><Badge status={p.status} /></td>

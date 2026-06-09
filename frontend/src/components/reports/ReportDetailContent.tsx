@@ -6,6 +6,7 @@
  */
 import { BiRads } from '@/components/ui/BiRads';
 import { BiRadsTrendSparkline } from '@/components/analytics';
+import type { BiRadsDataPoint } from '@/components/analytics';
 import type { Report, ReportFinding } from '@/hooks/useReports';
 
 const SECTION: React.CSSProperties = { display: 'grid', gap: 12 };
@@ -75,7 +76,7 @@ function FindingCard({ finding, index }: { finding: ReportFinding; index: number
 
 interface Props {
   report: Report;
-  biRadsTrendData: { date: string; birads: number }[];
+  biRadsTrendData: BiRadsDataPoint[];
 }
 
 export function ReportDetailContent({ report, biRadsTrendData }: Props) {

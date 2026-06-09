@@ -17,6 +17,7 @@ export interface PatientRow {
   age: number;
   sex: string;
   initials: string;
+  filename: string;
   accession: string;
   modality: string;
   birads: string;

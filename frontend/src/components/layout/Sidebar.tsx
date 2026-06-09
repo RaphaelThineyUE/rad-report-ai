@@ -27,6 +27,7 @@ const NAV_ITEMS: { id: NavId; label: string; icon: string }[] = [
   { id: 'analytics', label: 'System Analytics', icon: 'bar-chart' },
   { id: 'patient-analytics', label: 'Patient Analytics', icon: 'line-chart' },
   { id: 'teams',     label: 'Teams',     icon: 'users-plus' },
+  { id: 'test',      label: 'Test Harness', icon: 'flask' },
   { id: 'howto',     label: 'How To',    icon: 'help-circle' },
   { id: 'admin-dashboard', label: 'Admin',  icon: 'shield' },
 ];
@@ -34,7 +35,6 @@ const NAV_ITEMS: { id: NavId; label: string; icon: string }[] = [
 const ADMIN_ITEMS: { id: NavId; label: string; icon: string }[] = [
   { id: 'admin-dashboard', label: 'System Health', icon: 'activity' },
   { id: 'admin-users',     label: 'Users',          icon: 'users-cog' },
-  { id: 'test',            label: 'Test Harness',   icon: 'flask' },
 ];
 
 export function Sidebar({ active, onNav, collapsed }: SidebarProps) {
@@ -58,7 +58,10 @@ export function Sidebar({ active, onNav, collapsed }: SidebarProps) {
           : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <img src={logoLockup} alt="RadReport AI" />
-              <span style={{ fontSize: 11, color: 'var(--fg-4)', letterSpacing: 0.2 }}>
+              <span
+                style={{ fontSize: 11, color: 'var(--fg-4)', letterSpacing: 0.2, cursor: 'default' }}
+                title={`Deployed: ${new Date(__BUILD_TIME__).toLocaleString()}`}
+              >
                 v{__APP_VERSION__}
               </span>
             </div>
