@@ -14,6 +14,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { AdminRoute } from '@/components/AdminRoute';
 import { AppLayout } from '@/components/layout/AppLayout';
 import NotificationContainer from '@/components/notifications/NotificationContainer';
 
@@ -31,8 +32,9 @@ const AdminUsers   = lazy(() => import('@/pages/AdminUsers'));
 const Settings     = lazy(() => import('@/pages/Settings'));
 const Teams        = lazy(() => import('@/pages/Teams'));
 const HowTo        = lazy(() => import('@/pages/HowTo'));
+const Test         = lazy(() => import('@/pages/Test'));
 
-type NavId = 'dashboard' | 'worklist' | 'patients' | 'analytics' | 'patient-analytics' | 'admin-dashboard' | 'admin-users' | 'settings' | 'teams' | 'howto';
+type NavId = 'dashboard' | 'worklist' | 'patients' | 'analytics' | 'patient-analytics' | 'admin-dashboard' | 'admin-users' | 'settings' | 'teams' | 'howto' | 'test';
 
 function AppShell() {
   const navigate = useNavigate();
@@ -55,8 +57,9 @@ function AppShell() {
           <Route path="/patients"         element={<Patients  search={search} />} />
           <Route path="/analytics"        element={<Analytics />} />
           <Route path="/patient-analytics" element={<PatientAnalytics />} />
-          <Route path="/admin-dashboard"  element={<AdminDashboard />} />
-          <Route path="/admin-users"      element={<AdminUsers />} />
+          <Route path="/admin-dashboard"  element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          <Route path="/admin-users"      element={<AdminRoute><AdminUsers /></AdminRoute>} />
+          <Route path="/test"             element={<AdminRoute><Test /></AdminRoute>} />
           <Route path="/teams"            element={<Teams />} />
           <Route path="/howto"            element={<HowTo />} />
           <Route path="/settings"         element={<Settings />} />

@@ -36,18 +36,25 @@ export async function analyzeReportText(
     return;
   }
 
-  const { report_text } = req.body;
+  const { report_text, prompt_variant, model, temperature } = req.body;
 
   try {
     // Clean identifiers for privacy
     const cleanedText = await cleanupIdentifiers(report_text);
 
-    // Analyze the report
-    const analysis = await analyzeReport(cleanedText);
+    // Analyze the report with optional overrides
+    const analysis = await analyzeReport(cleanedText, {
+      prompt_variant: prompt_variant || 'default',
+      model,
+      temperature,
+    });
 
     logger.info('Successfully analyzed report text', {
       userId: req.userId,
       textLength: report_text.length,
+      promptVariant: prompt_variant,
+      model,
+      temperature,
     });
 
     res.json({

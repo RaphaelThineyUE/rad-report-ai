@@ -12,7 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import logoLockup from '@/assets/logo-lockup.svg';
 import logomark from '@/assets/logomark.svg';
 
-type NavId = 'dashboard' | 'worklist' | 'patients' | 'analytics' | 'patient-analytics' | 'admin-dashboard' | 'admin-users' | 'teams' | 'settings' | 'howto';
+type NavId = 'dashboard' | 'worklist' | 'patients' | 'analytics' | 'patient-analytics' | 'admin-dashboard' | 'admin-users' | 'teams' | 'settings' | 'howto' | 'test';
 
 interface SidebarProps {
   active: NavId;
@@ -34,6 +34,7 @@ const NAV_ITEMS: { id: NavId; label: string; icon: string }[] = [
 const ADMIN_ITEMS: { id: NavId; label: string; icon: string }[] = [
   { id: 'admin-dashboard', label: 'System Health', icon: 'activity' },
   { id: 'admin-users',     label: 'Users',          icon: 'users-cog' },
+  { id: 'test',            label: 'Test Harness',   icon: 'flask' },
 ];
 
 export function Sidebar({ active, onNav, collapsed }: SidebarProps) {

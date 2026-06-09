@@ -13,6 +13,7 @@ import aiRoutes from './ai.js';
 import analyticsRouter from './analytics.js';
 import adminRouter from './admin.js';
 import organizationsRouter from './organizations.js';
+import testRouter from './test.js';
 
 const router: IRouter = Router();
 
@@ -24,5 +25,6 @@ router.use('/ai', aiRoutes);
 router.use('/analytics', analyticsRouter);
 router.use('/admin', adminRouter);
 router.use('/organizations', organizationsRouter);
+router.use('/test', testRouter);
 
 export default router;
