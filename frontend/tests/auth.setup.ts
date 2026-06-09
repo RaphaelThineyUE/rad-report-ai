@@ -2,8 +2,8 @@ import { test as setup, expect } from '@playwright/test';
 
 export const authFile = 'playwright/.auth/user.json';
 
-const TEST_EMAIL ='raphael.thiney@gmail.com';  //'process.env.E2E_TEST_EMAIL;
-const TEST_PASSWORD ='12qwaszx' // process.env.E2E_TEST_PASSWORD;
+const TEST_EMAIL = process.env.E2E_TEST_EMAIL;
+const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD;
 
 setup('authenticate as test user', async ({ page }) => {
   if (!TEST_EMAIL || !TEST_PASSWORD) {

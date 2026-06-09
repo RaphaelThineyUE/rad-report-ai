@@ -33,8 +33,11 @@ export default function Settings() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [profileLoading, setProfileLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [profileError, setProfileError] = useState('');
+  const [profileSuccess, setProfileSuccess] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [deleteError, setDeleteError] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const navigate = useNavigate();
@@ -59,8 +62,8 @@ export default function Settings() {
 
   async function handleUpdateProfile(e: React.FormEvent) {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setProfileError('');
+    setProfileSuccess('');
     setLoading(true);
 
     try {
@@ -70,10 +73,10 @@ export default function Settings() {
 
       const response = await api.patch('/api/auth/me', updates);
       setUser(response.data);
-      setSuccess('Profile updated successfully');
-      setTimeout(() => setSuccess(''), 3000);
+      setProfileSuccess('Profile updated successfully');
+      setTimeout(() => setProfileSuccess(''), 3000);
     } catch (err) {
-      setError((err as any).response?.data?.error || 'Failed to update profile');
+      setProfileError((err as any).response?.data?.error || 'Failed to update profile');
     } finally {
       setLoading(false);
     }
@@ -81,21 +84,21 @@ export default function Settings() {
 
   async function handleChangePassword(e: React.FormEvent) {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setPasswordError('');
+    setPasswordSuccess('');
 
     if (!currentPassword) {
-      setError('Please enter your current password');
+      setPasswordError('Please enter your current password');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError('New passwords do not match');
+      setPasswordError('New passwords do not match');
       return;
     }
 
     if (newPassword.length < 8) {
-      setError('New password must be at least 8 characters');
+      setPasswordError('New password must be at least 8 characters');
       return;
     }
 
@@ -106,10 +109,10 @@ export default function Settings() {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      setSuccess('Password changed successfully');
-      setTimeout(() => setSuccess(''), 3000);
+      setPasswordSuccess('Password changed successfully');
+      setTimeout(() => setPasswordSuccess(''), 3000);
     } catch (err) {
-      setError((err as any).response?.data?.error || 'Failed to change password');
+      setPasswordError((err as any).response?.data?.error || 'Failed to change password');
     } finally {
       setLoading(false);
     }
@@ -117,14 +120,14 @@ export default function Settings() {
 
   async function handleDeleteAccount() {
     setDeleteLoading(true);
-    setError('');
+    setDeleteError('');
 
     try {
       await api.delete('/api/auth/me');
       await supabase.auth.signOut();
       navigate('/login');
     } catch (err) {
-      setError((err as any).response?.data?.error || 'Failed to delete account');
+      setDeleteError((err as any).response?.data?.error || 'Failed to delete account');
       setDeleteLoading(false);
     }
   }
@@ -154,25 +157,25 @@ export default function Settings() {
           Update your personal information
         </p>
 
-        {error && (
+        {profileError && (
           <div style={{
             background: 'var(--error-100)', border: '1px solid var(--error-200)',
             borderRadius: 'var(--r-sm)', padding: 12, marginBottom: 20,
             color: 'var(--error-700)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8
           }}>
             <Icon name="alert-circle" size={16} />
-            {error}
+            {profileError}
           </div>
         )}
 
-        {success && (
+        {profileSuccess && (
           <div style={{
             background: 'var(--success-100)', border: '1px solid var(--success-200)',
             borderRadius: 'var(--r-sm)', padding: 12, marginBottom: 20,
             color: 'var(--success-700)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8
           }}>
             <Icon name="check" size={16} />
-            {success}
+            {profileSuccess}
           </div>
         )}
 
@@ -221,6 +224,28 @@ export default function Settings() {
         <p className="t-body-sm" style={{ color: 'var(--fg-3)', marginBottom: 20 }}>
           Update your password to keep your account secure
         </p>
+
+        {passwordError && (
+          <div style={{
+            background: 'var(--error-100)', border: '1px solid var(--error-200)',
+            borderRadius: 'var(--r-sm)', padding: 12, marginBottom: 20,
+            color: 'var(--error-700)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8
+          }}>
+            <Icon name="alert-circle" size={16} />
+            {passwordError}
+          </div>
+        )}
+
+        {passwordSuccess && (
+          <div style={{
+            background: 'var(--success-100)', border: '1px solid var(--success-200)',
+            borderRadius: 'var(--r-sm)', padding: 12, marginBottom: 20,
+            color: 'var(--success-700)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8
+          }}>
+            <Icon name="check" size={16} />
+            {passwordSuccess}
+          </div>
+        )}
 
         <form onSubmit={handleChangePassword}>
           <div style={{ marginBottom: 16 }}>
@@ -279,6 +304,17 @@ export default function Settings() {
         <p className="t-body-sm" style={{ color: 'var(--fg-3)', marginBottom: 20 }}>
           Delete your account and all associated data
         </p>
+
+        {deleteError && (
+          <div style={{
+            background: 'var(--error-100)', border: '1px solid var(--error-200)',
+            borderRadius: 'var(--r-sm)', padding: 12, marginBottom: 20,
+            color: 'var(--error-700)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8
+          }}>
+            <Icon name="alert-circle" size={16} />
+            {deleteError}
+          </div>
+        )}
 
         {deleteConfirm ? (
           <div style={{

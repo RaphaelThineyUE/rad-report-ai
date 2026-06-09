@@ -10,6 +10,55 @@ import { api } from '@/lib/api';
 
 export type ReportStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
+export interface ReportFinding {
+  laterality: string;
+  location: string;
+  description: string;
+  assessment: string;
+  evidence: string[];
+  finding_type?: string;
+  size_mm?: number;
+  per_finding_birads?: number;
+  interval_change?: string;
+  clock_position?: string;
+  distance_from_nipple_cm?: number;
+  quadrant?: string;
+  depth?: string;
+  shape?: string;
+  margin?: string;
+  calcification_morphology?: string;
+  calcification_distribution?: string;
+  ultrasound_features?: string;
+  mri_features?: string;
+}
+
+export interface ReportRecommendation {
+  action: string;
+  timeframe: string;
+  evidence: string[];
+}
+
+export interface ReportLymphNode {
+  laterality: string;
+  region?: string;
+  abnormal: boolean;
+  morphology?: string;
+  size_mm?: number;
+  evidence: string[];
+}
+
+export interface ReportImplant {
+  present: boolean;
+  type?: string;
+  integrity?: string;
+}
+
+export interface ReportManagement {
+  biopsy_recommended: boolean;
+  recommended_modality?: string;
+  follow_up_interval?: string;
+}
+
 export interface Report {
   id: string;
   created_by: string;
@@ -19,13 +68,43 @@ export interface Report {
   file_size: number | null;
   status: ReportStatus;
   summary: string | null;
-  birads_value: number | null;
-  birads_confidence: string | null;
-  processing_time_ms: number | null;
-  breast_density_value: string | null;
+  // Exam
+  exam_date: string | null;
+  modality: string | null;
+  contrast: string | null;
   exam_type: string | null;
   exam_laterality: string | null;
+  exam_evidence: string[] | null;
+  // Assessment
+  birads_value: number | null;
+  birads_confidence: string | null;
+  birads_evidence: string[] | null;
+  breast_density_value: string | null;
+  breast_density_evidence: string[] | null;
+  // Clinical context
+  clinical_history: string | null;
+  risk_factors: string[] | null;
+  comparison_prior_exam_date: string | null;
+  comparison_dates: string[] | null;
+  comparison_evidence: string[] | null;
+  // Findings
+  findings: ReportFinding[] | null;
+  lymph_nodes: ReportLymphNode[] | null;
+  skin_nipple_changes: string[] | null;
+  implants: ReportImplant | null;
+  post_surgical_changes: string[] | null;
+  // Disease extent
+  multifocal: boolean | null;
+  multicentric: boolean | null;
+  bilateral_disease: boolean | null;
+  disease_extent: string | null;
+  // Outcomes
+  recommendations: ReportRecommendation[] | null;
+  management: ReportManagement | null;
+  pathology_correlation: string | null;
   red_flags: string[] | null;
+  // Meta
+  processing_time_ms: number | null;
   created_at: string;
   updated_at: string;
 }

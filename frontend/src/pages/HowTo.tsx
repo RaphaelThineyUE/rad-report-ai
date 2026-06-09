@@ -234,27 +234,6 @@ export default function HowTo() {
 
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 20px' }}>
-      {/* Medical Disclaimer */}
-      <div style={{
-        padding: 20,
-        background: 'var(--error-50)',
-        border: '2px solid var(--error-300)',
-        borderRadius: 'var(--r-md)',
-        marginBottom: 32,
-      }}>
-        <div style={{ display: 'flex', gap: 16 }}>
-          <Icon name="alert-triangle" size={24} style={{ color: 'var(--error-600)', flexShrink: 0, marginTop: 2 }} />
-          <div>
-            <h3 style={{ margin: '0 0 8px 0', color: 'var(--error-900)', fontSize: 16, fontWeight: 600 }}>
-              Medical Disclaimer
-            </h3>
-            <p style={{ margin: 0, color: 'var(--error-800)', fontSize: 14, lineHeight: 1.6 }}>
-              <strong>This application is for clinical support and educational purposes only.</strong> It is not intended to replace professional medical judgment or diagnosis. All findings, assessments, and recommendations from this system must be reviewed and validated by qualified healthcare professionals. Do not use this tool as the sole basis for patient care decisions. Always consult with appropriate medical specialists before making clinical or treatment decisions. The developers and operators of this application are not responsible for medical decisions made using this tool.
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Header */}
       <h1 style={{ margin: '0 0 12px 0', fontSize: 32, fontWeight: 700 }}>How to Use RadReport AI</h1>
       <p style={{ margin: '0 0 32px 0', color: 'var(--fg-2)', fontSize: 16, lineHeight: 1.6 }}>
@@ -334,6 +313,27 @@ export default function HowTo() {
         <p style={{ margin: '8px 0 0 0' }}>
           Last updated: June 2026 | Version 1.0
         </p>
+      </div>
+
+      {/* Medical Disclaimer */}
+      <div style={{
+        padding: 20,
+        background: 'var(--error-50)',
+        border: '2px solid var(--error-300)',
+        borderRadius: 'var(--r-md)',
+        marginTop: 32,
+      }}>
+        <div style={{ display: 'flex', gap: 16 }}>
+          <Icon name="alert-triangle" size={24} style={{ color: 'var(--error-600)', flexShrink: 0, marginTop: 2 }} />
+          <div>
+            <h3 style={{ margin: '0 0 8px 0', color: 'var(--error-900)', fontSize: 16, fontWeight: 600 }}>
+              Medical Disclaimer
+            </h3>
+            <p style={{ margin: 0, color: 'var(--error-800)', fontSize: 14, lineHeight: 1.6 }}>
+              <strong>This application is for clinical support and educational purposes only.</strong> It is not intended to replace professional medical judgment or diagnosis. All findings, assessments, and recommendations from this system must be reviewed and validated by qualified healthcare professionals. Do not use this tool as the sole basis for patient care decisions. Always consult with appropriate medical specialists before making clinical or treatment decisions. The developers and operators of this application are not responsible for medical decisions made using this tool.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -91,7 +91,7 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
                 {patient.full_name}
               </h2>
               <div className="mono" style={{ fontSize: 12, color: 'var(--fg-4)' }}>
-                {patient.id} · {age} years old · {patient.gender || 'N/A'}
+                {new Date(patient.date_of_birth).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })} · {age} years old · {patient.gender || 'N/A'}
               </div>
             </div>
           </div>

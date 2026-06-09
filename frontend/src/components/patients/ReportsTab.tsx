@@ -97,6 +97,23 @@ export function ReportsTab({ patientId, patientName }: ReportsTabProps) {
     }
   }
 
+  // When a report is selected, swap the whole tab body for the inline detail view.
+  if (selectedReport) {
+    return (
+      <div>
+        <ReportDetail
+          report={selectedReport}
+          isOpen
+          inline
+          onClose={() => setSelectedReport(null)}
+          onOpenPDF={handleOpenReport}
+          isLoadingPDF={signedUrl.isPending}
+          patientId={patientId}
+        />
+      </div>
+    );
+  }
+
   return (
     <div>
       <input
@@ -182,15 +199,6 @@ export function ReportsTab({ patientId, patientName }: ReportsTabProps) {
           onClose={() => setShowConsolidated(false)}
         />
       )}
-
-      <ReportDetail
-        report={selectedReport}
-        isOpen={selectedReport !== null}
-        onClose={() => setSelectedReport(null)}
-        onOpenPDF={handleOpenReport}
-        isLoadingPDF={signedUrl.isPending}
-        patientId={patientId}
-      />
     </div>
   );
 }
