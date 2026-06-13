@@ -5,12 +5,15 @@
  * All queries use the caller's JWT client; RLS enforces created_by ownership.
  * exportPatientBundle returns patient demographics, linked radiology reports,
  * and treatment records as a downloadable JSON attachment (no PHI in logs).
+ * Audit logs are written asynchronously for create/update/delete operations.
  */
 import { Response } from 'express';
 import { validationResult } from 'express-validator';
 import { AuthRequest } from '../middleware/auth.js';
 import { createUserClient } from '../services/supabaseClient.js';
 import { logger } from '../utils/logger.js';
+import { AppError, Errors } from '../utils/AppError.js';
+import { logPatientAudit } from '../services/auditService.js';
 
 interface PatientBody {
   full_name: string;
@@ -39,8 +42,7 @@ export async function listPatients(req: AuthRequest, res: Response): Promise<voi
 
   if (error) {
     logger.error('listPatients error', { userId: req.userId, error: error.message });
-    res.status(500).json({ error: 'Failed to fetch patients' });
-    return;
+    throw Errors.internal('Failed to fetch patients');
   }
 
   res.json({ patients: data ?? [] });
@@ -49,8 +51,7 @@ export async function listPatients(req: AuthRequest, res: Response): Promise<voi
 export async function createPatient(req: AuthRequest, res: Response): Promise<void> {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(422).json({ errors: errors.array() });
-    return;
+    throw Errors.validation('Invalid patient data', errors.array());
   }
 
   const {
@@ -95,10 +96,10 @@ export async function createPatient(req: AuthRequest, res: Response): Promise<vo
 
   if (error) {
     logger.error('createPatient error', { userId: req.userId, error: error.message });
-    res.status(500).json({ error: 'Failed to create patient' });
-    return;
+    throw Errors.internal('Failed to create patient');
   }
 
+  logPatientAudit(req.userId, 'create_patient', data.id, req.accessToken, req.ip, req.get('user-agent'));
   res.status(201).json(data);
 }
 
@@ -112,8 +113,7 @@ export async function getPatient(req: AuthRequest, res: Response): Promise<void>
     .single();
 
   if (error || !data) {
-    res.status(404).json({ error: 'Patient not found' });
-    return;
+    throw Errors.notFound('Patient');
   }
 
   res.json(data);
@@ -122,8 +122,7 @@ export async function getPatient(req: AuthRequest, res: Response): Promise<void>
 export async function updatePatient(req: AuthRequest, res: Response): Promise<void> {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(422).json({ errors: errors.array() });
-    return;
+    throw Errors.validation('Invalid patient data', errors.array());
   }
 
   const { id } = req.params;
@@ -155,10 +154,10 @@ export async function updatePatient(req: AuthRequest, res: Response): Promise<vo
 
   if (error || !data) {
     logger.error('updatePatient error', { userId: req.userId, patientId: id, error: error?.message });
-    res.status(404).json({ error: 'Patient not found or update failed' });
-    return;
+    throw Errors.notFound('Patient');
   }
 
+  logPatientAudit(req.userId, 'update_patient', id, req.accessToken, req.ip, req.get('user-agent'));
   res.json(data);
 }
 
@@ -172,10 +171,10 @@ export async function deletePatient(req: AuthRequest, res: Response): Promise<vo
 
   if (error) {
     logger.error('deletePatient error', { userId: req.userId, patientId: id, error: error.message });
-    res.status(500).json({ error: 'Failed to delete patient' });
-    return;
+    throw Errors.internal('Failed to delete patient');
   }
 
+  logPatientAudit(req.userId, 'delete_patient', id, req.accessToken, req.ip, req.get('user-agent'));
   res.status(204).send();
 }
 
@@ -191,8 +190,7 @@ export async function exportPatientBundle(req: AuthRequest, res: Response): Prom
     .single();
 
   if (patientError || !patient) {
-    res.status(404).json({ error: 'Patient not found' });
-    return;
+    throw Errors.notFound('Patient');
   }
 
   const { data: reports, error: reportsError } = await client
@@ -202,8 +200,7 @@ export async function exportPatientBundle(req: AuthRequest, res: Response): Prom
 
   if (reportsError) {
     logger.error('exportPatientBundle reports error', { userId: req.userId, patientId: id, error: reportsError.message });
-    res.status(500).json({ error: 'Failed to fetch patient reports' });
-    return;
+    throw Errors.internal('Failed to fetch patient reports');
   }
 
   const { data: treatments, error: treatmentsError } = await client
@@ -213,8 +210,7 @@ export async function exportPatientBundle(req: AuthRequest, res: Response): Prom
 
   if (treatmentsError) {
     logger.error('exportPatientBundle treatments error', { userId: req.userId, patientId: id, error: treatmentsError.message });
-    res.status(500).json({ error: 'Failed to fetch patient treatments' });
-    return;
+    throw Errors.internal('Failed to fetch patient treatments');
   }
 
   const exportData = {
