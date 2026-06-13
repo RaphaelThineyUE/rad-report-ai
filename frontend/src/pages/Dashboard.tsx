@@ -52,7 +52,7 @@ export default function Dashboard() {
       const followUpData: FollowUpItem[] = [];
       for (const patient of patientsRes.data?.patients || patientsRes.data || []) {
         try {
-          const treatmentsRes = await api.get(`/api/treatments?patientId=${patient.id}`);
+          const treatmentsRes = await api.get(`/api/treatments?patient_id=${patient.id}`);
           const treatments = treatmentsRes.data?.treatments || treatmentsRes.data || [];
 
           for (const treatment of treatments) {
