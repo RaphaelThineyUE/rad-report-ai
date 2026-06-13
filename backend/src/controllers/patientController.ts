@@ -99,7 +99,7 @@ export async function createPatient(req: AuthRequest, res: Response): Promise<vo
     throw Errors.internal('Failed to create patient');
   }
 
-  logPatientAudit(req.userId, 'create_patient', data.id, req.accessToken, req.ip, req.get('user-agent'));
+  logPatientAudit(req.userId, 'create_patient', data.id, req.accessToken, req.ip, req.get('user-agent') as string);
   res.status(201).json(data);
 }
 
@@ -157,7 +157,7 @@ export async function updatePatient(req: AuthRequest, res: Response): Promise<vo
     throw Errors.notFound('Patient');
   }
 
-  logPatientAudit(req.userId, 'update_patient', id, req.accessToken, req.ip, req.get('user-agent'));
+  logPatientAudit(req.userId, 'update_patient', id, req.accessToken, req.ip, req.get('user-agent') as string);
   res.json(data);
 }
 
@@ -174,7 +174,7 @@ export async function deletePatient(req: AuthRequest, res: Response): Promise<vo
     throw Errors.internal('Failed to delete patient');
   }
 
-  logPatientAudit(req.userId, 'delete_patient', id, req.accessToken, req.ip, req.get('user-agent'));
+  logPatientAudit(req.userId, 'delete_patient', id, req.accessToken, req.ip, req.get('user-agent') as string);
   res.status(204).send();
 }
 

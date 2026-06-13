@@ -18,12 +18,15 @@ export function errorHandler(
 ): void {
   if (err instanceof AppError) {
     logger.error(`AppError [${err.code}]`, { message: err.message, details: err.details });
+    const errorResponse: Record<string, unknown> = {
+      code: err.code,
+      message: err.message,
+    };
+    if (err.details) {
+      errorResponse.details = err.details;
+    }
     res.status(err.statusCode).json({
-      error: {
-        code: err.code,
-        message: err.message,
-        ...(err.details && { details: err.details }),
-      },
+      error: errorResponse,
     });
     return;
   }

@@ -86,7 +86,7 @@ export async function createTreatment(req: AuthRequest, res: Response): Promise<
     throw Errors.internal('Failed to create treatment');
   }
 
-  logTreatmentAudit(req.userId, 'create_treatment', data.id, req.accessToken, req.ip, req.get('user-agent'));
+  logTreatmentAudit(req.userId, 'create_treatment', data.id, req.accessToken, req.ip, req.get('user-agent') as string);
   res.status(201).json(data);
 }
 
@@ -138,7 +138,7 @@ export async function updateTreatment(req: AuthRequest, res: Response): Promise<
     throw Errors.notFound('Treatment');
   }
 
-  logTreatmentAudit(req.userId, 'update_treatment', id, req.accessToken, req.ip, req.get('user-agent'));
+  logTreatmentAudit(req.userId, 'update_treatment', id, req.accessToken, req.ip, req.get('user-agent') as string);
   res.json(data);
 }
 
@@ -155,6 +155,6 @@ export async function deleteTreatment(req: AuthRequest, res: Response): Promise<
     throw Errors.internal('Failed to delete treatment');
   }
 
-  logTreatmentAudit(req.userId, 'delete_treatment', id, req.accessToken, req.ip, req.get('user-agent'));
+  logTreatmentAudit(req.userId, 'delete_treatment', id, req.accessToken, req.ip, req.get('user-agent') as string);
   res.status(204).send();
 }

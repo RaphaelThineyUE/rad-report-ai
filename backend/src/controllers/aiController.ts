@@ -240,7 +240,7 @@ export async function comparePatientTreatments(
         patientId: patient_id,
         error: treatmentsError.message,
       });
-      throw Errors.internal('Failed to fetch treatments' });
+      throw Errors.internal('Failed to fetch treatments');
       return;
     }
 

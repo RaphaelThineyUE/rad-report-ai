@@ -327,12 +327,12 @@ export async function getReportSignedUrl(req: AuthRequest, res: Response): Promi
     .single();
 
   if (error || !report) {
-    throw Errors.notFound('Report not found' });
+    throw Errors.notFound('Report not found');
     return;
   }
 
   if (!report.file_url) {
-    throw Errors.notFound('Report file is unavailable' });
+    throw Errors.notFound('Report file is unavailable');
     return;
   }
 
@@ -343,7 +343,7 @@ export async function getReportSignedUrl(req: AuthRequest, res: Response): Promi
 
   if (signedUrlError || !data?.signedUrl) {
     logger.error('getReportSignedUrl error', { userId: req.userId, reportId: id, error: signedUrlError?.message });
-    throw Errors.internal('Failed to create signed URL' });
+    throw Errors.internal('Failed to create signed URL');
     return;
   }
 
@@ -382,7 +382,7 @@ export async function createReport(req: AuthRequest, res: Response): Promise<voi
     throw Errors.internal('Failed to create report');
   }
 
-  logReportAudit(req.userId, 'create_report', data.id, req.accessToken, req.ip, req.get('user-agent'));
+  logReportAudit(req.userId, 'create_report', data.id, req.accessToken, req.ip, req.get('user-agent') as string);
   res.status(201).json(data);
 }
 
@@ -391,7 +391,7 @@ export async function listReports(req: AuthRequest, res: Response): Promise<void
   const status = String(req.query.status ?? '').trim();
 
   if (!patientId) {
-    throw Errors.validation('patient_id is required' });
+    throw Errors.validation('patient_id is required');
     return;
   }
 
@@ -409,7 +409,7 @@ export async function listReports(req: AuthRequest, res: Response): Promise<void
   const { data, error } = await query;
   if (error) {
     logger.error('listReports error', { userId: req.userId, patientId, error: error.message });
-    throw Errors.internal('Failed to fetch reports' });
+    throw Errors.internal('Failed to fetch reports');
     return;
   }
 
@@ -426,7 +426,7 @@ export async function getReport(req: AuthRequest, res: Response): Promise<void> 
     .single();
 
   if (error || !data) {
-    throw Errors.notFound('Report not found' });
+    throw Errors.notFound('Report not found');
     return;
   }
 
@@ -459,7 +459,7 @@ export async function updateReport(req: AuthRequest, res: Response): Promise<voi
     throw Errors.notFound('Report');
   }
 
-  logReportAudit(req.userId, 'update_report', id, req.accessToken, req.ip, req.get('user-agent'));
+  logReportAudit(req.userId, 'update_report', id, req.accessToken, req.ip, req.get('user-agent') as string);
   res.json(data);
 }
 
@@ -496,7 +496,7 @@ export async function deleteReport(req: AuthRequest, res: Response): Promise<voi
     throw Errors.internal('Failed to delete report');
   }
 
-  logReportAudit(req.userId, 'delete_report', id, req.accessToken, req.ip, req.get('user-agent'));
+  logReportAudit(req.userId, 'delete_report', id, req.accessToken, req.ip, req.get('user-agent') as string);
   res.status(204).send();
 }
 
@@ -511,7 +511,7 @@ export async function exportReportJson(req: AuthRequest, res: Response): Promise
     .single();
 
   if (error || !report) {
-    throw Errors.notFound('Report not found' });
+    throw Errors.notFound('Report not found');
     return;
   }
 
@@ -561,12 +561,12 @@ export async function processReport(req: AuthRequest, res: Response): Promise<vo
       .single();
 
     if (reportError || !report) {
-      throw Errors.notFound('Report not found' });
+      throw Errors.notFound('Report not found');
       return;
     }
 
     if (!report.file_url) {
-      throw Errors.validation('Report file URL is missing' });
+      throw Errors.validation('Report file URL is missing');
       return;
     }
 
@@ -590,7 +590,7 @@ export async function processReport(req: AuthRequest, res: Response): Promise<vo
           processing_time_ms: Date.now() - startTime,
         })
         .eq('id', id);
-      throw Errors.internal('Failed to download report file' });
+      throw Errors.internal('Failed to download report file');
       return;
     }
 
@@ -605,7 +605,7 @@ export async function processReport(req: AuthRequest, res: Response): Promise<vo
           processing_time_ms: Date.now() - startTime,
         })
         .eq('id', id);
-      throw Errors.validation('Invalid PDF file' });
+      throw Errors.validation('Invalid PDF file');
       return;
     }
 
@@ -686,7 +686,7 @@ export async function processReport(req: AuthRequest, res: Response): Promise<vo
 
     if (updateError || !updatedReport) {
       logger.error('processReport update error', { userId: req.userId, reportId: id, error: updateError?.message });
-      throw Errors.internal('Failed to save analysis results' });
+      throw Errors.internal('Failed to save analysis results');
       return;
     }
 
@@ -714,6 +714,6 @@ export async function processReport(req: AuthRequest, res: Response): Promise<vo
       logger.error('Failed to update report status to failed', { error: updateErr instanceof Error ? updateErr.message : 'Unknown' });
     }
 
-    throw Errors.internal('Report processing failed', details: message });
+    throw Errors.internal('Report processing failed');
   }
 }
