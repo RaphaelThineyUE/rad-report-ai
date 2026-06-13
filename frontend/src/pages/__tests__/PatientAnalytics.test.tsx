@@ -296,6 +296,7 @@ describe('PatientAnalytics Component', () => {
   });
 
   it('handles API errors gracefully', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const mockApi = apiModule as any;
     mockApi.api.get.mockRejectedValue(new Error('API Error'));
 
@@ -305,6 +306,8 @@ describe('PatientAnalytics Component', () => {
       // Should still render the page without crashing
       expect(screen.getByText('Patient Analytics')).toBeInTheDocument();
     });
+
+    consoleErrorSpy.mockRestore();
   });
 
   it('displays treatment metrics', async () => {

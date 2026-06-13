@@ -8,7 +8,7 @@ import { useState, useMemo } from 'react';
 import { Avatar, Badge, BiRads, Button, Icon } from '@/components/ui';
 import { ReportDrawer } from '@/components/drawers/ReportDrawer';
 import { usePatients } from '@/hooks/usePatients';
-import { useReports, type Report } from '@/hooks/useReports';
+import { useReportsForPatients, type Report } from '@/hooks/useReports';
 import { type PatientRow } from '@/types/clinical';
 
 interface WorklistProps {
@@ -20,10 +20,7 @@ export default function Worklist({ search }: WorklistProps) {
   const { data: patients, isLoading: patientsLoading } = usePatients();
 
   // Fetch reports for all patients
-  const reportQueries = (patients || []).map(p =>
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    useReports(p.id)
-  );
+  const reportQueries = useReportsForPatients((patients || []).map(p => p.id));
 
   // Flatten patients + reports into PatientRow format
   const rows = useMemo(() => {

@@ -5,7 +5,7 @@
  * Exports: useReports, useCreateReport, useDeleteReport, useReportSignedUrl, useBatchUpload.
  * Also exports Report, CreateReportInput, UploadReportResponse, BatchUploadInput, ReportStatus types.
  */
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 
 export type ReportStatus = 'pending' | 'processing' | 'completed' | 'failed';
@@ -132,6 +132,25 @@ export function useReports(patientId: string | undefined, status?: ReportStatus)
       return data.reports;
     },
     enabled: !!patientId,
+  });
+}
+
+/**
+ * Fetches reports for multiple patients via a single hook call (one query per patient),
+ * avoiding the Rules-of-Hooks violation of calling useReports() inside a loop/map.
+ */
+export function useReportsForPatients(patientIds: string[]) {
+  return useQueries({
+    queries: patientIds.map(patientId => ({
+      queryKey: ['reports', patientId, undefined],
+      queryFn: async () => {
+        const { data } = await api.get<{ reports: Report[] }>('/api/reports', {
+          params: { patient_id: patientId },
+        });
+        return data.reports;
+      },
+      enabled: !!patientId,
+    })),
   });
 }
 
