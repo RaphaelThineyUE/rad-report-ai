@@ -115,6 +115,30 @@ export function logReportAudit(
 }
 
 /**
+ * Convenience wrapper for treatment-related audit logs
+ */
+export function logTreatmentAudit(
+  userId: string,
+  action: string,
+  treatmentId: string,
+  accessToken: string,
+  ipAddress?: string,
+  userAgent?: string
+): void {
+  logAudit(
+    {
+      userId,
+      action,
+      resourceType: 'treatment',
+      resourceId: treatmentId,
+      ipAddress,
+      userAgent,
+    },
+    accessToken
+  );
+}
+
+/**
  * Convenience wrapper for AI analysis audit logs
  */
 export function logAIAudit(
