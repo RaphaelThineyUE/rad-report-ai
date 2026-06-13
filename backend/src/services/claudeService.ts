@@ -26,7 +26,6 @@ import {
   type Implant,
   type Management,
   type TimelinePoint,
-  type Consolidation,
 } from './aiSchemas.js';
 import { deidentify } from './deidentify.js';
 
@@ -113,6 +112,7 @@ Provide evidence (quoted text) for all findings.`;
     const message = await client.messages.parse({
       model: modelToUse,
       max_tokens: 2000,
+      temperature,
       system: systemPrompt,
       messages: [
         {

@@ -10,7 +10,8 @@
 import path from 'path';
 import fs from 'fs';
 import request from 'supertest';
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
+import type { AuthRequest } from '../middleware/auth';
 
 // --- mocks must be declared before imports that use them ---
 
@@ -20,9 +21,9 @@ jest.mock('../services/supabaseClient', () => ({
 }));
 
 jest.mock('../middleware/auth', () => ({
-  requireAuth: (req: any, _res: any, next: any) => {
-    req.userId = 'test-user-id';
-    req.accessToken = 'test-token';
+  requireAuth: (req: Request, _res: Response, next: NextFunction) => {
+    (req as AuthRequest).userId = 'test-user-id';
+    (req as AuthRequest).accessToken = 'test-token';
     next();
   },
 }));
@@ -40,7 +41,7 @@ jest.mock('../services/claudeService', () => ({
 import testRouter from '../routes/test';
 import { errorHandler } from '../middleware/errorHandler';
 import { extractTextFromPdf } from '../services/pdfService';
-import { analyzeReport } from '../services/claudeService';
+import { analyzeReport, type AnalysisResult } from '../services/claudeService';
 
 const mockExtractText = extractTextFromPdf as jest.MockedFunction<typeof extractTextFromPdf>;
 const mockAnalyze = analyzeReport as jest.MockedFunction<typeof analyzeReport>;
@@ -48,7 +49,6 @@ const mockAnalyze = analyzeReport as jest.MockedFunction<typeof analyzeReport>;
 // --- sample files ---
 const SAMPLES_DIR = path.resolve(__dirname, '../../../docs/samples');
 const TEXT_PDF = path.join(SAMPLES_DIR, 'text-based-pdf-sample.pdf');
-const IMAGE_PDF = path.join(SAMPLES_DIR, 'image-based-pdf-sample.pdf');
 const REAL_REPORT_PDF = path.join(SAMPLES_DIR, 'bresdt_rediology.pdf');
 
 const MOCK_ANALYSIS = {
@@ -65,7 +65,7 @@ const MOCK_ANALYSIS = {
   risk_factors: [],
   prior_exam_date: null,
   comparison_dates: [],
-  findings: [{ description: 'No suspicious masses', location: 'bilateral', birads: 2 } as any],
+  findings: [{ description: 'No suspicious masses', location: 'bilateral', birads: 2 }],
   lymph_nodes: [],
   skin_nipple_changes: [],
   implants: null,
@@ -74,13 +74,13 @@ const MOCK_ANALYSIS = {
   multicentric: null,
   bilateral_disease: null,
   disease_extent: null,
-  recommendations: [{ action: 'Routine annual screening', timeframe: '12 months' } as any],
-  management: { followup: 'routine' } as any,
+  recommendations: [{ action: 'Routine annual screening', timeframe: '12 months' }],
+  management: { followup: 'routine' },
   pathology_correlation: null,
   red_flags: [],
   raw_analysis: '',
   clinical_disclaimer: 'For clinical use only.',
-};
+} as unknown as AnalysisResult;
 
 // --- app setup ---
 function buildApp() {
