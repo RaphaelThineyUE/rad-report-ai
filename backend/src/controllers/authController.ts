@@ -4,17 +4,19 @@
  * register/login delegate directly to Supabase; password reset uses the Bearer token
  * from the magic-link email as the reset credential.
  * All mutations use supabaseAdmin so they bypass RLS intentionally.
+ * Audit logs are written asynchronously for login/logout/password-reset/delete.
  */
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { supabaseAdmin } from '../services/supabaseClient.js';
 import { AuthRequest } from '../middleware/auth.js';
+import { AppError, Errors } from '../utils/AppError.js';
+import { logAuthAudit } from '../services/auditService.js';
 
 export async function register(req: Request, res: Response): Promise<void> {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(422).json({ errors: errors.array() });
-    return;
+    throw Errors.validation('Invalid registration request', errors.array());
   }
 
   const { email, password, full_name } = req.body;
@@ -25,8 +27,7 @@ export async function register(req: Request, res: Response): Promise<void> {
   });
 
   if (error) {
-    res.status(400).json({ error: error.message });
-    return;
+    throw Errors.validation(error.message || 'Registration failed');
   }
 
   res.status(201).json({ user: data.user, session: data.session });
@@ -35,16 +36,25 @@ export async function register(req: Request, res: Response): Promise<void> {
 export async function login(req: Request, res: Response): Promise<void> {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(422).json({ errors: errors.array() });
-    return;
+    throw Errors.validation('Invalid login request', errors.array());
   }
 
   const { email, password } = req.body;
   const { data, error } = await supabaseAdmin.auth.signInWithPassword({ email, password });
 
   if (error) {
-    res.status(401).json({ error: error.message });
-    return;
+    throw new AppError('LOGIN_FAILED', error.message || 'Login failed', 401);
+  }
+
+  // Audit log the login
+  if (data.user?.id && data.session?.access_token) {
+    logAuthAudit(
+      data.user.id,
+      'login',
+      data.session.access_token,
+      req.ip,
+      req.get('user-agent')
+    );
   }
 
   res.json({ user: data.user, session: data.session });
