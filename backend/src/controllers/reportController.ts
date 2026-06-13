@@ -382,7 +382,7 @@ export async function createReport(req: AuthRequest, res: Response): Promise<voi
     throw Errors.internal('Failed to create report');
   }
 
-  logReportAudit(req.userId, 'create_report', data.id, req.accessToken, req.ip, req.get('user-agent') as string);
+  logReportAudit(req.userId, 'create_report', data.id, req.accessToken, req.ip);
   res.status(201).json(data);
 }
 
@@ -459,7 +459,7 @@ export async function updateReport(req: AuthRequest, res: Response): Promise<voi
     throw Errors.notFound('Report');
   }
 
-  logReportAudit(req.userId, 'update_report', id, req.accessToken, req.ip, req.get('user-agent') as string);
+  logReportAudit(req.userId, 'update_report', id, req.accessToken, req.ip);
   res.json(data);
 }
 
@@ -496,7 +496,7 @@ export async function deleteReport(req: AuthRequest, res: Response): Promise<voi
     throw Errors.internal('Failed to delete report');
   }
 
-  logReportAudit(req.userId, 'delete_report', id, req.accessToken, req.ip, req.get('user-agent') as string);
+  logReportAudit(req.userId, 'delete_report', id, req.accessToken, req.ip);
   res.status(204).send();
 }
 
