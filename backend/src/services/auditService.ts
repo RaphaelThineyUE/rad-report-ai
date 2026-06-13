@@ -12,7 +12,7 @@ export interface AuditLogEntry {
   action: string;
   resourceType?: string;
   resourceId?: string;
-  ipAddress?: string;
+  ipAddress?: string | string[];
   userAgent?: string;
 }
 
@@ -51,7 +51,7 @@ export function logAuthAudit(
   userId: string,
   action: string,
   accessToken: string,
-  ipAddress?: string,
+  ipAddress?: string | string[],
   userAgent?: string
 ): void {
   logAudit(
@@ -74,7 +74,7 @@ export function logPatientAudit(
   action: string,
   patientId: string,
   accessToken: string,
-  ipAddress?: string,
+  ipAddress?: string | string[],
   userAgent?: string
 ): void {
   logAudit(
@@ -98,7 +98,7 @@ export function logReportAudit(
   action: string,
   reportId: string,
   accessToken: string,
-  ipAddress?: string,
+  ipAddress?: string | string[],
   userAgent?: string
 ): void {
   logAudit(
@@ -122,7 +122,7 @@ export function logTreatmentAudit(
   action: string,
   treatmentId: string,
   accessToken: string,
-  ipAddress?: string,
+  ipAddress?: string | string[],
   userAgent?: string
 ): void {
   logAudit(
@@ -146,7 +146,7 @@ export function logAIAudit(
   action: string,
   reportId: string,
   accessToken: string,
-  ipAddress?: string,
+  ipAddress?: string | string[],
   userAgent?: string
 ): void {
   logAudit(
