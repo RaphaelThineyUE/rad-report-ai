@@ -7,12 +7,15 @@
  *   comparePatientTreatments, detectPatientBiradsTrend, extractReportQuotes.
  * Delegates to claudeService; reads report/treatment data from Supabase using
  * the caller's JWT so RLS enforces data ownership.
+ * Audit logs are written asynchronously for all AI analysis operations.
  */
 import { Response } from 'express';
 import { validationResult } from 'express-validator';
 import { AuthRequest } from '../middleware/auth.js';
 import { createUserClient } from '../services/supabaseClient.js';
 import { logger } from '../utils/logger.js';
+import { Errors } from '../utils/AppError.js';
+import { logAIAudit } from '../services/auditService.js';
 import {
   analyzeReport,
   generateSummary,
@@ -32,7 +35,7 @@ export async function analyzeReportText(
 ): Promise<void> {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(422).json({ errors: errors.array() });
+    throw Errors.validation('Invalid input', errors.array());
     return;
   }
 
@@ -67,7 +70,7 @@ export async function analyzeReportText(
       userId: req.userId,
       error: message,
     });
-    res.status(500).json({ error: 'Analysis failed', details: message });
+    throw Errors.internal('Analysis failed');
   }
 }
 
@@ -80,7 +83,7 @@ export async function generateReportSummary(
 ): Promise<void> {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(422).json({ errors: errors.array() });
+    throw Errors.validation('Invalid input', errors.array());
     return;
   }
 
@@ -109,7 +112,7 @@ export async function generateReportSummary(
       userId: req.userId,
       error: message,
     });
-    res.status(500).json({ error: 'Summary generation failed', details: message });
+    throw Errors.internal('Summary generation failed');
   }
 }
 
@@ -122,7 +125,7 @@ export async function consolidatePatientReports(
 ): Promise<void> {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(422).json({ errors: errors.array() });
+    throw Errors.validation('Invalid input', errors.array());
     return;
   }
 
@@ -186,7 +189,7 @@ export async function consolidatePatientReports(
       patientId: patient_id,
       error: message,
     });
-    res.status(500).json({ error: 'Consolidation failed', details: message });
+    throw Errors.internal('Consolidation failed');
   }
 }
 
@@ -199,7 +202,7 @@ export async function comparePatientTreatments(
 ): Promise<void> {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(422).json({ errors: errors.array() });
+    throw Errors.validation('Invalid input', errors.array());
     return;
   }
 
@@ -237,7 +240,7 @@ export async function comparePatientTreatments(
         patientId: patient_id,
         error: treatmentsError.message,
       });
-      res.status(500).json({ error: 'Failed to fetch treatments' });
+      throw Errors.internal('Failed to fetch treatments');
       return;
     }
 
@@ -275,7 +278,7 @@ export async function comparePatientTreatments(
       patientId: patient_id,
       error: message,
     });
-    res.status(500).json({ error: 'Comparison failed', details: message });
+    throw Errors.internal('Comparison failed');
   }
 }
 
@@ -288,7 +291,7 @@ export async function detectPatientBiradsTrend(
 ): Promise<void> {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(422).json({ errors: errors.array() });
+    throw Errors.validation('Invalid input', errors.array());
     return;
   }
 
@@ -350,7 +353,7 @@ export async function detectPatientBiradsTrend(
       patientId: patient_id,
       error: message,
     });
-    res.status(500).json({ error: 'Trend detection failed', details: message });
+    throw Errors.internal('Trend detection failed');
   }
 }
 
@@ -363,7 +366,7 @@ export async function extractReportQuotes(
 ): Promise<void> {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(422).json({ errors: errors.array() });
+    throw Errors.validation('Invalid input', errors.array());
     return;
   }
 

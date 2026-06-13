@@ -4,12 +4,15 @@
  * listTreatments requires patient_id as a query param; ordered by treatment_start_date desc.
  * All queries use the caller's JWT client; RLS enforces created_by ownership.
  * Treatment data is also consumed by aiController.comparePatientTreatments for AI comparison.
+ * Audit logs are written asynchronously for create/update/delete operations.
  */
 import { Response } from 'express';
 import { validationResult } from 'express-validator';
 import { AuthRequest } from '../middleware/auth.js';
 import { createUserClient } from '../services/supabaseClient.js';
 import { logger } from '../utils/logger.js';
+import { AppError, Errors } from '../utils/AppError.js';
+import { logTreatmentAudit } from '../services/auditService.js';
 
 interface TreatmentBody {
   patient_id: string;
@@ -26,8 +29,7 @@ export async function listTreatments(req: AuthRequest, res: Response): Promise<v
   const patientId = String(req.query.patient_id ?? '').trim();
 
   if (!patientId) {
-    res.status(422).json({ error: 'patient_id is required' });
-    return;
+    throw Errors.validation('patient_id is required');
   }
 
   const client = createUserClient(req.accessToken);
@@ -39,8 +41,7 @@ export async function listTreatments(req: AuthRequest, res: Response): Promise<v
 
   if (error) {
     logger.error('listTreatments error', { userId: req.userId, patientId, error: error.message });
-    res.status(500).json({ error: 'Failed to fetch treatments' });
-    return;
+    throw Errors.internal('Failed to fetch treatments');
   }
 
   res.json({ treatments: data ?? [] });
@@ -49,8 +50,7 @@ export async function listTreatments(req: AuthRequest, res: Response): Promise<v
 export async function createTreatment(req: AuthRequest, res: Response): Promise<void> {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(422).json({ errors: errors.array() });
-    return;
+    throw Errors.validation('Invalid treatment data', errors.array());
   }
 
   const {
@@ -83,10 +83,10 @@ export async function createTreatment(req: AuthRequest, res: Response): Promise<
 
   if (error) {
     logger.error('createTreatment error', { userId: req.userId, patientId: patient_id, error: error.message });
-    res.status(500).json({ error: 'Failed to create treatment' });
-    return;
+    throw Errors.internal('Failed to create treatment');
   }
 
+  logTreatmentAudit(req.userId, 'create_treatment', data.id, req.accessToken);
   res.status(201).json(data);
 }
 
@@ -100,8 +100,7 @@ export async function getTreatment(req: AuthRequest, res: Response): Promise<voi
     .single();
 
   if (error || !data) {
-    res.status(404).json({ error: 'Treatment not found' });
-    return;
+    throw Errors.notFound('Treatment');
   }
 
   res.json(data);
@@ -110,8 +109,7 @@ export async function getTreatment(req: AuthRequest, res: Response): Promise<voi
 export async function updateTreatment(req: AuthRequest, res: Response): Promise<void> {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(422).json({ errors: errors.array() });
-    return;
+    throw Errors.validation('Invalid treatment data', errors.array());
   }
 
   const { id } = req.params;
@@ -137,10 +135,10 @@ export async function updateTreatment(req: AuthRequest, res: Response): Promise<
 
   if (error || !data) {
     logger.error('updateTreatment error', { userId: req.userId, treatmentId: id, error: error?.message });
-    res.status(404).json({ error: 'Treatment not found or update failed' });
-    return;
+    throw Errors.notFound('Treatment');
   }
 
+  logTreatmentAudit(req.userId, 'update_treatment', id, req.accessToken);
   res.json(data);
 }
 
@@ -154,9 +152,9 @@ export async function deleteTreatment(req: AuthRequest, res: Response): Promise<
 
   if (error) {
     logger.error('deleteTreatment error', { userId: req.userId, treatmentId: id, error: error.message });
-    res.status(500).json({ error: 'Failed to delete treatment' });
-    return;
+    throw Errors.internal('Failed to delete treatment');
   }
 
+  logTreatmentAudit(req.userId, 'delete_treatment', id, req.accessToken);
   res.status(204).send();
 }
