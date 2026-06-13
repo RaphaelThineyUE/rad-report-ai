@@ -14,9 +14,11 @@ import analyticsRouter from './analytics.js';
 import adminRouter from './admin.js';
 import organizationsRouter from './organizations.js';
 import testRouter from './test.js';
+import healthRouter from './health.js';
 
 const router: IRouter = Router();
 
+router.use('/health', healthRouter);
 router.use('/auth', authRoutes);
 router.use('/patients', patientsRouter);
 router.use('/reports', reportsRouter);

@@ -21,7 +21,13 @@ const REQUIRED_VARS = [
 export function validateEnv(): void {
   const missing = REQUIRED_VARS.filter((key) => !process.env[key]);
   if (missing.length > 0) {
-    console.error(`Missing required environment variables: ${missing.join(', ')}`);
+    const message = `Missing required environment variables: ${missing.join(', ')}`;
+    // On Vercel, process.exit(1) kills the serverless function with no diagnostics —
+    // clients just see a connection error. Throw instead so it's logged with a stack trace.
+    if (process.env.VERCEL) {
+      throw new Error(message);
+    }
+    console.error(message);
     process.exit(1);
   }
 }
