@@ -63,7 +63,7 @@ export async function getMe(req: Request, res: Response): Promise<void> {
     id: data.user.id,
     email: data.user.email,
     full_name: data.user.user_metadata?.full_name ?? null,
-    role: data.user.role ?? 'user',
+    role: data.user.app_metadata?.role === 'admin' ? 'admin' : 'user',
   });
 }
 
