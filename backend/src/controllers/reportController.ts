@@ -7,6 +7,7 @@
  *   DOB, addresses, direct identifiers) → analyzes via claudeService → saves results.
  * supabaseAdmin is used for storage operations (upload, download, signed URL, delete);
  * the caller's JWT client is used for all DB queries so RLS enforces ownership.
+ * Audit logs are written asynchronously for upload/create/update/delete/process operations.
  */
 import { Response } from 'express';
 import { validationResult } from 'express-validator';
@@ -20,6 +21,8 @@ import {
   cleanupIdentifiers,
   detectBiradsTrend,
 } from '../services/claudeService.js';
+import { AppError, Errors } from '../utils/AppError.js';
+import { logReportAudit } from '../services/auditService.js';
 
 const STORAGE_BUCKET = process.env.STORAGE_BUCKET ?? 'reports';
 
@@ -112,19 +115,16 @@ function normalizeFilename(filename: string): string {
 
 export async function uploadReport(req: AuthRequest, res: Response): Promise<void> {
   if (!req.file) {
-    res.status(400).json({ error: 'Missing file' });
-    return;
+    throw Errors.fileError('Missing file');
   }
 
   if (req.file.mimetype !== 'application/pdf') {
-    res.status(422).json({ error: 'Only PDF uploads are supported' });
-    return;
+    throw Errors.fileError('Only PDF uploads are supported');
   }
 
   const patientId = String(req.body.patient_id ?? '').trim();
   if (!patientId) {
-    res.status(422).json({ error: 'patient_id is required' });
-    return;
+    throw Errors.validation('patient_id is required');
   }
 
   const filename = req.file.originalname;
@@ -142,13 +142,11 @@ export async function uploadReport(req: AuthRequest, res: Response): Promise<voi
       patientId,
       error: duplicateError.message,
     });
-    res.status(500).json({ error: 'Failed to check existing reports' });
-    return;
+    throw Errors.internal('Failed to check existing reports');
   }
 
   if (duplicate) {
-    res.status(409).json({ error: 'A report with this filename already exists for the patient' });
-    return;
+    throw Errors.conflict('A report with this filename already exists for the patient');
   }
 
   const path = `${req.userId}/${patientId}/${Date.now()}-${normalizeFilename(filename)}`;
@@ -158,10 +156,10 @@ export async function uploadReport(req: AuthRequest, res: Response): Promise<voi
 
   if (uploadError) {
     logger.error('uploadReport storage error', { userId: req.userId, patientId, error: uploadError.message });
-    res.status(500).json({ error: 'Failed to upload report file' });
-    return;
+    throw Errors.internal('Failed to upload report file');
   }
 
+  // Note: Audit logging for actual report creation happens in createReport
   res.json({
     file_url: path,
     filename,
@@ -359,8 +357,7 @@ export async function getReportSignedUrl(req: AuthRequest, res: Response): Promi
 export async function createReport(req: AuthRequest, res: Response): Promise<void> {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(422).json({ errors: errors.array() });
-    return;
+    throw Errors.validation('Invalid report data', errors.array());
   }
 
   const { patient_id, filename, file_url, file_size } = req.body as CreateReportBody;
@@ -382,14 +379,13 @@ export async function createReport(req: AuthRequest, res: Response): Promise<voi
   if (error) {
     const isDuplicate = error.code === '23505';
     if (isDuplicate) {
-      res.status(409).json({ error: 'A report with this filename already exists for the patient' });
-      return;
+      throw Errors.conflict('A report with this filename already exists for the patient');
     }
     logger.error('createReport error', { userId: req.userId, patientId: patient_id, error: error.message });
-    res.status(500).json({ error: 'Failed to create report' });
-    return;
+    throw Errors.internal('Failed to create report');
   }
 
+  logReportAudit(req.userId, 'create_report', data.id, req.accessToken, req.ip, req.get('user-agent'));
   res.status(201).json(data);
 }
 
@@ -463,10 +459,10 @@ export async function updateReport(req: AuthRequest, res: Response): Promise<voi
 
   if (error || !data) {
     logger.error('updateReport error', { userId: req.userId, reportId: id, error: error?.message });
-    res.status(404).json({ error: 'Report not found or update failed' });
-    return;
+    throw Errors.notFound('Report');
   }
 
+  logReportAudit(req.userId, 'update_report', id, req.accessToken, req.ip, req.get('user-agent'));
   res.json(data);
 }
 
@@ -480,8 +476,7 @@ export async function deleteReport(req: AuthRequest, res: Response): Promise<voi
     .single();
 
   if (reportError || !report) {
-    res.status(404).json({ error: 'Report not found' });
-    return;
+    throw Errors.notFound('Report');
   }
 
   if (report.file_url) {
@@ -490,8 +485,7 @@ export async function deleteReport(req: AuthRequest, res: Response): Promise<voi
       .remove([report.file_url]);
     if (storageError) {
       logger.error('deleteReport storage error', { userId: req.userId, reportId: id, error: storageError.message });
-      res.status(500).json({ error: 'Failed to remove report file' });
-      return;
+      throw Errors.internal('Failed to remove report file');
     }
   }
 
@@ -502,10 +496,10 @@ export async function deleteReport(req: AuthRequest, res: Response): Promise<voi
 
   if (deleteError) {
     logger.error('deleteReport row error', { userId: req.userId, reportId: id, error: deleteError.message });
-    res.status(500).json({ error: 'Failed to delete report' });
-    return;
+    throw Errors.internal('Failed to delete report');
   }
 
+  logReportAudit(req.userId, 'delete_report', id, req.accessToken, req.ip, req.get('user-agent'));
   res.status(204).send();
 }
 
