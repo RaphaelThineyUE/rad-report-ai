@@ -5,10 +5,12 @@
  * cancer-stage breakdown filtered by optional date range / stage / treatment type.
  * exportAnalyticsCsv streams the same filtered dataset as a downloadable CSV.
  * Data is scoped to the authenticated user's patients via RLS (created_by filter).
+ * Admin users (userRole === 'admin') bypass RLS via supabaseAdmin and see data
+ * across all users.
  */
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.js';
-import { createUserClient } from '../services/supabaseClient.js';
+import { createUserClient, supabaseAdmin } from '../services/supabaseClient.js';
 import { logger } from '../utils/logger.js';
 
 interface AnalyticsFilters {
@@ -16,6 +18,12 @@ interface AnalyticsFilters {
   endDate?: string;
   cancerStage?: string;
   treatmentType?: string;
+}
+
+// Admins query via supabaseAdmin (bypasses RLS, no created_by filter) to see all users' data.
+function getAnalyticsScope(req: AuthRequest) {
+  const isAdmin = req.userRole === 'admin';
+  return { client: isAdmin ? supabaseAdmin : createUserClient(req.accessToken), isAdmin };
 }
 
 export async function getAnalytics(req: AuthRequest, res: Response): Promise<void> {
@@ -28,13 +36,14 @@ export async function getAnalytics(req: AuthRequest, res: Response): Promise<voi
     treatmentType,
   };
 
-  const client = createUserClient(req.accessToken);
+  const { client, isAdmin } = getAnalyticsScope(req);
 
-  // Fetch patients (filters by created_by for RLS)
-  const { data: patients, error: patientsError } = await client
-    .from('patients')
-    .select('id, cancer_stage, created_at')
-    .eq('created_by', req.userId);
+  // Fetch patients (filters by created_by for RLS; admins see all)
+  let patientsQuery = client.from('patients').select('id, cancer_stage, created_at');
+  if (!isAdmin) {
+    patientsQuery = patientsQuery.eq('created_by', req.userId);
+  }
+  const { data: patients, error: patientsError } = await patientsQuery;
 
   if (patientsError) {
     logger.error('getAnalytics patients error', { userId: req.userId, error: patientsError.message });
@@ -152,12 +161,13 @@ export async function exportAnalyticsCsv(req: AuthRequest, res: Response): Promi
     treatmentType,
   };
 
-  const client = createUserClient(req.accessToken);
+  const { client, isAdmin } = getAnalyticsScope(req);
 
-  const { data: patients, error: patientsError } = await client
-    .from('patients')
-    .select('id, full_name, cancer_stage, cancer_type, created_at')
-    .eq('created_by', req.userId);
+  let patientsQuery = client.from('patients').select('id, full_name, cancer_stage, cancer_type, created_at');
+  if (!isAdmin) {
+    patientsQuery = patientsQuery.eq('created_by', req.userId);
+  }
+  const { data: patients, error: patientsError } = await patientsQuery;
 
   if (patientsError) {
     logger.error('exportAnalyticsCsv patients error', { userId: req.userId, error: patientsError.message });

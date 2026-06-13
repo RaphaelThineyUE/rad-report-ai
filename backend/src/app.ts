@@ -9,9 +9,11 @@ import express, { Express } from 'express';
 import cors from 'cors';
 import routes from './routes/index.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { requestLogger } from './middleware/requestLogger.js';
 
 const app: Express = express();
 
+app.use(requestLogger);
 app.use(sentryRequestHandler());
 // In development allow any localhost port (Vite may pick a different port if 5173 is busy).
 // In production lock to the configured FRONTEND_URL.
