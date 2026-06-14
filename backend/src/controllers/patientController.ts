@@ -157,7 +157,7 @@ export async function updatePatient(req: AuthRequest, res: Response): Promise<vo
     throw Errors.notFound('Patient');
   }
 
-  logPatientAudit(req.userId, 'update_patient', id, req.accessToken);
+  logPatientAudit(req.userId, 'update_patient', id as string, req.accessToken);
   res.json(data);
 }
 
@@ -174,7 +174,7 @@ export async function deletePatient(req: AuthRequest, res: Response): Promise<vo
     throw Errors.internal('Failed to delete patient');
   }
 
-  logPatientAudit(req.userId, 'delete_patient', id, req.accessToken);
+  logPatientAudit(req.userId, 'delete_patient', id as string, req.accessToken);
   res.status(204).send();
 }
 
