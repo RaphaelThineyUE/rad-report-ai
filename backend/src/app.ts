@@ -18,7 +18,7 @@ app.use(sentryRequestHandler());
 // In development allow any localhost port (Vite may pick a different port if 5173 is busy).
 // In production lock to the configured FRONTEND_URL.
 const corsOrigin =
-  process.env.NODE_ENV === 'production'
+  process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
     ? process.env.FRONTEND_URL ?? 'http://localhost:5173'
     : (origin: string | undefined, cb: (e: Error | null, allow?: boolean) => void) =>
         cb(null, !origin || /^https?:\/\/localhost(:\d+)?$/.test(origin));
