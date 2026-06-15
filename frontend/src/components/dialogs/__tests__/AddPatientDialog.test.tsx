@@ -171,4 +171,34 @@ describe('AddPatientDialog', () => {
       expect(screen.getByText(/network error|failed to create/i)).toBeInTheDocument();
     });
   });
+
+  it('should display backend validation message when API returns nested error payload', async () => {
+    vi.mocked(usePatients.useCreatePatient).mockReturnValue({
+      mutateAsync: vi.fn().mockRejectedValue({
+        response: {
+          data: {
+            error: {
+              message: 'Invalid patient data',
+              details: [{ msg: 'diagnosis_date must be YYYY-MM-DD' }],
+            },
+          },
+        },
+      }),
+      isPending: false,
+    } as any);
+
+    const user = userEvent.setup();
+    render(<AddPatientDialog onClose={mockOnClose} />);
+
+    await user.type(screen.getByLabelText('Full Name *'), 'John Doe');
+    await user.type(screen.getByLabelText('Date of Birth *'), '1980-01-15');
+    await user.type(screen.getByLabelText('Diagnosis Date *'), '2023-01-15');
+    await user.type(screen.getByLabelText('Cancer Type *'), 'Breast');
+
+    await user.click(screen.getByRole('button', { name: /create patient/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Invalid patient data')).toBeInTheDocument();
+    });
+  });
 });

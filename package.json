@@ -1,6 +1,6 @@
 {
   "name": "rad-report-ai",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "private": true,
   "packageManager": "yarn@1.22.22",
   "workspaces": [
@@ -14,6 +14,7 @@
     "build": "yarn workspace backend build && yarn workspace frontend build",
     "test": "yarn workspace backend test && yarn workspace frontend test",
     "e2e:create-patient": "yarn workspace frontend test:e2e:create-patient",
+    "extract:pdf": "yarn workspace backend extract:pdf",
     "seed:fake": "yarn workspace backend seed:fake",
     "seed:fake:dry-run": "yarn workspace backend seed:fake:dry-run",
     "lint": "yarn workspace backend lint && yarn workspace frontend lint",

@@ -15,6 +15,15 @@ interface AddPatientDialogProps {
   onClose: () => void;
 }
 
+interface ApiErrorDetail {
+  msg?: string;
+}
+
+interface ApiErrorPayload {
+  error?: string | { message?: string; details?: ApiErrorDetail[] };
+  errors?: ApiErrorDetail[];
+}
+
 const formSectionStyle: React.CSSProperties = {
   paddingBottom: 24,
   borderBottom: '1px solid var(--border-2)',
@@ -103,9 +112,14 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
       });
       onClose();
     } catch (err) {
-      const axiosErr = err as AxiosError<{ error?: string; errors?: Array<{ msg: string }> }>;
-      const detail = axiosErr.response?.data?.error
-        ?? axiosErr.response?.data?.errors?.map(e => e.msg).join(', ')
+      const axiosErr = err as AxiosError<ApiErrorPayload>;
+      const apiError = axiosErr.response?.data?.error;
+      const nestedDetails = typeof apiError === 'object' && apiError?.details?.length
+        ? apiError.details.map(detail => detail.msg).filter(Boolean).join(', ')
+        : undefined;
+      const detail = (typeof apiError === 'string' ? apiError : apiError?.message)
+        ?? nestedDetails
+        ?? axiosErr.response?.data?.errors?.map(e => e.msg).filter(Boolean).join(', ')
         ?? axiosErr.message
         ?? 'Failed to create patient';
       setSubmitError(detail);
