@@ -15,15 +15,10 @@ const app: Express = express();
 
 app.use(requestLogger);
 app.use(sentryRequestHandler());
-// Allow requests from configured FRONTEND_URL (for staging/production),
-// or from localhost (for development).
-const corsOrigin = (origin: string | undefined, cb: (e: Error | null, allow?: boolean) => void) => {
-  const allowed =
-    !origin || // allow requests with no origin (e.g., Postman, mobile apps)
-    /^https?:\/\/localhost(:\d+)?$/.test(origin) || // allow localhost in dev
-    origin === process.env.FRONTEND_URL; // allow configured frontend URL
-  cb(null, allowed);
-};
+// CORS configuration: allow all origins in staging, localhost in dev
+const corsOrigin = process.env.NODE_ENV === 'production' && process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL
+  : true; // Allow all in staging and dev for now
 
 app.use(cors({ origin: corsOrigin }));
 app.use(express.json());
