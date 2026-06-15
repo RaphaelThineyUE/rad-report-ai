@@ -417,7 +417,7 @@ export async function listReports(req: AuthRequest, res: Response): Promise<void
 }
 
 export async function getReport(req: AuthRequest, res: Response): Promise<void> {
-  const { id } = req.params;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const client = createUserClient(req.accessToken);
   const { data, error } = await client
     .from('radiology_reports')
@@ -434,7 +434,7 @@ export async function getReport(req: AuthRequest, res: Response): Promise<void> 
 }
 
 export async function updateReport(req: AuthRequest, res: Response): Promise<void> {
-  const { id } = req.params;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const body = req.body as ReportUpdateBody;
   const updates: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
@@ -464,7 +464,7 @@ export async function updateReport(req: AuthRequest, res: Response): Promise<voi
 }
 
 export async function deleteReport(req: AuthRequest, res: Response): Promise<void> {
-  const { id } = req.params;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const client = createUserClient(req.accessToken);
   const { data: report, error: reportError } = await client
     .from('radiology_reports')
@@ -501,7 +501,7 @@ export async function deleteReport(req: AuthRequest, res: Response): Promise<voi
 }
 
 export async function exportReportJson(req: AuthRequest, res: Response): Promise<void> {
-  const { id } = req.params;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const client = createUserClient(req.accessToken);
 
   const { data: report, error } = await client

@@ -52,6 +52,31 @@ describe('Patients API', () => {
   });
 
   describe('POST /api/patients', () => {
+    it('should create patient with valid payload', async () => {
+      const response = await request(app)
+        .post('/api/patients')
+        .set('Authorization', 'Bearer test-token')
+        .send({
+          full_name: 'Jane Doe',
+          date_of_birth: '1980-01-01',
+          gender: 'Female',
+          ethnicity: 'Hispanic',
+          diagnosis_date: '2024-01-01',
+          cancer_type: 'Invasive Ductal Carcinoma',
+          cancer_stage: 'Stage II',
+          tumor_size_cm: 2.3,
+          lymph_node_positive: true,
+          er_status: 'Positive',
+          pr_status: 'Positive',
+          her2_status: 'Negative',
+          menopausal_status: 'Postmenopausal',
+          initial_treatment_plan: 'Surgery then radiation',
+        })
+        .expect(201);
+
+      expect(response.body).toEqual({ id: 'new-patient' });
+    });
+
     it('should validate full_name is required', async () => {
       const response = await request(app)
         .post('/api/patients')

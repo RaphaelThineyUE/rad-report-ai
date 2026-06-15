@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "dotenv -e .env.e2e.local -- playwright test"
+    "test:e2e": "dotenv -e .env.e2e.local -- playwright test",
+    "test:e2e:create-patient": "dotenv -e .env.e2e.local -- playwright test --project=chromium-auth tests/patients.spec.ts -g \"creates a new patient with full clinical profile and captures workflow screenshots\""
   },
   "dependencies": {
     "@sentry/react": "^10.56.0",
