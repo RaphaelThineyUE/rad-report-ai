@@ -15,13 +15,12 @@ const app: Express = express();
 
 app.use(requestLogger);
 app.use(sentryRequestHandler());
-// In development allow any localhost port (Vite may pick a different port if 5173 is busy).
-// In production lock to the configured FRONTEND_URL.
-const corsOrigin =
-  process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
-    ? process.env.FRONTEND_URL ?? 'http://localhost:5173'
-    : (origin: string | undefined, cb: (e: Error | null, allow?: boolean) => void) =>
-        cb(null, !origin || /^https?:\/\/localhost(:\d+)?$/.test(origin));
+// If FRONTEND_URL is configured (staging/production), use it.
+// Otherwise allow localhost for development (any port, since Vite may pick a different port).
+const corsOrigin = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL
+  : (origin: string | undefined, cb: (e: Error | null, allow?: boolean) => void) =>
+      cb(null, !origin || /^https?:\/\/localhost(:\d+)?$/.test(origin));
 
 app.use(cors({ origin: corsOrigin }));
 app.use(express.json());
