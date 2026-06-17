@@ -12,6 +12,11 @@ import { AuthRequest } from '../middleware/auth.js';
 import { createUserClient, supabaseAdmin } from '../services/supabaseClient.js';
 import { logger } from '../utils/logger.js';
 import {
+  analyzeReport,
+  generateSummary,
+  cleanupIdentifiers,
+  detectBiradsTrend,
+} from '../services/claudeService.js';
   buildReportStoragePath,
   enqueueReportProcessing,
 } from '../services/reportProcessingService.js';
