@@ -80,14 +80,71 @@ See [docs/development-guide.md](docs/development-guide.md) for full setup instru
 
 ---
 
+## Architecture Diagram
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│                         Browser (User)                              │
+└────────────────────────────────────────────────────────────────────┘
+                           │
+                    ▼ HTTPS / JWT Token
+┌────────────────────────────────────────────────────────────────────┐
+│          Frontend (React + Vite)                                    │
+│  Vercel: https://app.example.com                                   │
+│  - Authentication (Supabase Auth)                                  │
+│  - Patient CRUD UI                                                 │
+│  - Report Upload & Analysis UI                                     │
+│  - Analytics & Dashboards                                          │
+│  - TanStack Query for server state                                 │
+└────────────────────────────────────────────────────────────────────┘
+                           │
+         ▼ Axios + Authorization Bearer Token
+┌────────────────────────────────────────────────────────────────────┐
+│       Backend API (Node.js / Express)                              │
+│  Vercel Functions: https://api.example.com                         │
+│  - /api/auth (login, signup, session)                              │
+│  - /api/patients (CRUD + export)                                   │
+│  - /api/reports (upload, analyze, export)                          │
+│  - /api/ai (Claude analysis - de-identified)                       │
+│  - /api/analytics (aggregated dashboard data)                      │
+│  - /api/admin (health, monitoring)                                 │
+└────────────────────────────────────────────────────────────────────┘
+                           │
+          ├─────────────────────┬────────────────────┐
+          │                     │                    │
+          ▼                     ▼                    ▼
+    ┌──────────────┐   ┌──────────────┐   ┌───────────────────┐
+    │  Supabase    │   │  Supabase    │   │ Anthropic Claude  │
+    │  PostgreSQL  │   │  Storage     │   │ API (Backend Only) │
+    │  (RLS)       │   │  (Private)   │   │ (De-identified)   │
+    │              │   │              │   │                   │
+    │ - patients   │   │ - PDF files  │   │ - Report analysis │
+    │ - reports    │   │ - signed URLs│   │ - Summary gen.    │
+    │ - treatments │   │              │   │ - Comparisons     │
+    │ - audit_logs │   │              │   │ - BI-RADS trend   │
+    └──────────────┘   └──────────────┘   └───────────────────┘
+```
+
+**Key Features**:
+- **Full Stack**: React frontend → Express backend → Supabase + Claude AI
+- **Auth**: Supabase JWT, Row-Level Security enforces data ownership
+- **AI**: Claude processes de-identified clinical data only (backend)
+- **Storage**: Private S3-like bucket for PDFs, accessed via signed URLs
+- **Audit**: All sensitive actions logged for compliance
+
+---
+
 ## Documentation
 
 | Document | Description |
 |---|---|
-| [docs/architecture.md](docs/architecture.md) | System overview, request flows, auth diagram, RLS, AI services |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Setup, branching, commits, testing, PR process |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Production & staging setup (Vercel + Supabase) |
+| [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) | Pre-flight, staging validation, production rollout, rollback |
+| [docs/architecture.md](docs/architecture.md) | Detailed system overview, request flows, auth, RLS, AI services |
 | [docs/api-reference.md](docs/api-reference.md) | All API endpoints with request/response shapes |
 | [docs/database-schema.md](docs/database-schema.md) | SQL schemas, RLS policies, Storage bucket policies |
-| [docs/development-guide.md](docs/development-guide.md) | Setup guide, env vars, running tests, conventions |
+| [docs/development-guide.md](docs/development-guide.md) | Local dev setup, env vars, running tests, conventions |
 | [docs/backlog.md](docs/backlog.md) | Full Linear issue list by milestone and epic |
 
 ---
