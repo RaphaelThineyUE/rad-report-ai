@@ -25,39 +25,39 @@ interface ApiErrorPayload {
 }
 
 const formSectionStyle: React.CSSProperties = {
-  paddingBottom: 24,
+  paddingBottom: 16,
   borderBottom: '1px solid var(--border-2)',
 };
 
 const formFieldStyle: React.CSSProperties = {
-  marginBottom: 16,
+  marginBottom: 10,
 };
 
 const labelStyle: React.CSSProperties = {
   display: 'block',
-  marginBottom: 8,
+  marginBottom: 6,
+  fontSize: 12,
 };
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
   fontFamily: 'var(--font-sans)',
-  fontSize: 14,
+  fontSize: 13,
   color: 'var(--fg-1)',
   background: 'var(--bg-surface)',
   border: '1px solid var(--border-2)',
   borderRadius: 'var(--r-sm)',
-  padding: '11px 12px',
+  padding: '9px 10px',
   boxShadow: 'var(--shadow-xs)',
   outline: 'none',
   boxSizing: 'border-box',
 };
 
-const gridTwoColStyle: React.CSSProperties = {
+const compactGridStyle: React.CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: '1fr 1fr',
-  gap: 16,
+  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+  gap: 12,
 };
-
 
 export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
   const createPatient = useCreatePatient();
@@ -129,7 +129,12 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
   return (
     <>
       <div className="scrim" onClick={onClose} />
-      <div className="modal" role="dialog" aria-label="Add patient">
+      <div
+        className="modal"
+        role="dialog"
+        aria-label="Add patient"
+        style={{ width: 980, maxWidth: '96vw', maxHeight: '92vh' }}
+      >
         <div className="modal-head">
           <h2 className="t-h3" style={{ margin: 0 }}>Add Patient</h2>
           <button className="icon-btn" onClick={onClose} style={{ border: 'none' }}>
@@ -138,11 +143,11 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="modal-body">
+          <div className="modal-body" style={{ padding: '16px 20px' }}>
             {submitError && (
               <div style={{
                 background: 'var(--error-100)', border: '1px solid var(--error-200)',
-                borderRadius: 'var(--r-sm)', padding: 12, marginBottom: 24,
+                borderRadius: 'var(--r-sm)', padding: 10, marginBottom: 16,
                 color: 'var(--error-700)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8,
               }}>
                 <Icon name="alert-circle" size={16} />
@@ -152,8 +157,8 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
 
             {/* Basic Information Section */}
             <div style={formSectionStyle}>
-              <h3 className="t-h5" style={{ marginBottom: 16, color: 'var(--fg-1)' }}>Basic Information</h3>
-              <div style={gridTwoColStyle}>
+              <h3 className="t-h5" style={{ marginBottom: 12, color: 'var(--fg-1)' }}>Basic Information</h3>
+              <div style={compactGridStyle}>
                 <div style={formFieldStyle}>
                   <label htmlFor="ap-full-name" className="t-label" style={labelStyle}>Full Name *</label>
                   <input
@@ -179,9 +184,6 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
                     required
                   />
                 </div>
-              </div>
-
-              <div style={gridTwoColStyle}>
                 <div style={formFieldStyle}>
                   <label htmlFor="ap-gender" className="t-label" style={labelStyle}>Gender</label>
                   <select
@@ -214,8 +216,8 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
 
             {/* Diagnosis Section */}
             <div style={formSectionStyle}>
-              <h3 className="t-h5" style={{ marginBottom: 16, color: 'var(--fg-1)' }}>Diagnosis</h3>
-              <div style={gridTwoColStyle}>
+              <h3 className="t-h5" style={{ marginBottom: 12, color: 'var(--fg-1)' }}>Diagnosis</h3>
+              <div style={compactGridStyle}>
                 <div style={formFieldStyle}>
                   <label htmlFor="ap-diagnosis-date" className="t-label" style={labelStyle}>Diagnosis Date *</label>
                   <input
@@ -241,9 +243,6 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
                     placeholder="e.g., Breast, Lung"
                   />
                 </div>
-              </div>
-
-              <div style={gridTwoColStyle}>
                 <div style={formFieldStyle}>
                   <label htmlFor="ap-cancer-stage" className="t-label" style={labelStyle}>Cancer Stage</label>
                   <select
@@ -273,25 +272,24 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
                     placeholder="Optional"
                   />
                 </div>
-              </div>
-
-              <div style={formFieldStyle}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', userSelect: 'none' }}>
-                  <input
-                    type="checkbox"
-                    name="lymph_node_positive"
-                    checked={formData.lymph_node_positive === true}
-                    onChange={handleChange}
-                  />
-                  <span className="t-body">Lymph node positive</span>
-                </label>
+                <div style={{ ...formFieldStyle, display: 'flex', alignItems: 'flex-end' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', userSelect: 'none', minHeight: 40 }}>
+                    <input
+                      type="checkbox"
+                      name="lymph_node_positive"
+                      checked={formData.lymph_node_positive === true}
+                      onChange={handleChange}
+                    />
+                    <span className="t-body-sm">Lymph node positive</span>
+                  </label>
+                </div>
               </div>
             </div>
 
             {/* Biomarkers Section */}
             <div style={formSectionStyle}>
-              <h3 className="t-h5" style={{ marginBottom: 16, color: 'var(--fg-1)' }}>Biomarkers</h3>
-              <div style={gridTwoColStyle}>
+              <h3 className="t-h5" style={{ marginBottom: 12, color: 'var(--fg-1)' }}>Biomarkers</h3>
+              <div style={compactGridStyle}>
                 <div style={formFieldStyle}>
                   <label htmlFor="ap-er-status" className="t-label" style={labelStyle}>ER Status</label>
                   <select
@@ -322,9 +320,6 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
                     ))}
                   </select>
                 </div>
-              </div>
-
-              <div style={gridTwoColStyle}>
                 <div style={formFieldStyle}>
                   <label htmlFor="ap-her2-status" className="t-label" style={labelStyle}>HER2 Status</label>
                   <select
@@ -357,7 +352,7 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
 
             {/* Treatment Section */}
             <div>
-              <h3 className="t-h5" style={{ marginBottom: 16, color: 'var(--fg-1)' }}>Treatment Plan</h3>
+              <h3 className="t-h5" style={{ marginBottom: 12, color: 'var(--fg-1)' }}>Treatment Plan</h3>
               <div style={formFieldStyle}>
                 <label htmlFor="ap-treatment" className="t-label" style={labelStyle}>Initial Treatment Plan</label>
                 <textarea
@@ -366,14 +361,14 @@ export function AddPatientDialog({ onClose }: AddPatientDialogProps) {
                   value={formData.initial_treatment_plan}
                   onChange={handleChange}
                   style={{ ...inputStyle, fontFamily: 'var(--font-mono)', fontSize: 13 }}
-                  rows={4}
+                  rows={3}
                   placeholder="Optional treatment details"
                 />
               </div>
             </div>
           </div>
 
-          <div className="modal-foot">
+          <div className="modal-foot" style={{ padding: '12px 20px' }}>
             <Button variant="secondary" onClick={onClose}>Cancel</Button>
             <Button type="submit" disabled={createPatient.isPending}>
               {createPatient.isPending ? 'Creating...' : 'Create Patient'}

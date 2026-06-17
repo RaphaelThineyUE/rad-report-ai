@@ -94,6 +94,19 @@ export function ReportDetailContent({ report, biRadsTrendData }: Props) {
     failed:     { bg: 'var(--danger-50)',  fg: 'var(--danger-700)'  },
     pending:    { bg: 'var(--fg-6)',        fg: 'var(--fg-2)'        },
   }[report.status] ?? { bg: 'var(--fg-6)', fg: 'var(--fg-2)' };
+  const stageLabel = {
+    queued: 'Queued for background processing',
+    downloading: 'Downloading source PDF',
+    validating_pdf: 'Validating PDF',
+    extracting_text: 'Extracting text',
+    preprocessing_images: 'Improving scan quality',
+    running_ocr: 'Running OCR',
+    deidentifying: 'Removing identifiers',
+    analyzing: 'Analyzing report',
+    saving_results: 'Saving structured data',
+    completed: 'Processing complete',
+    failed: 'Processing failed',
+  }[report.processing_stage ?? report.status] ?? report.status;
 
   return (
     <div style={{ display: 'grid', gap: 24 }}>
@@ -122,12 +135,23 @@ export function ReportDetailContent({ report, biRadsTrendData }: Props) {
         <SectionHeader title="Processing Status" />
         <div style={{ padding: '10px 12px', borderRadius: 'var(--r-sm)', background: statusColor.bg, color: statusColor.fg }}>
           <span style={{ fontWeight: 600, textTransform: 'capitalize' }}>{report.status}</span>
+          <span style={{ fontSize: 12, marginLeft: 8, opacity: 0.9 }}>{stageLabel}</span>
+          {typeof report.processing_progress === 'number' && report.status !== 'completed' && (
+            <span style={{ fontSize: 12, marginLeft: 8, opacity: 0.8 }}>
+              · {report.processing_progress}%
+            </span>
+          )}
           {report.processing_time_ms && (
             <span style={{ fontSize: 12, marginLeft: 8, opacity: 0.8 }}>
               · {(report.processing_time_ms / 1000).toFixed(1)}s
             </span>
           )}
         </div>
+        {report.last_error && (
+          <div style={{ marginTop: 8, fontSize: 12, color: 'var(--danger-700)' }}>
+            {report.last_error}
+          </div>
+        )}
       </div>
 
       {/* Exam Information */}

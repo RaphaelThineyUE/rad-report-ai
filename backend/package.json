@@ -8,6 +8,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "extract:pdf": "tsx scripts/extractPdfText.ts",
+    "worker": "tsx scripts/runReportWorker.ts",
     "seed:fake": "tsx scripts/seedFakeData.ts",
     "seed:fake:dry-run": "tsx scripts/seedFakeData.ts --dry-run",
     "test": "jest --passWithNoTests",

@@ -57,6 +57,15 @@ type OcrCandidate = {
   text: string;
 };
 
+export type PdfExtractionStage =
+  | 'extracting_text'
+  | 'preprocessing_images'
+  | 'running_ocr';
+
+interface ExtractPdfOptions {
+  onStage?: (stage: PdfExtractionStage) => void | Promise<void>;
+}
+
 function execFileAsync(
   file: string,
   args: string[],
@@ -178,6 +187,10 @@ async function withTempDir<T>(prefix: string, work: (dir: string) => Promise<T>)
   } finally {
     await rm(tempDir, { recursive: true, force: true });
   }
+}
+
+async function notifyStage(options: ExtractPdfOptions | undefined, stage: PdfExtractionStage): Promise<void> {
+  await options?.onStage?.(stage);
 }
 
 /**
@@ -343,11 +356,17 @@ async function buildPreprocessedPdf(
   return outputPdfPath;
 }
 
-async function extractBestPreprocessedOcr(filePath: string, tessdataDir: string): Promise<OcrCandidate | null> {
+async function extractBestPreprocessedOcr(
+  filePath: string,
+  tessdataDir: string,
+  options?: ExtractPdfOptions
+): Promise<OcrCandidate | null> {
   if (!await commandExists('convert')) {
     logger.info('Skipping OCR preprocessing; ImageMagick convert not installed');
     return null;
   }
+
+  await notifyStage(options, 'preprocessing_images');
 
   return withTempDir('rad-report-preprocess-', async (tempDir) => {
     let bestCandidate: OcrCandidate | null = null;
@@ -377,10 +396,11 @@ async function extractBestPreprocessedOcr(filePath: string, tessdataDir: string)
   });
 }
 
-async function extractTextLocally(buffer: Buffer): Promise<string> {
+async function extractTextLocally(buffer: Buffer, options?: ExtractPdfOptions): Promise<string> {
   return withTempPdf(buffer, async (filePath) => {
     if (await commandExists('gs')) {
       try {
+        await notifyStage(options, 'extracting_text');
         const textWriteText = await extractWithGhostscriptTxtwrite(filePath);
         if (hasEnoughText(textWriteText)) {
           return textWriteText;
@@ -394,6 +414,7 @@ async function extractTextLocally(buffer: Buffer): Promise<string> {
       const tessdataDir = await resolveTessdataDir();
 
       try {
+        await notifyStage(options, 'running_ocr');
         const ocrText = await extractWithGhostscriptOcr(filePath, {
           label: 'Ghostscript OCR extracted text (direct)',
           tessdataDir: tessdataDir ?? undefined,
@@ -409,7 +430,7 @@ async function extractTextLocally(buffer: Buffer): Promise<string> {
       }
 
       if (tessdataDir) {
-        const preprocessedCandidate = await extractBestPreprocessedOcr(filePath, tessdataDir);
+        const preprocessedCandidate = await extractBestPreprocessedOcr(filePath, tessdataDir, options);
         bestOcrCandidate = pickBetterOcrCandidate(bestOcrCandidate, preprocessedCandidate);
       }
 
@@ -433,7 +454,10 @@ async function extractTextLocally(buffer: Buffer): Promise<string> {
  * Extracts text from PDF buffer.
  * Tries local parsers first, remote OCR last.
  */
-export async function extractTextFromPdf(buffer: Buffer | Blob): Promise<string> {
+export async function extractTextFromPdf(
+  buffer: Buffer | Blob,
+  options?: ExtractPdfOptions
+): Promise<string> {
   const bufferToUse = buffer instanceof Blob
     ? Buffer.from(await buffer.arrayBuffer())
     : buffer;
@@ -458,12 +482,13 @@ export async function extractTextFromPdf(buffer: Buffer | Blob): Promise<string>
     logger.warn('pdf-parse failed, trying local fallbacks', { error: msg });
   }
 
-  const localText = await extractTextLocally(bufferToUse);
+  const localText = await extractTextLocally(bufferToUse, options);
   if (localText) {
     return localText;
   }
 
   try {
+    await notifyStage(options, 'running_ocr');
     const ocrText = await ocrWithClaude(bufferToUse);
     if (ocrText) {
       return ocrText;
