@@ -138,7 +138,7 @@ export async function updateTreatment(req: AuthRequest, res: Response): Promise<
     throw Errors.notFound('Treatment');
   }
 
-  logTreatmentAudit(req.userId, 'update_treatment', id, req.accessToken);
+  logTreatmentAudit(req.userId, 'update_treatment', id as string, req.accessToken);
   res.json(data);
 }
 
@@ -155,6 +155,6 @@ export async function deleteTreatment(req: AuthRequest, res: Response): Promise<
     throw Errors.internal('Failed to delete treatment');
   }
 
-  logTreatmentAudit(req.userId, 'delete_treatment', id, req.accessToken);
+  logTreatmentAudit(req.userId, 'delete_treatment', id as string, req.accessToken);
   res.status(204).send();
 }
