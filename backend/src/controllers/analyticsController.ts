@@ -12,6 +12,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.js';
 import { createUserClient, supabaseAdmin } from '../services/supabaseClient.js';
 import { logger } from '../utils/logger.js';
+import { Errors } from '../utils/AppError.js';
 
 interface AnalyticsFilters {
   startDate?: string;
@@ -47,8 +48,7 @@ export async function getAnalytics(req: AuthRequest, res: Response): Promise<voi
 
   if (patientsError) {
     logger.error('getAnalytics patients error', { userId: req.userId, error: patientsError.message });
-    res.status(500).json({ error: 'Failed to fetch analytics' });
-    return;
+    throw Errors.internal('Failed to fetch analytics');
   }
 
   // Filter patients by cancer_stage if provided
@@ -72,8 +72,7 @@ export async function getAnalytics(req: AuthRequest, res: Response): Promise<voi
 
   if (reportsError) {
     logger.error('getAnalytics reports error', { userId: req.userId, error: reportsError.message });
-    res.status(500).json({ error: 'Failed to fetch reports' });
-    return;
+    throw Errors.internal('Failed to fetch reports');
   }
 
   // Filter reports by date range
@@ -171,8 +170,7 @@ export async function exportAnalyticsCsv(req: AuthRequest, res: Response): Promi
 
   if (patientsError) {
     logger.error('exportAnalyticsCsv patients error', { userId: req.userId, error: patientsError.message });
-    res.status(500).json({ error: 'Failed to export analytics' });
-    return;
+    throw Errors.internal('Failed to export analytics');
   }
 
   let filteredPatients = patients ?? [];
@@ -194,8 +192,7 @@ export async function exportAnalyticsCsv(req: AuthRequest, res: Response): Promi
 
   if (reportsError) {
     logger.error('exportAnalyticsCsv reports error', { userId: req.userId, error: reportsError.message });
-    res.status(500).json({ error: 'Failed to fetch reports' });
-    return;
+    throw Errors.internal('Failed to fetch reports');
   }
 
   let filteredReports = reports ?? [];

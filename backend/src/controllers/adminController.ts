@@ -10,6 +10,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.js';
 import { createUserClient, supabaseAdmin } from '../services/supabaseClient.js';
 import { logger } from '../utils/logger.js';
+import { Errors } from '../utils/AppError.js';
 
 export async function getSystemHealth(req: AuthRequest, res: Response): Promise<void> {
   const client = createUserClient(req.accessToken);
@@ -17,8 +18,7 @@ export async function getSystemHealth(req: AuthRequest, res: Response): Promise<
   // Check if user is admin (this is a simplified check - in production, add proper admin role verification)
   const { data: authUser } = await client.auth.getUser();
   if (!authUser.user) {
-    res.status(401).json({ error: 'Unauthorized' });
-    return;
+    throw Errors.unauthorized();
   }
 
   try {
@@ -69,7 +69,7 @@ export async function getSystemHealth(req: AuthRequest, res: Response): Promise<
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     logger.error('getSystemHealth error', { userId: req.userId, error: message });
-    res.status(500).json({ error: 'Failed to fetch system health' });
+    throw Errors.internal('Failed to fetch system health');
   }
 }
 
@@ -80,8 +80,7 @@ export async function listUsers(req: AuthRequest, res: Response): Promise<void> 
 
     if (authError) {
       logger.error('listUsers auth error', { userId: req.userId, error: authError.message });
-      res.status(500).json({ error: 'Failed to fetch users' });
-      return;
+      throw Errors.internal('Failed to fetch users');
     }
 
     const client = createUserClient(req.accessToken);
@@ -113,7 +112,7 @@ export async function listUsers(req: AuthRequest, res: Response): Promise<void> 
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     logger.error('listUsers error', { userId: req.userId, error: message });
-    res.status(500).json({ error: 'Failed to fetch users' });
+    throw Errors.internal('Failed to fetch users');
   }
 }
 
@@ -124,8 +123,7 @@ export async function getUserProfile(req: AuthRequest, res: Response): Promise<v
     const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(userId);
 
     if (userError || !user) {
-      res.status(404).json({ error: 'User not found' });
-      return;
+      throw Errors.notFound('User');
     }
 
     const client = createUserClient(req.accessToken);
@@ -157,6 +155,6 @@ export async function getUserProfile(req: AuthRequest, res: Response): Promise<v
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     logger.error('getUserProfile error', { userId: req.userId, targetUserId: userId, error: message });
-    res.status(500).json({ error: 'Failed to fetch user profile' });
+    throw Errors.internal('Failed to fetch user profile');
   }
 }

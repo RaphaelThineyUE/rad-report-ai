@@ -14,15 +14,14 @@ import { logger } from '../utils/logger.js';
 import { Errors } from '../utils/AppError.js';
 
 export async function createOrganization(req: AuthRequest, res: Response): Promise<void> {
+  const userId = req.userId;
+  const { name, description } = req.body;
+
+  if (!name) {
+    throw Errors.validation('Organization name is required');
+  }
+
   try {
-    const userId = req.userId;
-    const { name, description } = req.body;
-
-    if (!name) {
-      res.status(400).json({ error: 'Organization name is required' });
-      return;
-    }
-
     const client = createUserClient(req.accessToken);
     const { data, error } = await client
       .from('organizations')
@@ -35,8 +34,7 @@ export async function createOrganization(req: AuthRequest, res: Response): Promi
 
     if (error) {
       logger.error('Failed to create organization', { userId, error: error.message });
-      res.status(500).json({ error: 'Failed to create organization' });
-      return;
+      throw Errors.internal('Failed to create organization');
     }
 
     const org = data?.[0];
@@ -60,14 +58,14 @@ export async function createOrganization(req: AuthRequest, res: Response): Promi
     res.json(org);
   } catch (err) {
     logger.error('Unexpected error creating organization', { error: String(err) });
-    res.status(500).json({ error: 'Internal server error' });
+    throw Errors.internal('Internal server error');
   }
 }
 
 export async function listOrganizations(req: AuthRequest, res: Response): Promise<void> {
-  try {
-    const userId = req.userId;
+  const userId = req.userId;
 
+  try {
     const client = createUserClient(req.accessToken);
     const { data, error } = await client
       .from('organizations')
@@ -75,21 +73,20 @@ export async function listOrganizations(req: AuthRequest, res: Response): Promis
 
     if (error) {
       logger.error('Failed to list organizations', { userId, error: error.message });
-      res.status(500).json({ error: 'Failed to list organizations' });
-      return;
+      throw Errors.internal('Failed to list organizations');
     }
 
     res.json(data || []);
   } catch (err) {
     logger.error('Unexpected error listing organizations', { error: String(err) });
-    res.status(500).json({ error: 'Internal server error' });
+    throw Errors.internal('Internal server error');
   }
 }
 
 export async function getOrganization(req: AuthRequest, res: Response): Promise<void> {
-  try {
-    const { orgId } = req.params;
+  const { orgId } = req.params;
 
+  try {
     const client = createUserClient(req.accessToken);
     const { data, error } = await client
       .from('organizations')
@@ -99,23 +96,22 @@ export async function getOrganization(req: AuthRequest, res: Response): Promise<
 
     if (error) {
       logger.error('Failed to get organization', { userId: req.userId, orgId, error: error.message });
-      res.status(404).json({ error: 'Organization not found' });
-      return;
+      throw Errors.notFound('Organization');
     }
 
     res.json(data);
   } catch (err) {
     logger.error('Unexpected error getting organization', { error: String(err) });
-    res.status(500).json({ error: 'Internal server error' });
+    throw Errors.internal('Internal server error');
   }
 }
 
 export async function updateOrganization(req: AuthRequest, res: Response): Promise<void> {
-  try {
-    const userId = req.userId;
-    const { orgId } = req.params;
-    const { name, description } = req.body;
+  const userId = req.userId;
+  const { orgId } = req.params;
+  const { name, description } = req.body;
 
+  try {
     const client = createUserClient(req.accessToken);
 
     // Check if user is owner
@@ -126,8 +122,7 @@ export async function updateOrganization(req: AuthRequest, res: Response): Promi
       .single();
 
     if (orgError || org?.owner_id !== userId) {
-      res.status(403).json({ error: 'Unauthorized' });
-      return;
+      throw Errors.forbidden();
     }
 
     const { data, error } = await client
@@ -138,8 +133,7 @@ export async function updateOrganization(req: AuthRequest, res: Response): Promi
 
     if (error) {
       logger.error('Failed to update organization', { userId, orgId, error: error.message });
-      res.status(500).json({ error: 'Failed to update organization' });
-      return;
+      throw Errors.internal('Failed to update organization');
     }
 
     // Log action
@@ -154,15 +148,15 @@ export async function updateOrganization(req: AuthRequest, res: Response): Promi
     res.json(data?.[0]);
   } catch (err) {
     logger.error('Unexpected error updating organization', { error: String(err) });
-    res.status(500).json({ error: 'Internal server error' });
+    throw Errors.internal('Internal server error');
   }
 }
 
 export async function deleteOrganization(req: AuthRequest, res: Response): Promise<void> {
-  try {
-    const userId = req.userId;
-    const { orgId } = req.params;
+  const userId = req.userId;
+  const { orgId } = req.params;
 
+  try {
     const client = createUserClient(req.accessToken);
 
     // Check if user is owner
@@ -173,8 +167,7 @@ export async function deleteOrganization(req: AuthRequest, res: Response): Promi
       .single();
 
     if (orgError || org?.owner_id !== userId) {
-      res.status(403).json({ error: 'Unauthorized' });
-      return;
+      throw Errors.forbidden();
     }
 
     // Log action before deleting
@@ -190,21 +183,20 @@ export async function deleteOrganization(req: AuthRequest, res: Response): Promi
 
     if (error) {
       logger.error('Failed to delete organization', { userId, orgId, error: error.message });
-      res.status(500).json({ error: 'Failed to delete organization' });
-      return;
+      throw Errors.internal('Failed to delete organization');
     }
 
     res.json({ success: true });
   } catch (err) {
     logger.error('Unexpected error deleting organization', { error: String(err) });
-    res.status(500).json({ error: 'Internal server error' });
+    throw Errors.internal('Internal server error');
   }
 }
 
 export async function listMembers(req: AuthRequest, res: Response): Promise<void> {
-  try {
-    const { orgId } = req.params;
+  const { orgId } = req.params;
 
+  try {
     const client = createUserClient(req.accessToken);
     const { data, error } = await client
       .from('organization_members')
@@ -221,33 +213,30 @@ export async function listMembers(req: AuthRequest, res: Response): Promise<void
 
     if (error) {
       logger.error('Failed to list members', { userId: req.userId, orgId, error: error.message });
-      res.status(500).json({ error: 'Failed to list members' });
-      return;
+      throw Errors.internal('Failed to list members');
     }
 
     res.json(data || []);
   } catch (err) {
     logger.error('Unexpected error listing members', { error: String(err) });
-    res.status(500).json({ error: 'Internal server error' });
+    throw Errors.internal('Internal server error');
   }
 }
 
 export async function inviteMember(req: AuthRequest, res: Response): Promise<void> {
+  const userId = req.userId;
+  const { orgId } = req.params;
+  const { email, role } = req.body;
+
+  if (!email || !role) {
+    throw Errors.validation('Email and role are required');
+  }
+
+  if (!['admin', 'clinician', 'viewer'].includes(role)) {
+    throw Errors.validation('Invalid role');
+  }
+
   try {
-    const userId = req.userId;
-    const { orgId } = req.params;
-    const { email, role } = req.body;
-
-    if (!email || !role) {
-      res.status(400).json({ error: 'Email and role are required' });
-      return;
-    }
-
-    if (!['admin', 'clinician', 'viewer'].includes(role)) {
-      res.status(400).json({ error: 'Invalid role' });
-      return;
-    }
-
     const client = createUserClient(req.accessToken);
 
     // Check if user is admin/owner in organization
@@ -259,8 +248,7 @@ export async function inviteMember(req: AuthRequest, res: Response): Promise<voi
       .single();
 
     if (!memberCheck || !['owner', 'admin'].includes(memberCheck.role)) {
-      res.status(403).json({ error: 'Unauthorized' });
-      return;
+      throw Errors.forbidden();
     }
 
     // Find user by email using admin client
@@ -268,14 +256,12 @@ export async function inviteMember(req: AuthRequest, res: Response): Promise<voi
 
     if (authError || !users) {
       logger.error('Failed to list auth users', { userId, error: authError?.message });
-      res.status(500).json({ error: 'Failed to find user' });
-      return;
+      throw Errors.internal('Failed to find user');
     }
 
     const invitedUser = users.find((u) => u.email === email);
     if (!invitedUser) {
-      res.status(400).json({ error: 'User not found' });
-      return;
+      throw Errors.validation('User not found');
     }
 
     // Add member
@@ -290,12 +276,10 @@ export async function inviteMember(req: AuthRequest, res: Response): Promise<voi
 
     if (error) {
       if (error.code === '23505') {
-        res.status(400).json({ error: 'User is already a member' });
-        return;
+        throw Errors.validation('User is already a member');
       }
       logger.error('Failed to invite member', { userId, orgId, email, error: error.message });
-      res.status(500).json({ error: 'Failed to invite member' });
-      return;
+      throw Errors.internal('Failed to invite member');
     }
 
     // Log action
@@ -310,21 +294,20 @@ export async function inviteMember(req: AuthRequest, res: Response): Promise<voi
     res.json(data?.[0]);
   } catch (err) {
     logger.error('Unexpected error inviting member', { error: String(err) });
-    res.status(500).json({ error: 'Internal server error' });
+    throw Errors.internal('Internal server error');
   }
 }
 
 export async function updateMemberRole(req: AuthRequest, res: Response): Promise<void> {
+  const userId = req.userId;
+  const { orgId, memberId } = req.params;
+  const { role } = req.body;
+
+  if (!role || !['admin', 'clinician', 'viewer', 'owner'].includes(role)) {
+    throw Errors.validation('Invalid role');
+  }
+
   try {
-    const userId = req.userId;
-    const { orgId, memberId } = req.params;
-    const { role } = req.body;
-
-    if (!role || !['admin', 'clinician', 'viewer', 'owner'].includes(role)) {
-      res.status(400).json({ error: 'Invalid role' });
-      return;
-    }
-
     const client = createUserClient(req.accessToken);
 
     // Check if user is admin/owner in organization
@@ -336,8 +319,7 @@ export async function updateMemberRole(req: AuthRequest, res: Response): Promise
       .single();
 
     if (!memberCheck || !['owner', 'admin'].includes(memberCheck.role)) {
-      res.status(403).json({ error: 'Unauthorized' });
-      return;
+      throw Errors.forbidden();
     }
 
     const { data, error } = await client
@@ -349,8 +331,7 @@ export async function updateMemberRole(req: AuthRequest, res: Response): Promise
 
     if (error) {
       logger.error('Failed to update member role', { userId, orgId, memberId, error: error.message });
-      res.status(500).json({ error: 'Failed to update member role' });
-      return;
+      throw Errors.internal('Failed to update member role');
     }
 
     // Log action
@@ -365,15 +346,15 @@ export async function updateMemberRole(req: AuthRequest, res: Response): Promise
     res.json(data?.[0]);
   } catch (err) {
     logger.error('Unexpected error updating member role', { error: String(err) });
-    res.status(500).json({ error: 'Internal server error' });
+    throw Errors.internal('Internal server error');
   }
 }
 
 export async function removeMember(req: AuthRequest, res: Response): Promise<void> {
-  try {
-    const userId = req.userId;
-    const { orgId, memberId } = req.params;
+  const userId = req.userId;
+  const { orgId, memberId } = req.params;
 
+  try {
     const client = createUserClient(req.accessToken);
 
     // Check if user is owner in organization (only owners can remove members)
@@ -385,8 +366,7 @@ export async function removeMember(req: AuthRequest, res: Response): Promise<voi
       .single();
 
     if (!memberCheck || memberCheck.role !== 'owner') {
-      res.status(403).json({ error: 'Unauthorized' });
-      return;
+      throw Errors.forbidden();
     }
 
     // Log action before deleting
@@ -402,13 +382,12 @@ export async function removeMember(req: AuthRequest, res: Response): Promise<voi
 
     if (error) {
       logger.error('Failed to remove member', { userId, orgId, memberId, error: error.message });
-      res.status(500).json({ error: 'Failed to remove member' });
-      return;
+      throw Errors.internal('Failed to remove member');
     }
 
     res.json({ success: true });
   } catch (err) {
     logger.error('Unexpected error removing member', { error: String(err) });
-    res.status(500).json({ error: 'Internal server error' });
+    throw Errors.internal('Internal server error');
   }
 }

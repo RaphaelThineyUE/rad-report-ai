@@ -117,9 +117,8 @@ describe('analyticsController', () => {
       const req = { userId: 'user-1', accessToken: 'user-token', userRole: 'user', query: {} } as unknown as AuthRequest;
       const res = buildRes();
 
-      await getAnalytics(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(500);
+      // The function now throws errors, so we expect it to throw
+      await expect(getAnalytics(req, res)).rejects.toThrow();
     });
   });
 
