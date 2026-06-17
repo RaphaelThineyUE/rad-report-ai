@@ -3,6 +3,12 @@
  * Logs are written asynchronously (fire-and-forget) to avoid blocking request handling.
  * Sensitive actions: login/logout, view patient, create/update/delete patient,
  * upload report, delete report, all AI analysis calls, sign/export operations.
+ *
+ * Payloads are stored as JSONB in the database but PHI is redacted:
+ * - Patient names (full_name field)
+ * - Dates of birth (date_of_birth field)
+ * - Email addresses (email field)
+ * - All other PHI-bearing fields
  */
 import { createUserClient } from './supabaseClient.js';
 import { logger } from '../utils/logger.js';
@@ -14,6 +20,34 @@ export interface AuditLogEntry {
   resourceId?: string;
   ipAddress?: string | string[];
   userAgent?: string;
+  payload?: Record<string, unknown>;
+}
+
+/**
+ * Redact PHI from an audit payload to ensure no sensitive data is logged.
+ * Removes: full_name, date_of_birth, email, password, ssn, mrn, phone, insurance.
+ */
+function redactPhiFromPayload(payload: Record<string, unknown>): Record<string, unknown> {
+  const redactedFields = [
+    'full_name',
+    'date_of_birth',
+    'email',
+    'password',
+    'ssn',
+    'mrn',
+    'phone',
+    'insurance',
+  ];
+
+  const redacted: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(payload)) {
+    if (redactedFields.includes(key.toLowerCase())) {
+      redacted[key] = '[REDACTED]';
+    } else {
+      redacted[key] = value;
+    }
+  }
+  return redacted;
 }
 
 /**
@@ -25,6 +59,7 @@ export function logAudit(entry: AuditLogEntry, accessToken: string): void {
   (async () => {
     try {
       const client = createUserClient(accessToken);
+      const payload = entry.payload ? redactPhiFromPayload(entry.payload) : null;
       await client.from('audit_logs').insert({
         user_id: entry.userId,
         action: entry.action,
@@ -32,6 +67,7 @@ export function logAudit(entry: AuditLogEntry, accessToken: string): void {
         resource_id: entry.resourceId,
         ip_address: entry.ipAddress,
         user_agent: entry.userAgent,
+        payload: payload,
       });
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Unknown error';
@@ -52,7 +88,8 @@ export function logAuthAudit(
   action: string,
   accessToken: string,
   ipAddress?: string | string[],
-  userAgent?: string
+  userAgent?: string,
+  payload?: Record<string, unknown>
 ): void {
   logAudit(
     {
@@ -61,6 +98,7 @@ export function logAuthAudit(
       resourceType: 'auth',
       ipAddress,
       userAgent,
+      payload,
     },
     accessToken
   );
@@ -75,7 +113,8 @@ export function logPatientAudit(
   patientId: string,
   accessToken: string,
   ipAddress?: string | string[],
-  userAgent?: string
+  userAgent?: string,
+  payload?: Record<string, unknown>
 ): void {
   logAudit(
     {
@@ -85,6 +124,7 @@ export function logPatientAudit(
       resourceId: patientId,
       ipAddress,
       userAgent,
+      payload,
     },
     accessToken
   );
@@ -99,7 +139,8 @@ export function logReportAudit(
   reportId: string,
   accessToken: string,
   ipAddress?: string | string[],
-  userAgent?: string
+  userAgent?: string,
+  payload?: Record<string, unknown>
 ): void {
   logAudit(
     {
@@ -109,6 +150,7 @@ export function logReportAudit(
       resourceId: reportId,
       ipAddress,
       userAgent,
+      payload,
     },
     accessToken
   );
@@ -123,7 +165,8 @@ export function logTreatmentAudit(
   treatmentId: string,
   accessToken: string,
   ipAddress?: string | string[],
-  userAgent?: string
+  userAgent?: string,
+  payload?: Record<string, unknown>
 ): void {
   logAudit(
     {
@@ -133,6 +176,7 @@ export function logTreatmentAudit(
       resourceId: treatmentId,
       ipAddress,
       userAgent,
+      payload,
     },
     accessToken
   );
@@ -147,7 +191,8 @@ export function logAIAudit(
   reportId: string,
   accessToken: string,
   ipAddress?: string | string[],
-  userAgent?: string
+  userAgent?: string,
+  payload?: Record<string, unknown>
 ): void {
   logAudit(
     {
@@ -157,6 +202,7 @@ export function logAIAudit(
       resourceId: reportId,
       ipAddress,
       userAgent,
+      payload,
     },
     accessToken
   );

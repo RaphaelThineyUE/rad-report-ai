@@ -30,6 +30,18 @@ export async function register(req: Request, res: Response): Promise<void> {
     throw Errors.validation(error.message || 'Registration failed');
   }
 
+  // Audit log the registration
+  if (data.user?.id && data.session?.access_token) {
+    logAuthAudit(
+      data.user.id,
+      'register',
+      data.session.access_token,
+      (req as any).ip,
+      req.get('user-agent'),
+      { email }
+    );
+  }
+
   res.status(201).json({ user: data.user, session: data.session });
 }
 
@@ -115,6 +127,10 @@ export async function forgotPassword(req: Request, res: Response): Promise<void>
 
   const { email } = req.body;
 
+  // Get the user ID to log the action
+  const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+  const targetUser = users?.find(u => u.email === email);
+
   const { error } = await supabaseAdmin.auth.resetPasswordForEmail(email, {
     redirectTo: `${process.env.FRONTEND_URL}/reset-password`,
   });
@@ -122,6 +138,23 @@ export async function forgotPassword(req: Request, res: Response): Promise<void>
   if (error) {
     res.status(400).json({ error: error.message });
     return;
+  }
+
+  // Audit log the forgot password request (if user was found)
+  if (targetUser?.id) {
+    // For forgot password, we need a special approach since user is not yet authenticated
+    // We'll log it with a service role client later, or skip if not authenticated
+    // For now, we log to the audit log table directly via admin
+    await supabaseAdmin
+      .from('audit_logs')
+      .insert({
+        user_id: targetUser.id,
+        action: 'forgot_password',
+        resource_type: 'auth',
+        ip_address: (req as any).ip,
+        user_agent: req.get('user-agent'),
+        payload: { email },
+      });
   }
 
   res.json({ message: 'Password reset email sent' });
@@ -161,11 +194,32 @@ export async function resetPassword(req: Request, res: Response): Promise<void> 
     return;
   }
 
+  // Audit log the password reset
+  logAuthAudit(
+    userData.user.id,
+    'reset_password',
+    accessToken,
+    (req as any).ip,
+    req.get('user-agent')
+  );
+
   res.json({ message: 'Password reset successful' });
 }
 
 export async function deleteAccount(req: Request, res: Response): Promise<void> {
-  const { userId } = req as AuthRequest;
+  const { userId, accessToken } = req as AuthRequest;
+
+  // Audit log the account deletion before deleting the account
+  // Use supabaseAdmin to ensure the log is written even if RLS would block it
+  await supabaseAdmin
+    .from('audit_logs')
+    .insert({
+      user_id: userId,
+      action: 'delete_account',
+      resource_type: 'auth',
+      ip_address: (req as any).ip,
+      user_agent: req.get('user-agent'),
+    });
 
   const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
 

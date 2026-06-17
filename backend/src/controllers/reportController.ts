@@ -159,7 +159,13 @@ export async function uploadReport(req: AuthRequest, res: Response): Promise<voi
     throw Errors.internal('Failed to upload report file');
   }
 
-  // Note: Audit logging for actual report creation happens in createReport
+  // Audit log the file upload
+  logReportAudit(req.userId, 'upload_report_file', '', req.accessToken, undefined, undefined, {
+    patient_id: patientId,
+    filename,
+    file_size: req.file.size,
+  });
+
   res.json({
     file_url: path,
     filename,
@@ -308,6 +314,14 @@ export async function batchUploadReports(req: AuthRequest, res: Response): Promi
   const successCount = results.filter(r => r.status === 'success').length;
   const failureCount = results.filter(r => r.status === 'error').length;
 
+  // Audit log the batch upload
+  logReportAudit(req.userId, 'batch_upload_reports', patientId, req.accessToken, undefined, undefined, {
+    patient_id: patientId,
+    total_files: files.length,
+    successful: successCount,
+    failed: failureCount,
+  });
+
   res.json({
     patient_id: patientId,
     total_files: files.length,
@@ -382,7 +396,11 @@ export async function createReport(req: AuthRequest, res: Response): Promise<voi
     throw Errors.internal('Failed to create report');
   }
 
-  logReportAudit(req.userId, 'create_report', data.id, req.accessToken);
+  logReportAudit(req.userId, 'create_report', data.id, req.accessToken, undefined, undefined, {
+    patient_id,
+    filename,
+    file_size,
+  });
   res.status(201).json(data);
 }
 
@@ -459,7 +477,9 @@ export async function updateReport(req: AuthRequest, res: Response): Promise<voi
     throw Errors.notFound('Report');
   }
 
-  logReportAudit(req.userId, 'update_report', id, req.accessToken);
+  logReportAudit(req.userId, 'update_report', id, req.accessToken, undefined, undefined, {
+    fields_updated: Object.keys(updates).filter(k => k !== 'updated_at'),
+  });
   res.json(data);
 }
 
@@ -496,7 +516,9 @@ export async function deleteReport(req: AuthRequest, res: Response): Promise<voi
     throw Errors.internal('Failed to delete report');
   }
 
-  logReportAudit(req.userId, 'delete_report', id, req.accessToken);
+  logReportAudit(req.userId, 'delete_report', id, req.accessToken, undefined, undefined, {
+    file_url: report.file_url,
+  });
   res.status(204).send();
 }
 
@@ -691,6 +713,12 @@ export async function processReport(req: AuthRequest, res: Response): Promise<vo
     }
 
     logger.info('Successfully processed report', { userId: req.userId, reportId: id, processingTime });
+
+    // Audit log the report processing
+    logReportAudit(req.userId, 'process_report', id, req.accessToken, undefined, undefined, {
+      processing_time_ms: processingTime,
+      birads_value: analysis.birads_value,
+    });
 
     res.json({
       report: updatedReport,

@@ -60,6 +60,14 @@ export async function analyzeReportText(
       temperature,
     });
 
+    // Audit log the analysis
+    logAIAudit(req.userId, 'analyze_report_text', '', req.accessToken, undefined, undefined, {
+      text_length: report_text.length,
+      prompt_variant: prompt_variant || 'default',
+      model,
+      temperature,
+    });
+
     res.json({
       analysis,
       original_text_length: report_text.length,
@@ -99,6 +107,11 @@ export async function generateReportSummary(
     logger.info('Successfully generated summary', {
       userId: req.userId,
       textLength: report_text.length,
+    });
+
+    // Audit log the summary generation
+    logAIAudit(req.userId, 'generate_report_summary', '', req.accessToken, undefined, undefined, {
+      text_length: report_text.length,
     });
 
     res.json({
@@ -175,6 +188,11 @@ export async function consolidatePatientReports(
       userId: req.userId,
       patientId: patient_id,
       reportCount: reports.length,
+    });
+
+    // Audit log the consolidation
+    logAIAudit(req.userId, 'consolidate_patient_reports', patient_id, req.accessToken, undefined, undefined, {
+      report_count: reports.length,
     });
 
     res.json({
@@ -265,6 +283,12 @@ export async function comparePatientTreatments(
       treatmentCount: treatments.length,
     });
 
+    // Audit log the comparison
+    logAIAudit(req.userId, 'compare_patient_treatments', report_id, req.accessToken, undefined, undefined, {
+      patient_id,
+      treatment_count: treatments.length,
+    });
+
     res.json({
       patient_id,
       report_id,
@@ -340,6 +364,12 @@ export async function detectPatientBiradsTrend(
       trend: trend.trend,
     });
 
+    // Audit log the trend detection
+    logAIAudit(req.userId, 'detect_patient_birads_trend', patient_id, req.accessToken, undefined, undefined, {
+      report_count: reports.length,
+      trend: trend.trend,
+    });
+
     res.json({
       patient_id,
       report_count: reports.length,
@@ -412,6 +442,12 @@ export async function extractReportQuotes(
       reportId: report_id,
       findingsCount: findings.length,
       matchedCount: quoteObject.length,
+    });
+
+    // Audit log the quote extraction
+    logAIAudit(req.userId, 'extract_report_quotes', report_id, req.accessToken, undefined, undefined, {
+      findings_count: findings.length,
+      matched_count: Object.keys(quoteObject).length,
     });
 
     res.json({

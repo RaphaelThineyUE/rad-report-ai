@@ -99,7 +99,11 @@ export async function createPatient(req: AuthRequest, res: Response): Promise<vo
     throw Errors.internal('Failed to create patient');
   }
 
-  logPatientAudit(req.userId, 'create_patient', data.id, req.accessToken);
+  logPatientAudit(req.userId, 'create_patient', data.id, req.accessToken, undefined, undefined, {
+    cancer_type,
+    cancer_stage,
+    gender,
+  });
   res.status(201).json(data);
 }
 
@@ -157,7 +161,9 @@ export async function updatePatient(req: AuthRequest, res: Response): Promise<vo
     throw Errors.notFound('Patient');
   }
 
-  logPatientAudit(req.userId, 'update_patient', id, req.accessToken);
+  logPatientAudit(req.userId, 'update_patient', id, req.accessToken, undefined, undefined, {
+    fields_updated: Object.keys(updates).filter(k => k !== 'updated_at'),
+  });
   res.json(data);
 }
 

@@ -86,7 +86,11 @@ export async function createTreatment(req: AuthRequest, res: Response): Promise<
     throw Errors.internal('Failed to create treatment');
   }
 
-  logTreatmentAudit(req.userId, 'create_treatment', data.id, req.accessToken);
+  logTreatmentAudit(req.userId, 'create_treatment', data.id, req.accessToken, undefined, undefined, {
+    treatment_type,
+    treatment_outcome,
+    patient_id,
+  });
   res.status(201).json(data);
 }
 
@@ -138,7 +142,9 @@ export async function updateTreatment(req: AuthRequest, res: Response): Promise<
     throw Errors.notFound('Treatment');
   }
 
-  logTreatmentAudit(req.userId, 'update_treatment', id, req.accessToken);
+  logTreatmentAudit(req.userId, 'update_treatment', id, req.accessToken, undefined, undefined, {
+    fields_updated: Object.keys(updates).filter(k => k !== 'updated_at'),
+  });
   res.json(data);
 }
 
