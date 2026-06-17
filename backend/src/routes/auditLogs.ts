@@ -8,7 +8,6 @@
 import { Router } from 'express';
 import { requireAuth } from '../middleware/auth.js';
 import { listAuditLogs } from '../controllers/auditLogsController.js';
-import { catchAsync } from '../utils/catchAsync.js';
 
 const router = Router();
 
@@ -16,6 +15,6 @@ const router = Router();
 router.use(requireAuth);
 
 // GET /api/audit-logs?limit=100&offset=0&action=create_patient&resource_type=patient
-router.get('/', catchAsync(listAuditLogs));
+router.get('/', listAuditLogs);
 
 export default router;
