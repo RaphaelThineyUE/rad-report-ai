@@ -3,11 +3,15 @@
  * Fetches from /analytics with URLSearchParams; re-fetches when any filter changes.
  * Displays five MetricCards, a monthly bar chart (last 12 months), BI-RADS distribution bars,
  * and a cancer-stage list. CSV export via useExportAnalytics hook.
+ * Wrapped in ErrorBoundary to gracefully handle render errors.
  */
 import { useEffect, useState } from 'react';
 import { MetricCard } from '@/components/ui';
 import { api } from '@/lib/api';
 import { useExportAnalytics } from '@/hooks/useExport';
+import { useApiError } from '@/hooks/useApiError';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { PageErrorFallback } from '@/components/PageErrorFallback';
 
 interface AnalyticsData {
   summary: {
@@ -22,11 +26,12 @@ interface AnalyticsData {
   cancer_stage_distribution: Record<string, number>;
 }
 
-export default function Analytics() {
+function AnalyticsContent() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const exportAnalytics = useExportAnalytics();
+  const { handleError } = useApiError();
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
@@ -52,8 +57,7 @@ export default function Analytics() {
       const response = await api.get(`/api/analytics?${params.toString()}`);
       setData(response.data);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Unknown error';
-      console.error('Failed to fetch analytics:', err);
+      const msg = handleError(err, 'Failed to load analytics data', false);
       setError(msg);
     } finally {
       setLoading(false);
@@ -81,29 +85,32 @@ export default function Analytics() {
     }
   };
 
-  if (loading) {
-    return <div className="fade-up"><div className="page-head"><h1 className="t-h1">Loading...</h1></div></div>;
+  if (error) {
+    return (
+      <PageErrorFallback
+        error={new Error(error)}
+        resetErrorBoundary={fetchAnalytics}
+        title="Analytics Error"
+        description={error}
+      />
+    );
   }
 
-  if (error || !data) {
+  if (loading) {
     return (
       <div className="fade-up">
         <div className="page-head">
-          <div>
-            <h1 className="t-h1">Analytics</h1>
-            <div className="sub">Patient population reporting</div>
-          </div>
+          <h1 className="t-h1">Loading...</h1>
         </div>
-        <div className="card card-pad" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: 40 }}>
-          <span style={{ fontSize: 14, color: 'var(--fg-2)' }}>Failed to load analytics data.</span>
-          {error && <span style={{ fontSize: 12, color: 'var(--fg-4)', fontFamily: 'monospace' }}>{error}</span>}
-          <button
-            className="btn btn-primary"
-            onClick={fetchAnalytics}
-            style={{ marginTop: 8 }}
-          >
-            Try again
-          </button>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="fade-up">
+        <div className="page-head">
+          <h1 className="t-h1">Loading...</h1>
         </div>
       </div>
     );
@@ -257,5 +264,22 @@ export default function Analytics() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Analytics() {
+  return (
+    <ErrorBoundary
+      fallback={(error: Error, retry: () => void) => (
+        <PageErrorFallback
+          error={error}
+          resetErrorBoundary={retry}
+          title="Analytics Error"
+          description="An unexpected error occurred while displaying analytics."
+        />
+      )}
+    >
+      <AnalyticsContent />
+    </ErrorBoundary>
   );
 }

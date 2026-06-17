@@ -16,6 +16,7 @@ import { NotificationProvider } from '@/contexts/NotificationContext';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { AdminRoute } from '@/components/AdminRoute';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import NotificationContainer from '@/components/notifications/NotificationContainer';
 
 const Login        = lazy(() => import('@/pages/Login'));
@@ -49,24 +50,26 @@ function AppShell() {
   }
 
   return (
-    <AppLayout active={active} onNav={handleNav} search={search} setSearch={setSearch}>
-      <Suspense fallback={null}>
-        <Routes>
-          <Route path="/dashboard"        element={<Dashboard />} />
-          <Route path="/worklist"         element={<Worklist  search={search} />} />
-          <Route path="/patients"         element={<Patients  search={search} />} />
-          <Route path="/analytics"        element={<Analytics />} />
-          <Route path="/patient-analytics" element={<PatientAnalytics />} />
-          <Route path="/admin-dashboard"  element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-          <Route path="/admin-users"      element={<AdminRoute><AdminUsers /></AdminRoute>} />
-          <Route path="/test"             element={<Test />} />
-          <Route path="/teams"            element={<Teams />} />
-          <Route path="/howto"            element={<HowTo />} />
-          <Route path="/settings"         element={<Settings />} />
-          <Route path="*"                 element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-      </Suspense>
-    </AppLayout>
+    <ErrorBoundary>
+      <AppLayout active={active} onNav={handleNav} search={search} setSearch={setSearch}>
+        <Suspense fallback={null}>
+          <Routes>
+            <Route path="/dashboard"        element={<Dashboard />} />
+            <Route path="/worklist"         element={<Worklist  search={search} />} />
+            <Route path="/patients"         element={<Patients  search={search} />} />
+            <Route path="/analytics"        element={<Analytics />} />
+            <Route path="/patient-analytics" element={<PatientAnalytics />} />
+            <Route path="/admin-dashboard"  element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+            <Route path="/admin-users"      element={<AdminRoute><AdminUsers /></AdminRoute>} />
+            <Route path="/test"             element={<Test />} />
+            <Route path="/teams"            element={<Teams />} />
+            <Route path="/howto"            element={<HowTo />} />
+            <Route path="/settings"         element={<Settings />} />
+            <Route path="*"                 element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </Suspense>
+      </AppLayout>
+    </ErrorBoundary>
   );
 }
 

@@ -4,10 +4,14 @@
  * then fans out per-patient treatment requests to compute follow-ups due within ±30 days.
  * Displays five MetricCards, a patient selector with quick stats, and a follow-up reminder list.
  * Data is fetched imperatively (not via TanStack Query) on mount via Promise.all.
+ * Wrapped in ErrorBoundary to gracefully handle render errors.
  */
 import { useEffect, useState } from 'react';
 import { MetricCard } from '@/components/ui';
 import { api } from '@/lib/api';
+import { useApiError } from '@/hooks/useApiError';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { PageErrorFallback } from '@/components/PageErrorFallback';
 import type { Patient } from '@/hooks/usePatients';
 
 interface DashboardStats {
@@ -26,12 +30,14 @@ interface FollowUpItem {
   last_treatment_type?: string;
 }
 
-export default function Dashboard() {
+function DashboardContent() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const [followUpItems, setFollowUpItems] = useState<FollowUpItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { handleError } = useApiError();
 
   useEffect(() => {
     fetchDashboardData();
@@ -39,6 +45,7 @@ export default function Dashboard() {
 
   const fetchDashboardData = async () => {
     setLoading(true);
+    setError(null);
     try {
       const [statsRes, patientsRes] = await Promise.all([
         api.get('/api/analytics'),
@@ -78,8 +85,9 @@ export default function Dashboard() {
       }
 
       setFollowUpItems(followUpData.sort((a, b) => a.days_until_due - b.days_until_due));
-    } catch (error) {
-      console.error('Failed to fetch dashboard data:', error);
+    } catch (err) {
+      const msg = handleError(err, 'Failed to load dashboard data', false);
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -112,6 +120,17 @@ export default function Dashboard() {
         return 'var(--slate-200)';
     }
   };
+
+  if (error) {
+    return (
+      <PageErrorFallback
+        error={new Error(error)}
+        resetErrorBoundary={fetchDashboardData}
+        title="Dashboard Error"
+        description={error}
+      />
+    );
+  }
 
   if (loading) {
     return (
@@ -253,5 +272,22 @@ export default function Dashboard() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <ErrorBoundary
+      fallback={(error: Error, retry: () => void) => (
+        <PageErrorFallback
+          error={error}
+          resetErrorBoundary={retry}
+          title="Dashboard Error"
+          description="An unexpected error occurred while displaying the dashboard."
+        />
+      )}
+    >
+      <DashboardContent />
+    </ErrorBoundary>
   );
 }

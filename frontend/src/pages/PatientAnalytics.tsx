@@ -4,9 +4,13 @@
  * Filterable by cancer stage (Stage 0–IV); all charts re-fetch when the filter changes.
  * Sections: gender/cancer-type/stage/ethnicity (demographics), BI-RADS/exam-type/breast-density
  * (diagnostics), treatment type/outcome/duration (treatments). No TanStack Query hooks used.
+ * Wrapped in ErrorBoundary to gracefully handle render errors.
  */
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
+import { useApiError } from '@/hooks/useApiError';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { PageErrorFallback } from '@/components/PageErrorFallback';
 import type { Patient } from '@/hooks/usePatients';
 import type { Report } from '@/hooks/useReports';
 import type { Treatment } from '@/hooks/useTreatments';
@@ -34,12 +38,14 @@ interface TreatmentStats {
   treatments_by_stage: Record<string, Record<string, number>>;
 }
 
-export default function PatientAnalytics() {
+function PatientAnalyticsContent() {
   const [demographics, setDemographics] = useState<DemographicsStats | null>(null);
   const [diagnostics, setDiagnostics] = useState<DiagnosticsStats | null>(null);
   const [treatments, setTreatments] = useState<TreatmentStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filterStage, setFilterStage] = useState<string>('');
+  const { handleError } = useApiError();
 
   useEffect(() => {
     fetchAnalyticsData();
@@ -47,6 +53,7 @@ export default function PatientAnalytics() {
 
   const fetchAnalyticsData = async () => {
     setLoading(true);
+    setError(null);
     try {
       const [patientsRes, reportsRes, treatmentsRes] = await Promise.all([
         api.get('/api/patients'),
@@ -190,12 +197,24 @@ export default function PatientAnalytics() {
         avg_treatment_duration_days: treatmentCount > 0 ? Math.round(totalDuration / treatmentCount) : 0,
         treatments_by_stage: treatmentByStage,
       });
-    } catch (error) {
-      console.error('Failed to fetch analytics data:', error);
+    } catch (err: unknown) {
+      const msg = handleError(err, 'Failed to load patient analytics data', false);
+      setError(msg);
     } finally {
       setLoading(false);
     }
   };
+
+  if (error) {
+    return (
+      <PageErrorFallback
+        error={new Error(error)}
+        resetErrorBoundary={fetchAnalyticsData}
+        title="Analytics Error"
+        description={error}
+      />
+    );
+  }
 
   if (loading) {
     return (
@@ -556,5 +575,22 @@ export default function PatientAnalytics() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PatientAnalytics() {
+  return (
+    <ErrorBoundary
+      fallback={(error: Error, retry: () => void) => (
+        <PageErrorFallback
+          error={error}
+          resetErrorBoundary={retry}
+          title="Patient Analytics Error"
+          description="An unexpected error occurred while displaying patient analytics."
+        />
+      )}
+    >
+      <PatientAnalyticsContent />
+    </ErrorBoundary>
   );
 }
