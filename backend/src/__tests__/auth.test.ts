@@ -36,7 +36,9 @@ describe('Auth API', () => {
         })
         .expect(422);
 
-      expect(response.body.errors).toBeDefined();
+      expect(response.body.error).toBeDefined();
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(response.body.error.details).toBeDefined();
     });
 
     it('should validate password length', async () => {
@@ -49,7 +51,9 @@ describe('Auth API', () => {
         })
         .expect(422);
 
-      expect(response.body.errors).toBeDefined();
+      expect(response.body.error).toBeDefined();
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(response.body.error.details).toBeDefined();
     });
 
     it('should require full_name', async () => {
@@ -61,7 +65,9 @@ describe('Auth API', () => {
         })
         .expect(422);
 
-      expect(response.body.errors).toBeDefined();
+      expect(response.body.error).toBeDefined();
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(response.body.error.details).toBeDefined();
     });
   });
 
@@ -75,7 +81,9 @@ describe('Auth API', () => {
         })
         .expect(422);
 
-      expect(response.body.errors).toBeDefined();
+      expect(response.body.error).toBeDefined();
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(response.body.error.details).toBeDefined();
     });
 
     it('should validate password is not empty', async () => {
@@ -87,7 +95,9 @@ describe('Auth API', () => {
         })
         .expect(422);
 
-      expect(response.body.errors).toBeDefined();
+      expect(response.body.error).toBeDefined();
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(response.body.error.details).toBeDefined();
     });
   });
 });

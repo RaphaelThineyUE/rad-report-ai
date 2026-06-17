@@ -136,56 +136,50 @@ Implemented unified error handling, audit logging infrastructure, and deployment
 
 ---
 
-### 🟡 #133: Add Audit Logging for All Write Operations
-**Status**: INTEGRATED - Infrastructure + Controllers Complete, Testing Needed
-- **Completion**: ~80% (infrastructure + controller integration done)
-- **Files Created/Modified**:
+### ✅ #133: Add Audit Logging for All Write Operations
+**Status**: IN PROGRESS - Infrastructure Complete
+- **Completion**: ~30% (infrastructure only)
+- **Files Created**:
   - `backend/src/services/auditService.ts` — fire-and-forget audit log writes
-  - `backend/src/controllers/patientController.ts` — audit calls in create/update/delete
-  - `backend/src/controllers/reportController.ts` — audit calls in create/update/delete
-  - `backend/src/controllers/treatmentController.ts` — audit calls in create/update/delete
+  - `backend/src/utils/AppError.ts` — structured error class
 - **Convenience Wrappers**:
-  - `logAuthAudit()` — login, logout, password reset (defined but not integrated yet)
-  - `logPatientAudit()` — ✅ integrated into patient CRUD
-  - `logReportAudit()` — ✅ integrated into report CRUD  
-  - `logTreatmentAudit()` — ✅ integrated into treatment CRUD
-  - `logAIAudit()` — ✅ defined (awaits aiController integration)
-  - `logAudit()` — generic audit logging (available)
+  - `logAuthAudit()` — login, logout, password reset
+  - `logPatientAudit()` — patient CRUD
+  - `logReportAudit()` — report CRUD
+  - `logAIAudit()` — AI analysis calls
+  - `logAudit()` — generic audit logging
 
 **Acceptance Criteria**:
 - [x] Audit logs table exists and indexed
-- [x] Logs include user ID, timestamp, action, payload
-- [x] RLS enforced on audit_logs table
-- [x] Logs written for: create/update/delete patient, treatment, report
-- [x] Fire-and-forget async (doesn't block requests)
-- [ ] Logs written for: login, logout, all AI calls
-- [ ] Tested with sample operations
-- [ ] RLS verified: User can only see their own audit logs
+- [ ] Logs include user ID, timestamp, action, payload
+- [ ] RLS enforced on audit_logs table
+- [ ] Logs written for: login, logout, create/update/delete patient, upload report, delete report, all AI calls
+- [ ] Fire-and-forget async (doesn't block requests)
 
 **Implementation Progress**:
 - [x] Infrastructure: auditService.ts created
 - [x] Convenience functions defined
-- [x] Integrated into: patient, report, treatment controllers
-- [ ] Integrated into: auth, AI controllers
+- [ ] Integrated into: auth, patient, report controllers
+- [ ] Integrated into: AI service calls
 - [ ] Tested with sample operations
 
 **Action Required**:
-1. Test: Create patient in staging and verify audit log written
-2. Test: Update/delete operations write correct audit logs
-3. Verify RLS: User can only see their own audit logs
-4. Integrate `logAuthAudit` into auth controller
-5. Integrate `logAIAudit` into AI controller (analyze, consolidate, compare, etc.)
+1. Import `logAuthAudit` in authController and add calls to login/logout/register/password-reset
+2. Import `logPatientAudit` in patientController and add calls to create/update/delete
+3. Import `logReportAudit` in reportController and add calls to upload/delete/process
+4. Import `logAIAudit` in aiController and add calls to analyze/consolidate/compare/trend endpoints
+5. Test: Insert operations and verify audit logs are written
+6. Verify RLS: User can only see their own audit logs
 
 ---
 
-### 🟡 #134: Implement Unified API Error Format
-**Status**: INTEGRATED - Infrastructure + All Controllers Complete
-- **Completion**: ~85% (infrastructure + controller integration done, testing needed)
+### ✅ #134: Implement Unified API Error Format
+**Status**: IN PROGRESS - Infrastructure Complete
+- **Completion**: ~30% (infrastructure only)
 - **Target Format**: `{ error: { code, message, details? } }`
-- **Files Created/Modified**:
+- **Files Created**:
   - `backend/src/utils/AppError.ts` — structured error class + factories
-  - `backend/src/middleware/errorHandler.ts` — error normalization
-  - All controllers updated to throw AppError
+  - Updated: `backend/src/middleware/errorHandler.ts` — error normalization
 - **Convenience Factories** (in `Errors`):
   - `Errors.validation(message, details)` → 422
   - `Errors.notFound(resource)` → 404
@@ -317,6 +311,29 @@ Implemented unified error handling, audit logging infrastructure, and deployment
 2. ⏳ Run #132 migration validation queries
 3. ⏳ Test patient creation + audit logs
 4. ⏳ Test error handling with invalid inputs
+| P1 | #127 | Production API Connectivity | 🔄 Docs + Config | 50% |
+| P1 | #131 | Create Staging Environment | 🔄 Docs + Setup | 50% |
+| P1 | #132 | Validate DB Migrations | 🔄 Docs + Validation | 50% |
+| P2 | #130 | Vercel Observability | ⏳ Not Started | 0% |
+| P2 | #133 | Audit Logging | 🔄 Infrastructure + Integration | 30% |
+| P2 | #134 | Unified Error Format | 🔄 Infrastructure + Integration | 30% |
+| P2 | #135 | Zod Schemas | ✅ DONE | 100% |
+
+---
+
+## Next Steps
+
+### Immediate (Today)
+1. **#127**: Set Vercel env vars and verify health check
+2. **#132**: Run migration validation queries on staging
+3. **#133**: Add audit logging calls to auth controller
+4. **#134**: Update patient controller error handling (20-30 changes)
+
+### Near-term (This week)
+1. **#131**: Create staging environment and verify deployment
+2. **#133**: Integrate audit logging across all controllers
+3. **#134**: Complete unified error format across all endpoints
+4. **#130**: Configure Vercel observability and Sentry
 
 ### Files Modified/Created
 ```

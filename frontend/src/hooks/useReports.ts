@@ -67,6 +67,12 @@ export interface Report {
   file_url: string | null;
   file_size: number | null;
   status: ReportStatus;
+  processing_stage: string | null;
+  processing_progress: number | null;
+  queued_at: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  last_error: string | null;
   summary: string | null;
   // Exam
   exam_date: string | null;
@@ -132,6 +138,13 @@ export function useReports(patientId: string | undefined, status?: ReportStatus)
       return data.reports;
     },
     enabled: !!patientId,
+    refetchInterval: (query) => {
+      const reports = query.state.data as Report[] | undefined;
+      const hasActiveProcessing = reports?.some(
+        (report) => report.status === 'pending' || report.status === 'processing'
+      );
+      return hasActiveProcessing ? 2000 : false;
+    },
   });
 }
 

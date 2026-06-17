@@ -9,3 +9,4 @@ coverage/
 .turbo/
 .vercel
 .env*
+backend/.tessdata/

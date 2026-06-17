@@ -1,26 +1,25 @@
 /**
- * Report controller — PDF upload, storage, AI processing, and export for radiology reports.
+ * Report controller — PDF upload, storage, background processing, and export for radiology reports.
  * Exports: uploadReport, batchUploadReports (≤50 files), createReport, listReports,
  *   getReport, updateReport, deleteReport, getReportSignedUrl, exportReportJson, processReport.
- * processReport: downloads PDF via supabaseAdmin storage → validates → extracts text via
- *   pdfService → de-identifies locally via cleanupIdentifiers (regex: patient name,
- *   DOB, addresses, direct identifiers) → analyzes via claudeService → saves results.
  * supabaseAdmin is used for storage operations (upload, download, signed URL, delete);
- * the caller's JWT client is used for all DB queries so RLS enforces ownership.
- * Audit logs are written asynchronously for upload/create/update/delete/process operations.
+ * caller's JWT client is used for DB queries so RLS enforces ownership.
+ * Heavy OCR/AI work runs in background worker after report is queued.
  */
 import { Response } from 'express';
 import { validationResult } from 'express-validator';
 import { AuthRequest } from '../middleware/auth.js';
 import { createUserClient, supabaseAdmin } from '../services/supabaseClient.js';
 import { logger } from '../utils/logger.js';
-import { extractTextFromPdf, isValidPdf } from '../services/pdfService.js';
 import {
   analyzeReport,
   generateSummary,
   cleanupIdentifiers,
   detectBiradsTrend,
 } from '../services/claudeService.js';
+  buildReportStoragePath,
+  enqueueReportProcessing,
+} from '../services/reportProcessingService.js';
 import { AppError, Errors } from '../utils/AppError.js';
 import { logReportAudit } from '../services/auditService.js';
 
@@ -109,10 +108,6 @@ const REPORT_UPDATE_FIELDS: (keyof ReportUpdateBody)[] = [
   'analysis_json',
 ];
 
-function normalizeFilename(filename: string): string {
-  return filename.replace(/[^\w.-]+/g, '_');
-}
-
 export async function uploadReport(req: AuthRequest, res: Response): Promise<void> {
   if (!req.file) {
     throw Errors.fileError('Missing file');
@@ -149,7 +144,7 @@ export async function uploadReport(req: AuthRequest, res: Response): Promise<voi
     throw Errors.conflict('A report with this filename already exists for the patient');
   }
 
-  const path = `${req.userId}/${patientId}/${Date.now()}-${normalizeFilename(filename)}`;
+  const path = buildReportStoragePath(req.userId, patientId, filename);
   const { error: uploadError } = await supabaseAdmin.storage
     .from(STORAGE_BUCKET)
     .upload(path, req.file.buffer, { contentType: req.file.mimetype, upsert: false });
@@ -194,6 +189,7 @@ export async function batchUploadReports(req: AuthRequest, res: Response): Promi
   const results: Array<{
     filename: string;
     status: 'success' | 'error';
+    report_id?: string;
     file_url?: string;
     file_size?: number;
     error?: string;
@@ -239,7 +235,7 @@ export async function batchUploadReports(req: AuthRequest, res: Response): Promi
       }
 
       // Upload file to storage
-      const path = `${req.userId}/${patientId}/${Date.now()}-${normalizeFilename(file.originalname)}`;
+      const path = buildReportStoragePath(req.userId, patientId, file.originalname);
       const { error: uploadError } = await supabaseAdmin.storage
         .from(STORAGE_BUCKET)
         .upload(path, file.buffer, { contentType: file.mimetype, upsert: false });
@@ -257,11 +253,15 @@ export async function batchUploadReports(req: AuthRequest, res: Response): Promi
       const { data: newReport, error: createError } = await client
         .from('radiology_reports')
         .insert({
+          created_by: req.userId,
           patient_id: patientId,
           filename: file.originalname,
           file_url: path,
           file_size: file.size,
           status: 'pending',
+          processing_stage: 'queued',
+          processing_progress: 0,
+          queued_at: new Date().toISOString(),
         })
         .select('id')
         .single();
@@ -281,9 +281,31 @@ export async function batchUploadReports(req: AuthRequest, res: Response): Promi
         continue;
       }
 
+      try {
+        await enqueueReportProcessing(newReport.id);
+      } catch (queueError) {
+        const message = queueError instanceof Error ? queueError.message : 'Unknown error';
+        logger.error('batchUploadReports queue error', {
+          userId: req.userId,
+          patientId,
+          reportId: newReport.id,
+          error: message,
+        });
+        await client
+          .from('radiology_reports')
+          .update({
+            status: 'failed',
+            processing_stage: 'failed',
+            processing_progress: 0,
+            last_error: 'Failed to queue background processing',
+          })
+          .eq('id', newReport.id);
+      }
+
       results.push({
         filename: file.originalname,
         status: 'success',
+        report_id: newReport.id,
         file_url: path,
         file_size: file.size,
       });
@@ -369,6 +391,9 @@ export async function createReport(req: AuthRequest, res: Response): Promise<voi
       file_url,
       file_size,
       status: 'pending',
+      processing_stage: 'queued',
+      processing_progress: 0,
+      queued_at: new Date().toISOString(),
     })
     .select('*')
     .single();
@@ -382,8 +407,30 @@ export async function createReport(req: AuthRequest, res: Response): Promise<voi
     throw Errors.internal('Failed to create report');
   }
 
+  try {
+    await enqueueReportProcessing(data.id);
+  } catch (queueError) {
+    const message = queueError instanceof Error ? queueError.message : 'Unknown error';
+    logger.error('createReport queue error', { userId: req.userId, reportId: data.id, error: message });
+    await client
+      .from('radiology_reports')
+      .update({
+        status: 'failed',
+        processing_stage: 'failed',
+        processing_progress: 0,
+        last_error: 'Failed to queue background processing',
+      })
+      .eq('id', data.id);
+  }
+
+  const { data: refreshedReport } = await client
+    .from('radiology_reports')
+    .select('*')
+    .eq('id', data.id)
+    .single();
+
   logReportAudit(req.userId, 'create_report', data.id, req.accessToken);
-  res.status(201).json(data);
+  res.status(201).json(refreshedReport ?? data);
 }
 
 export async function listReports(req: AuthRequest, res: Response): Promise<void> {
@@ -417,7 +464,7 @@ export async function listReports(req: AuthRequest, res: Response): Promise<void
 }
 
 export async function getReport(req: AuthRequest, res: Response): Promise<void> {
-  const { id } = req.params;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const client = createUserClient(req.accessToken);
   const { data, error } = await client
     .from('radiology_reports')
@@ -434,7 +481,7 @@ export async function getReport(req: AuthRequest, res: Response): Promise<void> 
 }
 
 export async function updateReport(req: AuthRequest, res: Response): Promise<void> {
-  const { id } = req.params;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const body = req.body as ReportUpdateBody;
   const updates: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
@@ -464,7 +511,7 @@ export async function updateReport(req: AuthRequest, res: Response): Promise<voi
 }
 
 export async function deleteReport(req: AuthRequest, res: Response): Promise<void> {
-  const { id } = req.params;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const client = createUserClient(req.accessToken);
   const { data: report, error: reportError } = await client
     .from('radiology_reports')
@@ -501,7 +548,7 @@ export async function deleteReport(req: AuthRequest, res: Response): Promise<voi
 }
 
 export async function exportReportJson(req: AuthRequest, res: Response): Promise<void> {
-  const { id } = req.params;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const client = createUserClient(req.accessToken);
 
   const { data: report, error } = await client
@@ -548,172 +595,30 @@ export async function exportReportJson(req: AuthRequest, res: Response): Promise
 }
 
 export async function processReport(req: AuthRequest, res: Response): Promise<void> {
-  const { id } = req.params;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const client = createUserClient(req.accessToken);
-  const startTime = Date.now();
+  const { data: report, error } = await client
+    .from('radiology_reports')
+    .select('id')
+    .eq('id', id)
+    .single();
 
-  try {
-    // Fetch the report
-    const { data: report, error: reportError } = await client
-      .from('radiology_reports')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (reportError || !report) {
-      throw Errors.notFound('Report not found');
-      return;
-    }
-
-    if (!report.file_url) {
-      throw Errors.validation('Report file URL is missing');
-      return;
-    }
-
-    // Update status to processing
-    await client
-      .from('radiology_reports')
-      .update({ status: 'processing' })
-      .eq('id', id);
-
-    // Download the PDF from storage
-    const { data: fileData, error: downloadError } = await supabaseAdmin.storage
-      .from(STORAGE_BUCKET)
-      .download(report.file_url);
-
-    if (downloadError || !fileData) {
-      logger.error('processReport download error', { userId: req.userId, reportId: id, error: downloadError?.message });
-      await client
-        .from('radiology_reports')
-        .update({
-          status: 'failed',
-          processing_time_ms: Date.now() - startTime,
-        })
-        .eq('id', id);
-      throw Errors.internal('Failed to download report file');
-      return;
-    }
-
-    // Validate PDF
-    const isValid = await isValidPdf(fileData);
-    if (!isValid) {
-      logger.error('processReport invalid PDF', { userId: req.userId, reportId: id });
-      await client
-        .from('radiology_reports')
-        .update({
-          status: 'failed',
-          processing_time_ms: Date.now() - startTime,
-        })
-        .eq('id', id);
-      throw Errors.validation('Invalid PDF file');
-      return;
-    }
-
-    // Extract text from PDF
-    let extractedText = await extractTextFromPdf(fileData);
-    const rawText = extractedText;
-
-    // Clean up identifiers
-    extractedText = await cleanupIdentifiers(extractedText);
-
-    // Analyze the report
-    const analysis = await analyzeReport(extractedText);
-
-    // Generate summary if not already present
-    let summary = analysis.summary;
-    if (!summary) {
-      const summaryResult = await generateSummary(extractedText);
-      summary = summaryResult.summary;
-    }
-
-    // Detect BI-RADS trend if available
-    let biradsTrend = null;
-    if (analysis.birads_value && report.birads_value) {
-      const trendData = await detectBiradsTrend([
-        { value: report.birads_value, date: report.created_at },
-        { value: analysis.birads_value, date: new Date().toISOString() },
-      ]);
-      biradsTrend = trendData;
-    }
-
-    const processingTime = Date.now() - startTime;
-
-    // Prepare updates
-    const updates: ReportUpdateBody = {
-      status: 'completed',
-      summary,
-      exam_date: analysis.exam_date,
-      modality: analysis.modality,
-      contrast: analysis.contrast,
-      birads_value: analysis.birads_value,
-      birads_confidence: analysis.birads_confidence,
-      birads_evidence: analysis.findings.map((f) => f.assessment),
-      breast_density_value: analysis.breast_density_value,
-      breast_density_evidence: [analysis.breast_density_value],
-      exam_type: analysis.exam_type,
-      exam_laterality: analysis.exam_laterality,
-      exam_evidence: [analysis.exam_type, analysis.exam_laterality],
-      clinical_history: analysis.clinical_history,
-      risk_factors: analysis.risk_factors,
-      comparison_prior_exam_date: analysis.prior_exam_date,
-      comparison_dates: analysis.comparison_dates,
-      comparison_evidence: analysis.prior_exam_date ? [analysis.prior_exam_date] : [],
-      findings: analysis.findings,
-      lymph_nodes: analysis.lymph_nodes,
-      skin_nipple_changes: analysis.skin_nipple_changes,
-      implants: analysis.implants,
-      post_surgical_changes: analysis.post_surgical_changes,
-      multifocal: analysis.multifocal,
-      multicentric: analysis.multicentric,
-      bilateral_disease: analysis.bilateral_disease,
-      disease_extent: analysis.disease_extent,
-      recommendations: analysis.recommendations,
-      management: analysis.management,
-      pathology_correlation: analysis.pathology_correlation,
-      red_flags: analysis.red_flags,
-      processing_time_ms: processingTime,
-      raw_text: rawText,
-      analysis_json: JSON.parse(analysis.raw_analysis),
-    };
-
-    // Update the report in the database
-    const { data: updatedReport, error: updateError } = await client
-      .from('radiology_reports')
-      .update(updates)
-      .eq('id', id)
-      .select('*')
-      .single();
-
-    if (updateError || !updatedReport) {
-      logger.error('processReport update error', { userId: req.userId, reportId: id, error: updateError?.message });
-      throw Errors.internal('Failed to save analysis results');
-      return;
-    }
-
-    logger.info('Successfully processed report', { userId: req.userId, reportId: id, processingTime });
-
-    res.json({
-      report: updatedReport,
-      processing_time_ms: processingTime,
-      birads_trend: biradsTrend,
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('processReport error', { userId: req.userId, reportId: id, error: message });
-
-    // Try to update status to failed
-    try {
-      await client
-        .from('radiology_reports')
-        .update({
-          status: 'failed',
-          processing_time_ms: Date.now() - startTime,
-        })
-        .eq('id', id);
-    } catch (updateErr) {
-      logger.error('Failed to update report status to failed', { error: updateErr instanceof Error ? updateErr.message : 'Unknown' });
-    }
-
-    throw Errors.internal('Report processing failed');
+  if (error || !report) {
+    throw Errors.notFound('Report not found');
   }
+
+  await enqueueReportProcessing(id);
+  logReportAudit(req.userId, 'queue_report_processing', id, req.accessToken);
+
+  const { data: queuedReport, error: queuedError } = await client
+    .from('radiology_reports')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (queuedError || !queuedReport) {
+    throw Errors.internal('Failed to reload queued report');
+  }
+
+  res.status(202).json(queuedReport);
 }

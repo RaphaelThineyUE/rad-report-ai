@@ -91,7 +91,7 @@ export async function createTreatment(req: AuthRequest, res: Response): Promise<
 }
 
 export async function getTreatment(req: AuthRequest, res: Response): Promise<void> {
-  const { id } = req.params;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const client = createUserClient(req.accessToken);
   const { data, error } = await client
     .from('treatment_records')
@@ -112,7 +112,7 @@ export async function updateTreatment(req: AuthRequest, res: Response): Promise<
     throw Errors.validation('Invalid treatment data', errors.array());
   }
 
-  const { id } = req.params;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const body = req.body as Partial<TreatmentBody>;
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
 
@@ -143,7 +143,7 @@ export async function updateTreatment(req: AuthRequest, res: Response): Promise<
 }
 
 export async function deleteTreatment(req: AuthRequest, res: Response): Promise<void> {
-  const { id } = req.params;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const client = createUserClient(req.accessToken);
   const { error } = await client
     .from('treatment_records')

@@ -27,6 +27,20 @@ const STATUS_COLORS: Record<Report['status'], { text: string; bg: string; border
   failed: { text: 'var(--danger-700)', bg: 'var(--danger-50)', border: 'var(--danger-200)' },
 };
 
+const STAGE_LABELS: Record<string, string> = {
+  queued: 'Queued for background processing',
+  downloading: 'Downloading source PDF',
+  validating_pdf: 'Validating PDF',
+  extracting_text: 'Extracting text',
+  preprocessing_images: 'Improving scan quality',
+  running_ocr: 'Running OCR',
+  deidentifying: 'Removing identifiers',
+  analyzing: 'Analyzing report',
+  saving_results: 'Saving structured data',
+  completed: 'Processing complete',
+  failed: 'Processing failed',
+};
+
 export function ReportCard({
   report,
   onOpenDetail,
@@ -45,6 +59,8 @@ export function ReportCard({
   const fileSizeStr = report.file_size
     ? `${Math.max(report.file_size / (1024 * 1024), 0.01).toFixed(2)} MB`
     : '';
+  const stageLabel = STAGE_LABELS[report.processing_stage ?? report.status] ?? 'Processing report';
+  const progress = report.processing_progress ?? 0;
 
   return (
     <div
@@ -117,16 +133,29 @@ export function ReportCard({
       )}
 
       {/* Processing/Failed State Info */}
-      {report.status === 'processing' && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--fg-3)', fontSize: 13 }}>
-          <Icon name="Loader2" size={16} style={{ animation: 'spin 1s linear infinite' }} />
-          Processing report…
+      {(report.status === 'pending' || report.status === 'processing') && (
+        <div style={{ display: 'grid', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--fg-3)', fontSize: 13 }}>
+            <Icon name="Loader2" size={16} style={{ animation: 'spin 1s linear infinite' }} />
+            {stageLabel}
+            <span style={{ color: 'var(--fg-4)' }}>· {progress}%</span>
+          </div>
+          <div style={{ height: 6, borderRadius: 999, background: 'var(--fg-6)', overflow: 'hidden' }}>
+            <div
+              style={{
+                width: `${progress}%`,
+                height: '100%',
+                background: 'linear-gradient(90deg, var(--rose-400), var(--warning-400))',
+                transition: 'width 0.25s ease',
+              }}
+            />
+          </div>
         </div>
       )}
 
       {report.status === 'failed' && (
         <div style={{ color: 'var(--danger-700)', fontSize: 13 }}>
-          Failed to process. Please try uploading again.
+          {report.last_error || 'Failed to process. Try queueing again.'}
         </div>
       )}
 

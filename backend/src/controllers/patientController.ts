@@ -104,7 +104,7 @@ export async function createPatient(req: AuthRequest, res: Response): Promise<vo
 }
 
 export async function getPatient(req: AuthRequest, res: Response): Promise<void> {
-  const { id } = req.params;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const client = createUserClient(req.accessToken);
   const { data, error } = await client
     .from('patients')
@@ -125,7 +125,7 @@ export async function updatePatient(req: AuthRequest, res: Response): Promise<vo
     throw Errors.validation('Invalid patient data', errors.array());
   }
 
-  const { id } = req.params;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const body = req.body as Partial<PatientBody>;
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
 
@@ -162,7 +162,7 @@ export async function updatePatient(req: AuthRequest, res: Response): Promise<vo
 }
 
 export async function deletePatient(req: AuthRequest, res: Response): Promise<void> {
-  const { id } = req.params;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const client = createUserClient(req.accessToken);
   const { error } = await client
     .from('patients')
@@ -179,7 +179,7 @@ export async function deletePatient(req: AuthRequest, res: Response): Promise<vo
 }
 
 export async function exportPatientBundle(req: AuthRequest, res: Response): Promise<void> {
-  const { id } = req.params;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const client = createUserClient(req.accessToken);
 
   const { data: patient, error: patientError } = await client

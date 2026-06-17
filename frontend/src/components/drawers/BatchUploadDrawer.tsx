@@ -3,7 +3,7 @@
  * Props: patientId (string), onClose, onComplete.
  * Manages per-file upload state (idle → uploading → done/error) and an overall
  * pipeline stage (idle → uploading → extracting → done). Uploads files in
- * parallel, then triggers AI extraction via POST /api/reports/:id/process.
+ * parallel, then backend queues background extraction automatically.
  * Supports retry of failed uploads and shows a step-progress indicator.
  */
 import { useMemo, useState } from 'react';
@@ -98,8 +98,6 @@ export function BatchUploadDrawer({
     setStage('uploading');
     setOverallProgress(0);
 
-    const reportIds: string[] = [];
-
     const uploadPromises = selectedFiles.map(async (fileState) => {
       const key = fileState.file.name;
 
@@ -142,14 +140,12 @@ export function BatchUploadDrawer({
         );
 
         // Create report entry
-        const createResponse = await api.post<{ id: string }>('/api/reports', {
+        await api.post<{ id: string }>('/api/reports', {
           patient_id: patientId,
           filename: uploadResponse.data.filename,
           file_url: uploadResponse.data.file_url,
           file_size: uploadResponse.data.file_size,
         });
-
-        reportIds.push(createResponse.data.id);
 
         // Mark as done uploading
         setFileStates((prev) => {
@@ -183,19 +179,8 @@ export function BatchUploadDrawer({
 
     // Check if all uploaded successfully
     const hasErrors = selectedFiles.some((f) => f.error !== null);
-    if (!hasErrors && reportIds.length > 0) {
+    if (!hasErrors) {
       setStage('extracting');
-
-      // Process all reports in parallel
-      const processPromises = reportIds.map(async (reportId) => {
-        try {
-          await api.post(`/api/reports/${reportId}/process`);
-        } catch (error) {
-          console.error(`Failed to process report ${reportId}:`, error);
-        }
-      });
-
-      await Promise.all(processPromises);
       setStage('done');
       setOverallProgress(100);
     } else {

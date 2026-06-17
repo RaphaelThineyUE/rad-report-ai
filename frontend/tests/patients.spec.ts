@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page, type TestInfo } from '@playwright/test';
 
 const TEST_PATIENT_MARKER = '[PW-TEST]';
 
@@ -40,6 +40,12 @@ async function dismissOnboarding(page: Page) {
     await startFresh.click();
     await page.waitForTimeout(300);
   }
+}
+
+async function captureScreenshot(page: Page, testInfo: TestInfo, name: string) {
+  const path = testInfo.outputPath(name);
+  await page.screenshot({ path, fullPage: true });
+  await testInfo.attach(name, { path, contentType: 'image/png' });
 }
 
 test.describe('Patients - Authenticated Flow', () => {
@@ -129,6 +135,53 @@ test.describe('Patients - Authenticated Flow', () => {
       await page.getByRole('button', { name: 'Create Patient' }).click();
       await expect(page.getByRole('dialog', { name: 'Add patient' })).not.toBeVisible({ timeout: 8000 });
       await expect(page.getByText(patientName)).toBeVisible({ timeout: 8000 });
+    });
+  });
+
+  test('creates a new patient with full clinical profile and captures workflow screenshots', async ({ page }, testInfo) => {
+    const patientName = `${TEST_PATIENT_MARKER} Screenshot Patient ${Date.now()}`;
+
+    await test.step('Capture patients list before creation', async () => {
+      await expect(page.getByRole('heading', { name: 'Patients' })).toBeVisible();
+      await captureScreenshot(page, testInfo, '01-patients-list.png');
+    });
+
+    await test.step('Open Add Patient dialog and capture it', async () => {
+      await page.getByRole('button', { name: 'Add Patient' }).click();
+      await expect(page.getByRole('dialog', { name: 'Add patient' })).toBeVisible();
+      await captureScreenshot(page, testInfo, '02-add-patient-dialog.png');
+    });
+
+    await test.step('Fill patient form and capture completed state', async () => {
+      await page.getByLabel('Full Name *').fill(patientName);
+      await page.getByLabel('Date of Birth *').fill('1983-08-19');
+      await page.getByLabel('Gender').selectOption('Female');
+      await page.getByLabel('Ethnicity').fill('Hispanic');
+      await page.getByLabel('Diagnosis Date *').fill('2024-02-11');
+      await page.getByLabel('Cancer Type *').fill('Invasive Lobular Carcinoma');
+      await page.getByLabel('Cancer Stage').selectOption('Stage III');
+      await page.getByLabel('Tumor Size (cm)').fill('3.4');
+      await page.getByLabel('Lymph node positive').check();
+      await page.getByLabel('ER Status').selectOption('Positive');
+      await page.getByLabel('PR Status').selectOption('Negative');
+      await page.getByLabel('HER2 Status').selectOption('Unknown');
+      await page.getByLabel('Menopausal Status').fill('Perimenopausal');
+      await page.getByLabel('Initial Treatment Plan').fill('Neoadjuvant chemotherapy followed by surgery.');
+      await captureScreenshot(page, testInfo, '03-patient-form-filled.png');
+    });
+
+    await test.step('Submit form and capture created patient in list', async () => {
+      await page.getByRole('button', { name: 'Create Patient' }).click();
+      await expect(page.getByRole('dialog', { name: 'Add patient' })).not.toBeVisible({ timeout: 8000 });
+      await expect(page.getByText(patientName)).toBeVisible({ timeout: 8000 });
+      await captureScreenshot(page, testInfo, '04-patient-created-in-list.png');
+    });
+
+    await test.step('Open patient detail and capture detail view', async () => {
+      await page.getByText(patientName).click();
+      await expect(page.getByRole('button', { name: 'Treatments' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Timeline' })).toBeVisible();
+      await captureScreenshot(page, testInfo, '05-patient-detail-view.png');
     });
   });
 
