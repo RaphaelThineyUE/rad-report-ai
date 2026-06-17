@@ -17,6 +17,7 @@ import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
 import { logger } from '../utils/logger.js';
 import {
   ReportAnalysisSchema,
+  SummarySchema,
   ConsolidationSchema,
   ComparisonSchema,
   BiradsTrendSchema,
@@ -125,7 +126,12 @@ Provide evidence (quoted text) for all findings.`;
 
     const analysisData = message.parsed_output;
     if (!analysisData) {
-      throw new Error('Failed to parse structured analysis from Claude response');
+      const validationError = new Error('Failed to parse structured analysis from Claude response');
+      logger.error('Analysis validation failed - no parsed output', {
+        error: validationError.message,
+        processingTime: Date.now() - startTime
+      });
+      throw validationError;
     }
 
     const processingTime = Date.now() - startTime;
@@ -163,7 +169,13 @@ Provide evidence (quoted text) for all findings.`;
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to analyze report', { error: message });
+    const processingTime = Date.now() - startTime;
+    logger.error('Failed to analyze report', {
+      error: message,
+      processingTime,
+      modelUsed: modelToUse,
+      variant
+    });
     throw new Error(`Report analysis failed: ${message}`);
   }
 }
@@ -172,25 +184,32 @@ Provide evidence (quoted text) for all findings.`;
  * Generate a summary of a single report
  */
 export async function generateSummary(reportText: string): Promise<SummaryResult> {
+  const startTime = Date.now();
   try {
-    const response = await client.messages.create({
+    const message = await client.messages.parse({
       model: MODEL,
       max_tokens: 300,
       system:
-        'You are a clinical summarizer. Create a concise, one-paragraph summary of the key findings.',
+        'You are a clinical summarizer. Create a concise, one-paragraph summary of the key findings and assessment.',
       messages: [
         {
           role: 'user',
           content: `Summarize this radiology report:\n\n${reportText}`,
         },
       ],
+      output_config: { format: zodOutputFormat(SummarySchema) },
     });
 
-    const summary =
-      response.content[0].type === 'text' ? response.content[0].text : '';
-    logger.info('Successfully generated summary');
+    const summaryData = message.parsed_output;
+    if (!summaryData) {
+      throw new Error('Failed to parse structured summary from Claude response');
+    }
+
+    const processingTime = Date.now() - startTime;
+    logger.info('Successfully generated summary', { processingTime });
+
     return {
-      summary,
+      summary: summaryData.summary,
       clinical_disclaimer: CLINICAL_DISCLAIMER,
     };
   } catch (error) {
@@ -235,10 +254,18 @@ Focus on temporal trends, interval changes, and any pathology correlation mentio
 
     const consolidation = message.parsed_output;
     if (!consolidation) {
-      throw new Error('Failed to parse structured consolidation from Claude response');
+      const validationError = new Error('Failed to parse structured consolidation from Claude response');
+      logger.error('Consolidation validation failed - no parsed output', {
+        error: validationError.message,
+        reportCount: reports.length
+      });
+      throw validationError;
     }
 
-    logger.info('Successfully consolidated reports');
+    logger.info('Successfully consolidated reports', {
+      reportCount: reports.length,
+      timelineCount: consolidation.timeline.length
+    });
 
     return {
       overall_summary: consolidation.overall_summary,
@@ -251,7 +278,10 @@ Focus on temporal trends, interval changes, and any pathology correlation mentio
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to consolidate reports', { error: message });
+    logger.error('Failed to consolidate reports', {
+      error: message,
+      reportCount: reports.length
+    });
     throw new Error(`Report consolidation failed: ${message}`);
   }
 }
@@ -288,10 +318,19 @@ clinical recommendations, and a summary of the supporting evidence.`,
 
     const comparison = message.parsed_output;
     if (!comparison) {
-      throw new Error('Failed to parse structured comparison from Claude response');
+      const validationError = new Error('Failed to parse structured comparison from Claude response');
+      logger.error('Comparison validation failed - no parsed output', {
+        error: validationError.message,
+        treatmentCount: treatments.length
+      });
+      throw validationError;
     }
 
-    logger.info('Successfully compared treatments');
+    logger.info('Successfully compared treatments', {
+      treatmentCount: treatments.length,
+      treatmentResponseCount: comparison.treatment_responses.length,
+      recommendationCount: comparison.recommendations.length
+    });
 
     return {
       treatment_responses: comparison.treatment_responses,
@@ -301,7 +340,10 @@ clinical recommendations, and a summary of the supporting evidence.`,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to compare treatments', { error: message });
+    logger.error('Failed to compare treatments', {
+      error: message,
+      treatmentCount: treatments.length
+    });
     throw new Error(`Treatment comparison failed: ${message}`);
   }
 }
@@ -343,15 +385,23 @@ the clinical significance (low/medium/high), and a brief explanatory note.`,
 
     const trendData = message.parsed_output;
     if (!trendData) {
+      logger.error('Trend analysis validation failed - no parsed output', {
+        biradValuesCount: biradValues.length
+      });
       return {
         trend: 'insufficient_data',
-        direction: 'unknown',
+        direction: 'none',
         significance: 'low',
-        clinical_note: 'Failed to analyze trend data',
+        clinical_note: 'Failed to analyze trend data - validation error',
       };
     }
 
-    logger.info('Successfully detected BI-RADS trend');
+    logger.info('Successfully detected BI-RADS trend', {
+      biradValuesCount: biradValues.length,
+      trend: trendData.trend,
+      direction: trendData.direction,
+      significance: trendData.significance
+    });
 
     return {
       trend: trendData.trend,
@@ -361,10 +411,13 @@ the clinical significance (low/medium/high), and a brief explanatory note.`,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to detect trend', { error: message });
+    logger.error('Failed to detect trend', {
+      error: message,
+      biradValuesCount: biradValues.length
+    });
     return {
       trend: 'insufficient_data',
-      direction: 'unknown',
+      direction: 'none',
       significance: 'low',
       clinical_note: 'Error during trend analysis',
     };

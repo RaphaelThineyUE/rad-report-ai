@@ -175,6 +175,11 @@ export const ComparisonSchema = z.object({
   evidence_summary: z.string(),
 });
 
+/** Output of generateSummary — a brief clinical summary of a single report. */
+export const SummarySchema = z.object({
+  summary: z.string().describe('A concise, one-paragraph summary of the key findings and assessment'),
+});
+
 /** Output of detectBiradsTrend — direction/significance of the BI-RADS trend. */
 export const BiradsTrendSchema = z.object({
   trend: z.enum(['improving', 'worsening', 'stable', 'insufficient_data']),
@@ -189,6 +194,7 @@ export type LymphNode = z.infer<typeof LymphNodeSchema>;
 export type Implant = z.infer<typeof ImplantSchema>;
 export type Management = z.infer<typeof ManagementSchema>;
 export type ReportAnalysis = z.infer<typeof ReportAnalysisSchema>;
+export type Summary = z.infer<typeof SummarySchema>;
 export type TimelinePoint = z.infer<typeof TimelinePointSchema>;
 export type Consolidation = z.infer<typeof ConsolidationSchema>;
 export type Comparison = z.infer<typeof ComparisonSchema>;

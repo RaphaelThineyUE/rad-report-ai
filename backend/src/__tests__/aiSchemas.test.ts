@@ -1,5 +1,6 @@
 import {
   ReportAnalysisSchema,
+  SummarySchema,
   ConsolidationSchema,
   ComparisonSchema,
   BiradsTrendSchema,
@@ -96,6 +97,39 @@ describe('aiSchemas', () => {
       const { summary, ...withoutSummary } = valid;
       void summary;
       const res = ReportAnalysisSchema.safeParse(withoutSummary);
+      expect(res.success).toBe(false);
+    });
+  });
+
+  describe('SummarySchema', () => {
+    it('parses a well-formed summary payload', () => {
+      const result = SummarySchema.parse({
+        summary: 'Stable benign findings on bilateral mammography. No evidence of malignancy.',
+      });
+      expect(result.summary).toBe('Stable benign findings on bilateral mammography. No evidence of malignancy.');
+    });
+
+    it('accepts various summary lengths', () => {
+      const shortResult = SummarySchema.parse({
+        summary: 'Stable.',
+      });
+      expect(shortResult.summary).toBe('Stable.');
+
+      const longResult = SummarySchema.parse({
+        summary: 'This is a comprehensive summary of the findings. ' + 'A'.repeat(200),
+      });
+      expect(longResult.summary.length).toBeGreaterThan(200);
+    });
+
+    it('rejects a non-string summary', () => {
+      const res = SummarySchema.safeParse({
+        summary: 123,
+      });
+      expect(res.success).toBe(false);
+    });
+
+    it('rejects a missing summary field', () => {
+      const res = SummarySchema.safeParse({});
       expect(res.success).toBe(false);
     });
   });
