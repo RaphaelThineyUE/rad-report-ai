@@ -1,0 +1,601 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RAD Report AI - Document Schemas",
+  "definitions": {
+    "Finding": {
+      "type": "object",
+      "properties": {
+        "laterality": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "assessment": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "finding_type": {
+          "type": "string",
+          "enum": [
+            "mass",
+            "calcifications",
+            "asymmetry",
+            "architectural_distortion",
+            "lymph_node",
+            "other"
+          ]
+        },
+        "size_mm": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "per_finding_birads": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "interval_change": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "new",
+            "increased",
+            "decreased",
+            "stable",
+            "resolved",
+            "not_applicable"
+          ]
+        },
+        "clock_position": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "distance_from_nipple_cm": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "quadrant": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "UOQ",
+            "UIQ",
+            "LOQ",
+            "LIQ",
+            "central",
+            "subareolar",
+            "axillary_tail"
+          ]
+        },
+        "depth": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "anterior",
+            "middle",
+            "posterior"
+          ]
+        },
+        "shape": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "oval",
+            "round",
+            "irregular"
+          ]
+        },
+        "margin": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "circumscribed",
+            "obscured",
+            "microlobulated",
+            "indistinct",
+            "spiculated"
+          ]
+        },
+        "calcification_morphology": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "calcification_distribution": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ultrasound_features": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "mri_features": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "laterality",
+        "location",
+        "description",
+        "assessment",
+        "evidence",
+        "finding_type"
+      ]
+    },
+    "Recommendation": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string"
+        },
+        "timeframe": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "action",
+        "timeframe",
+        "evidence"
+      ]
+    },
+    "LymphNode": {
+      "type": "object",
+      "properties": {
+        "laterality": {
+          "type": "string"
+        },
+        "region": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "abnormal": {
+          "type": "boolean"
+        },
+        "morphology": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "size_mm": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "laterality",
+        "abnormal",
+        "evidence"
+      ]
+    },
+    "Implant": {
+      "type": "object",
+      "properties": {
+        "present": {
+          "type": "boolean"
+        },
+        "type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "integrity": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "present"
+      ]
+    },
+    "Management": {
+      "type": "object",
+      "properties": {
+        "biopsy_recommended": {
+          "type": "boolean"
+        },
+        "recommended_modality": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "follow_up_interval": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "biopsy_recommended"
+      ]
+    },
+    "ReportAnalysis": {
+      "type": "object",
+      "properties": {
+        "summary": {
+          "type": "string"
+        },
+        "exam_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "modality": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "mammography",
+            "tomosynthesis",
+            "ultrasound",
+            "mri",
+            "other"
+          ]
+        },
+        "contrast": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "with",
+            "without",
+            "not_applicable"
+          ]
+        },
+        "exam_type": {
+          "type": "string"
+        },
+        "laterality": {
+          "type": "string"
+        },
+        "breast_density": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ]
+        },
+        "birads_value": {
+          "type": "number"
+        },
+        "birads_confidence": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "clinical_history": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "risk_factors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "prior_exam_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "comparison_dates": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Finding"
+          }
+        },
+        "lymph_nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LymphNode"
+          }
+        },
+        "skin_nipple_changes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "implants": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Implant"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "post_surgical_changes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "multifocal": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "multicentric": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "bilateral_disease": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "disease_extent": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "recommendations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Recommendation"
+          }
+        },
+        "management": {
+          "$ref": "#/definitions/Management"
+        },
+        "pathology_correlation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "red_flags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "summary",
+        "exam_type",
+        "laterality",
+        "birads_value",
+        "birads_confidence",
+        "risk_factors",
+        "comparison_dates",
+        "findings",
+        "lymph_nodes",
+        "skin_nipple_changes",
+        "post_surgical_changes",
+        "recommendations",
+        "management",
+        "red_flags"
+      ]
+    },
+    "TimelinePoint": {
+      "type": "object",
+      "properties": {
+        "exam_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "modality": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "birads": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "key_change": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key_change"
+      ]
+    },
+    "Consolidation": {
+      "type": "object",
+      "properties": {
+        "overall_summary": {
+          "type": "string"
+        },
+        "key_trends": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "overall_birads": {
+          "type": "number"
+        },
+        "clinical_implications": {
+          "type": "string"
+        },
+        "timeline": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TimelinePoint"
+          }
+        },
+        "pathology_correlation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "overall_summary",
+        "key_trends",
+        "overall_birads",
+        "clinical_implications",
+        "timeline"
+      ]
+    },
+    "TreatmentResponse": {
+      "type": "object",
+      "properties": {
+        "treatment_type": {
+          "type": "string"
+        },
+        "assessment": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "treatment_type",
+        "assessment"
+      ]
+    },
+    "Comparison": {
+      "type": "object",
+      "properties": {
+        "treatment_responses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TreatmentResponse"
+          }
+        },
+        "recommendations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "evidence_summary": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "treatment_responses",
+        "recommendations",
+        "evidence_summary"
+      ]
+    },
+    "BiradsTrend": {
+      "type": "object",
+      "properties": {
+        "trend": {
+          "type": "string",
+          "enum": [
+            "improving",
+            "worsening",
+            "stable",
+            "insufficient_data"
+          ]
+        },
+        "direction": {
+          "type": "string",
+          "enum": [
+            "up",
+            "down",
+            "none"
+          ]
+        },
+        "significance": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "clinical_note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "trend",
+        "direction",
+        "significance",
+        "clinical_note"
+      ]
+    }
+  }
+}

@@ -501,7 +501,7 @@ export async function updateReport(req: AuthRequest, res: Response): Promise<voi
     throw Errors.notFound('Report');
   }
 
-  logReportAudit(req.userId, 'update_report', id, req.accessToken);
+  logReportAudit(req.userId, 'update_report', id as string, req.accessToken);
   res.json(data);
 }
 
@@ -538,7 +538,7 @@ export async function deleteReport(req: AuthRequest, res: Response): Promise<voi
     throw Errors.internal('Failed to delete report');
   }
 
-  logReportAudit(req.userId, 'delete_report', id, req.accessToken);
+  logReportAudit(req.userId, 'delete_report', id as string, req.accessToken);
   res.status(204).send();
 }
 
